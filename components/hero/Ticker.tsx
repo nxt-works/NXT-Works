@@ -4,18 +4,21 @@ import { useEffect, useRef } from "react";
 import { hero } from "@/site.config";
 import { gsap } from "@/lib/gsap";
 import { scrollState } from "@/components/providers/SmoothScroll";
+import { useLowPower } from "@/lib/useLowPower";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 
 /**
  * Thin velocity-reactive ticker pinned to the bottom of the hero.
- * Scrolls slowly at rest, accelerates smoothly with Lenis scroll velocity,
- * pauses when off-screen, and stays static under prefers-reduced-motion.
+ * Scrolls slowly at rest, accelerates smoothly with Lenis scroll velocity
+ * (speed boost disabled on low-power devices), pauses when off-screen,
+ * respects bottom safe areas, and stays static under prefers-reduced-motion.
  */
 export default function Ticker() {
   const containerRef = useRef<HTMLDivElement>(null);
   const railRef = useRef<HTMLDivElement>(null);
   const firstTrackRef = useRef<HTMLUListElement>(null);
   const reducedMotion = useReducedMotion();
+  const lowPower = useLowPower();
 
   useEffect(() => {
     const container = containerRef.current;
@@ -51,7 +54,7 @@ export default function Ticker() {
       if (!visible || trackWidth <= 0) return;
       // Cap dt so tab switches never cause a huge jump.
       const dt = Math.min(deltaTime, 50) / 1000;
-      const targetBoost = Math.min(MAX_BOOST_PX_PER_SEC, Math.abs(scrollState.velocity) * 14);
+      const targetBoost = lowPower ? 0 : Math.min(MAX_BOOST_PX_PER_SEC, Math.abs(scrollState.velocity) * 14);
       boost += (targetBoost - boost) * 0.08;
 
       offset -= (BASE_PX_PER_SEC + boost) * dt;
@@ -68,7 +71,7 @@ export default function Ticker() {
       io.disconnect();
       rail.style.transform = "";
     };
-  }, [reducedMotion]);
+  }, [reducedMotion, lowPower]);
 
   const items = hero.ticker;
 
@@ -76,7 +79,12 @@ export default function Ticker() {
     <div
       ref={containerRef}
       aria-label="Capabilities ticker"
-      className="relative z-10 w-full overflow-hidden border-t border-bone/12 bg-ink py-3.5 md:py-4"
+      style={{
+        paddingBottom: "max(0.875rem, env(safe-area-inset-bottom))",
+        paddingLeft: "env(safe-area-inset-left)",
+        paddingRight: "env(safe-area-inset-right)",
+      }}
+      className="relative z-10 w-full overflow-hidden border-t border-bone/12 bg-ink pt-3.5 md:pt-4"
     >
       <div
         ref={railRef}

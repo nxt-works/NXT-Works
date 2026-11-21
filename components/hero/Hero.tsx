@@ -9,11 +9,12 @@ import Label from "@/components/ui/Label";
 import { gsap, SplitText, useGSAP } from "@/lib/gsap";
 import { onIntroReveal } from "@/lib/intro";
 import { useIsTouch } from "@/lib/useIsTouch";
+import { useLowPower } from "@/lib/useLowPower";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 
 /** Shared container layout for the vertically centred hero block above the ticker. */
 const HERO_CONTAINER_CLASS =
-  "mx-auto flex w-full max-w-[1600px] flex-1 flex-col justify-center px-5 pt-28 pb-10 md:px-10 md:pt-32 md:pb-12 lg:pt-32 [@media(max-height:800px)]:pt-28 [@media(max-height:800px)]:pb-8";
+  "mx-auto flex w-full max-w-[1600px] flex-1 flex-col justify-center px-5 pt-28 pb-10 md:px-10 md:pt-32 md:pb-12 lg:pt-32 [@media(max-height:800px)]:pt-28 [@media(max-height:800px)]:pb-8 [@media(max-height:520px)]:pt-22 [@media(max-height:520px)]:pb-4";
 
 /**
  * HERO — what we do, readable in < 5 s:
@@ -30,6 +31,7 @@ export default function Hero({ object, ticker }: { object?: React.ReactNode; tic
   const dockValueRef = useRef<HTMLSpanElement>(null);
 
   const isTouch = useIsTouch();
+  const lowPower = useLowPower();
   const reducedMotion = useReducedMotion();
   const [fullBlueprintOpen, setFullBlueprintOpen] = useState(false);
   const [lensActive, setLensActive] = useState(false);
@@ -44,6 +46,7 @@ export default function Hero({ object, ticker }: { object?: React.ReactNode; tic
 
   useGSAP(
     (_ctx, contextSafe) => {
+      let hasAnimated = false;
       const reveal = contextSafe!(() => {
         const el = root.current!;
         const h1 = el.querySelector<HTMLElement>("h1")!;
@@ -61,9 +64,19 @@ export default function Hero({ object, ticker }: { object?: React.ReactNode; tic
           type: "lines",
           mask: "lines",
           linesClass: "hero-line",
-          autoSplit: true, // re-split on resize / font swap; returned tween is re-synced
-          onSplit: (self) =>
-            gsap.from(self.lines, { yPercent: 108, rotate: 2.5, transformOrigin: "0% 0%", duration: 0.8, stagger: 0.085 }),
+          autoSplit: true,
+          onSplit: (self) => {
+            // Only animate the entrance once — orientation changes / resizes must not restart it.
+            if (hasAnimated) return;
+            hasAnimated = true;
+            return gsap.from(self.lines, {
+              yPercent: 108,
+              rotate: 2.5,
+              transformOrigin: "0% 0%",
+              duration: 0.8,
+              stagger: 0.085,
+            });
+          },
         });
         gsap.from(rest, { y: 28, autoAlpha: 0, duration: 0.9, stagger: 0.07, delay: 0.3 });
       });
@@ -78,14 +91,18 @@ export default function Hero({ object, ticker }: { object?: React.ReactNode; tic
       id="top"
       data-surface="ink"
       aria-labelledby="hero-title"
-      className="relative isolate flex min-h-svh flex-col overflow-hidden bg-ink text-bone"
+      className="relative isolate flex min-h-dvh flex-col overflow-hidden bg-ink text-bone"
     >
       {/* Stage above the bottom-pinned ticker: holds the vertically centred hero block & X-ray layer */}
       <div ref={stageRef} className="relative flex flex-1 flex-col">
         {/* Optional background object slot (kept for Stage 2 reuse) */}
         {object}
 
-        <div ref={contentRef} className={`relative z-10 ${HERO_CONTAINER_CLASS}`}>
+        <div
+          ref={contentRef}
+          style={showBlueprintButton ? { paddingBottom: "5.25rem" } : undefined}
+          className={`relative z-10 ${HERO_CONTAINER_CLASS}`}
+        >
           <div>
             <div data-reveal="rise" data-xray="eyebrow" className="w-fit">
               <Label index={1} className="text-[0.75rem] text-bone/85 md:text-[0.8125rem]">
@@ -176,11 +193,18 @@ export default function Hero({ object, ticker }: { object?: React.ReactNode; tic
           fullBlueprintOpen={fullBlueprintOpen}
           dockRefs={dockRefs}
           onLensActive={handleLensActive}
+          disableDrift={lowPower}
         />
 
         {/* Manual full-hero blueprint toggle for touch screens and reduced motion (always above z-20 blueprint) */}
         {showBlueprintButton && (
-          <div className="absolute right-5 bottom-5 z-30 md:right-10 md:bottom-7">
+          <div
+            style={{
+              right: "max(1.25rem, env(safe-area-inset-right))",
+              bottom: "max(1rem, env(safe-area-inset-bottom))",
+            }}
+            className="absolute z-30 md:right-10 md:bottom-6"
+          >
             <button
               type="button"
               aria-pressed={fullBlueprintOpen}

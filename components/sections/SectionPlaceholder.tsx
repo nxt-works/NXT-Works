@@ -36,7 +36,7 @@ export default function SectionPlaceholder({ id, index, label, title, surface }:
     >
       <div
         style={{ clipPath }}
-        className={`relative flex min-h-[48svh] flex-col justify-between pt-16 pb-12 md:min-h-[50svh] md:pt-20 md:pb-14 ${
+        className={`relative flex min-h-[48dvh] flex-col justify-between pt-16 pb-12 md:min-h-[50dvh] md:pt-20 md:pb-14 ${
           isBone ? "bg-bone text-ink" : "bg-ink text-bone"
         }`}
       >
@@ -63,7 +63,7 @@ export default function SectionPlaceholder({ id, index, label, title, surface }:
           </div>
 
           <div
-            className={`mt-12 flex items-center justify-between border-t pt-5 ${
+            className={`mt-12 flex flex-wrap items-center justify-between gap-2 border-t pt-5 ${
               isBone ? "border-ink/15 text-ink/70" : "border-bone/12 text-smoke"
             }`}
           >

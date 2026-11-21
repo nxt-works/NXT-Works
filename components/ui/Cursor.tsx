@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useIsTouch } from "@/lib/useIsTouch";
+import { useLowPower } from "@/lib/useLowPower";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 
 const INTERACTIVE_SELECTOR = 'a, button, [role="button"], input, textarea, select, [data-cursor="grow"]';
@@ -9,14 +10,15 @@ const INTERACTIVE_SELECTOR = 'a, button, [role="button"], input, textarea, selec
 /**
  * Custom Volt dot cursor that grows over links and buttons.
  * Uses direct Volt styling (never mix-blend-difference, which shifts Volt
- * to purple over Bone). Automatically disabled on touch & reduced motion.
+ * to purple over Bone). Automatically disabled on touch, low-power & reduced motion.
  */
 export default function Cursor() {
   const isTouch = useIsTouch();
+  const lowPower = useLowPower();
   const reducedMotion = useReducedMotion();
   const dotRef = useRef<HTMLDivElement>(null);
 
-  const disabled = isTouch || reducedMotion;
+  const disabled = isTouch || lowPower || reducedMotion;
 
   useEffect(() => {
     if (disabled) {

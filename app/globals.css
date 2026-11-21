@@ -28,18 +28,18 @@
   --default-transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   --default-transition-duration: 600ms;
 
-  /* Fluid type scale — spans ~90% width in 2 lines on desktop, 3–4 lines on mobile. */
-  --text-display: clamp(3.25rem, 10.4vw, 10.75rem);
+  /* Fluid type scale — spans ~90% width in 2 lines on desktop, 3–4 bold lines on 360px+ phones. */
+  --text-display: clamp(3rem, 10.2vw, 10.75rem);
   --text-display--line-height: 0.9;
   --text-display--letter-spacing: -0.03em;
-  --text-section: clamp(2.5rem, 1.1rem + 5.2vw, 6.75rem);
+  --text-section: clamp(2.25rem, 1.1rem + 5.2vw, 6.75rem);
   --text-section--line-height: 0.9;
   --text-section--letter-spacing: -0.03em;
-  --text-lede: clamp(1.0625rem, 0.95rem + 0.4vw, 1.3125rem);
+  --text-lede: clamp(1rem, 0.94rem + 0.35vw, 1.3125rem);
   --text-lede--line-height: 1.6;
-  --text-label: 0.6875rem;
-  --text-label--line-height: 1.2;
-  --text-label--letter-spacing: 0.16em;
+  --text-label: 0.75rem;
+  --text-label--line-height: 1.25;
+  --text-label--letter-spacing: 0.14em;
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -55,7 +55,14 @@
   }
   body {
     font-family: var(--font-sans);
+    font-size: 1rem;
     line-height: 1.6;
+  }
+  /* Prevent iOS Safari auto-zoom on form controls. */
+  input,
+  textarea,
+  select {
+    font-size: max(16px, 1rem);
   }
   ::selection {
     background: var(--color-volt);
@@ -127,6 +134,18 @@
   background-image: url("/grain.png");
   background-size: 128px 128px;
   opacity: 0.075;
+}
+/* Lighter grain on phones to keep mid-range Android compositing smooth. */
+@media (max-width: 767px) {
+  .grain {
+    opacity: 0.04;
+  }
+}
+/* Short rotated phone landscapes: scale headline cleanly so hero stays above the fold. */
+@media (max-height: 520px) {
+  :root {
+    --text-display: clamp(2.125rem, 6.4vw, 3.25rem);
+  }
 }
 
 /* ──────────────────────────────────────────────────────────────────────────

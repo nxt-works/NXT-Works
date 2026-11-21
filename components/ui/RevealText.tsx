@@ -39,23 +39,29 @@ export default function RevealText({ as: Tag = "h2", id, className = "", childre
           return;
         }
 
+        let hasRevealed = false;
         SplitText.create(el, {
           type: "lines",
           mask: "lines",
           autoSplit: true,
-          onSplit: (self) =>
-            gsap.from(self.lines, {
+          onSplit: (self) => {
+            if (hasRevealed) return;
+            return gsap.from(self.lines, {
               yPercent: 108,
               rotate: 2,
               transformOrigin: "0% 0%",
               duration: 0.85,
               stagger: 0.08,
+              onComplete: () => {
+                hasRevealed = true;
+              },
               scrollTrigger: {
                 trigger: el,
                 start: "top 88%",
                 once: true,
               },
-            }),
+            });
+          },
         });
       });
 

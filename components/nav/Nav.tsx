@@ -1,23 +1,53 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Logo from "@/components/Logo";
 import MagneticButton from "@/components/nav/MagneticButton";
 import { brand, nav } from "@/site.config";
 
+const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 /**
  * Floating pill navigation centred at the top of the viewport.
- * - Left: X mark via <Logo mark />
- * - Centre (desktop): section links from site.config.ts
- * - Right: magnetic Volt CTA + mobile menu toggle on small screens
- * - Hides smoothly on scroll down and returns on scroll up
+ * - Left: X mark via <Logo mark /> (44×44px target)
+ * - Centre (md+): section links from site.config.ts (44px tall targets, 8px+ gap)
+ * - Right: magnetic Volt CTA (44px tall) + mobile full-screen drawer toggle (44×44px)
+ * - Safe-area aware, hides on scroll down / returns on scroll up
+ * - Mobile drawer traps focus, locks scroll, closes on link tap, Esc, or browser Back gesture
  */
 export default function Nav() {
   const [hidden, setHidden] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeHref, setActiveHref] = useState<string>("");
+
   const headerRef = useRef<HTMLElement>(null);
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const toggleBtnRef = useRef<HTMLButtonElement>(null);
   const focusWithinRef = useRef(false);
+  const pushedHistoryRef = useRef(false);
+
+  const closeMenu = useCallback((restoreFocus = false) => {
+    setMenuOpen(false);
+    if (pushedHistoryRef.current) {
+      pushedHistoryRef.current = false;
+      // Pop our synthetic drawer history entry cleanly if still on top.
+      if (window.history.state?.navDrawer) {
+        window.history.back();
+      }
+    }
+    if (restoreFocus) {
+      requestAnimationFrame(() => toggleBtnRef.current?.focus());
+    }
+  }, []);
+
+  const openMenu = useCallback(() => {
+    setMenuOpen(true);
+    setHidden(false);
+    if (!pushedHistoryRef.current) {
+      pushedHistoryRef.current = true;
+      window.history.pushState({ ...(window.history.state ?? {}), navDrawer: true }, "");
+    }
+  }, []);
 
   // Hide on scroll down, reveal on scroll up (always visible near the top or while menu/focus is active).
   useEffect(() => {
@@ -74,24 +104,65 @@ export default function Nav() {
     return () => observer.disconnect();
   }, []);
 
-  // Close mobile menu on Escape or click outside.
+  // Mobile full-screen drawer: focus trap, body scroll lock, Escape, Back gesture (popstate), and md+ auto-close.
   useEffect(() => {
     if (!menuOpen) return;
+
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    // Move focus to first interactive link in the drawer.
+    requestAnimationFrame(() => {
+      const firstLink = drawerRef.current?.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);
+      firstLink?.focus();
+    });
+
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setMenuOpen(false);
-    };
-    const onPointerDown = (e: PointerEvent) => {
-      if (headerRef.current && !headerRef.current.contains(e.target as Node)) {
-        setMenuOpen(false);
+      if (e.key === "Escape") {
+        e.preventDefault();
+        closeMenu(true);
+        return;
+      }
+      if (e.key === "Tab" && headerRef.current) {
+        const focusables = Array.from(headerRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
+          (el) => el.offsetParent !== null,
+        );
+        if (focusables.length === 0) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
       }
     };
-    window.addEventListener("keydown", onKeyDown);
-    document.addEventListener("pointerdown", onPointerDown);
-    return () => {
-      window.removeEventListener("keydown", onKeyDown);
-      document.removeEventListener("pointerdown", onPointerDown);
+
+    // Close drawer cleanly on mobile swipe-back / browser Back button.
+    const onPopState = () => {
+      pushedHistoryRef.current = false;
+      setMenuOpen(false);
     };
-  }, [menuOpen]);
+
+    // Close mobile drawer automatically if rotating a tablet into md+ landscape nav.
+    const mql = window.matchMedia("(min-width: 768px)");
+    const onMediaChange = (ev: MediaQueryListEvent) => {
+      if (ev.matches) closeMenu(false);
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("popstate", onPopState);
+    mql.addEventListener("change", onMediaChange);
+
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("popstate", onPopState);
+      mql.removeEventListener("change", onMediaChange);
+    };
+  }, [menuOpen, closeMenu]);
 
   const isHidden = hidden && !menuOpen;
 
@@ -107,35 +178,40 @@ export default function Nav() {
           focusWithinRef.current = false;
         }
       }}
-      className="pointer-events-none fixed inset-x-0 top-0 z-[100] flex flex-col items-center px-4 pt-4 md:pt-5"
+      style={{
+        paddingTop: "max(0.875rem, env(safe-area-inset-top))",
+        paddingLeft: "max(1rem, env(safe-area-inset-left))",
+        paddingRight: "max(1rem, env(safe-area-inset-right))",
+      }}
+      className="pointer-events-none fixed inset-x-0 top-0 z-[100] flex flex-col items-center md:pt-5"
     >
       {/* Keyboard skip link */}
       <a
         href="#main"
-        className="label pointer-events-auto sr-only rounded-full bg-volt px-4 py-2 text-ink focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[130]"
+        className="label pointer-events-auto sr-only rounded-full bg-volt px-4 py-3 text-ink focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[130]"
       >
         Skip to content
       </a>
 
       <nav
         aria-label="Primary"
-        className={`flex w-full max-w-[368px] items-center justify-between gap-2 rounded-full border border-bone/12 bg-ink/84 p-1.5 pl-2.5 shadow-[0_14px_40px_rgba(12,12,13,0.45)] backdrop-blur-md transition-[transform,opacity] duration-500 md:w-auto md:max-w-none md:gap-5 md:pl-3 ${
+        className={`relative z-[102] flex w-full max-w-[400px] items-center justify-between gap-2 rounded-full border border-bone/14 bg-ink/96 p-1.5 pl-2 shadow-[0_12px_36px_rgba(12,12,13,0.45)] transition-[transform,opacity] duration-500 md:w-auto md:max-w-none md:gap-4 md:bg-ink/86 md:pl-2.5 md:backdrop-blur-md ${
           isHidden ? "pointer-events-none -translate-y-[180%] opacity-0" : "pointer-events-auto translate-y-0 opacity-100"
         }`}
       >
-        {/* Left: X mark */}
+        {/* Left: X mark (44×44px tap target) */}
         <a
           href="#top"
           aria-label={`${brand.name} — back to top`}
-          onClick={() => setMenuOpen(false)}
-          className="grid size-9 shrink-0 place-items-center rounded-full transition-colors duration-300 hover:bg-graphite"
+          onClick={() => closeMenu(false)}
+          className="grid size-11 shrink-0 place-items-center rounded-full transition-colors duration-300 hover:bg-graphite active:bg-graphite"
           data-cursor="grow"
         >
           <Logo mark title="" className="h-[18px] w-auto" />
         </a>
 
-        {/* Centre: desktop links */}
-        <ul className="hidden items-center gap-1 md:flex">
+        {/* Centre: tablet/desktop links (44px min height, 8px+ gap) */}
+        <ul className="hidden items-center gap-2 md:flex">
           {nav.links.map((item) => {
             const isActive = activeHref === item.href;
             return (
@@ -143,15 +219,15 @@ export default function Nav() {
                 <a
                   href={item.href}
                   aria-current={isActive ? "location" : undefined}
-                  className={`group relative inline-flex items-center rounded-full px-3.5 py-2 text-[0.875rem] tracking-[-0.01em] transition-colors duration-300 ${
-                    isActive ? "text-bone" : "text-bone/72 hover:text-bone"
+                  className={`group relative inline-flex min-h-[44px] items-center rounded-full px-3 text-[0.875rem] tracking-[-0.01em] transition-colors duration-300 lg:px-3.5 ${
+                    isActive ? "text-bone" : "text-bone/75 hover:text-bone"
                   }`}
                   data-cursor="grow"
                 >
                   <span>{item.label}</span>
                   <span
                     aria-hidden="true"
-                    className={`absolute inset-x-3.5 bottom-1 h-px origin-left bg-volt transition-transform duration-500 ${
+                    className={`absolute inset-x-3 bottom-2 h-px origin-left bg-volt transition-transform duration-500 lg:inset-x-3.5 ${
                       isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
                     }`}
                   />
@@ -161,13 +237,13 @@ export default function Nav() {
           })}
         </ul>
 
-        {/* Right: Volt CTA (magnetic) + mobile menu toggle */}
-        <div className="flex items-center gap-1.5">
+        {/* Right: Volt CTA (44px tall) + mobile menu toggle (44×44px), 8px gap */}
+        <div className="flex items-center gap-2">
           <MagneticButton>
             <a
               href={nav.cta.href}
-              onClick={() => setMenuOpen(false)}
-              className="group/cta inline-flex h-9 items-center gap-2.5 rounded-full bg-volt pr-1.5 pl-4 text-[0.8125rem] font-medium tracking-[-0.01em] text-ink transition-colors duration-300 md:h-10 md:pl-5 md:text-[0.875rem]"
+              onClick={() => closeMenu(false)}
+              className="group/cta inline-flex h-11 items-center gap-2 rounded-full bg-volt pr-1.5 pl-4 text-[0.875rem] font-medium tracking-[-0.01em] text-ink transition-colors duration-300 active:scale-[0.98] md:pl-5"
               data-cursor="grow"
               data-cursor-surface="volt"
             >
@@ -184,7 +260,7 @@ export default function Nav() {
               </span>
               <span
                 aria-hidden="true"
-                className="grid size-6 place-items-center rounded-full bg-ink text-volt transition-transform duration-500 group-hover/cta:rotate-45 md:size-7"
+                className="grid size-7 place-items-center rounded-full bg-ink text-volt transition-transform duration-500 group-hover/cta:rotate-45"
               >
                 <svg viewBox="0 0 12 12" className="size-2.5" fill="none" stroke="currentColor" strokeWidth="1.7">
                   <path d="M2 10 10 2M4 2h6v6" strokeLinecap="square" />
@@ -194,12 +270,13 @@ export default function Nav() {
           </MagneticButton>
 
           <button
+            ref={toggleBtnRef}
             type="button"
-            onClick={() => setMenuOpen((v) => !v)}
+            onClick={() => (menuOpen ? closeMenu(true) : openMenu())}
             aria-expanded={menuOpen}
             aria-controls="mobile-nav-drawer"
             aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
-            className="grid size-9 place-items-center rounded-full border border-bone/12 text-bone transition-colors duration-300 hover:border-bone/35 hover:bg-graphite md:hidden"
+            className="grid size-11 shrink-0 place-items-center rounded-full border border-bone/16 text-bone transition-colors duration-300 hover:border-bone/40 hover:bg-graphite active:bg-graphite md:hidden"
           >
             <span className="relative flex h-2.5 w-4 flex-col justify-between" aria-hidden="true">
               <span
@@ -217,26 +294,51 @@ export default function Nav() {
         </div>
       </nav>
 
-      {/* Mobile menu dropdown */}
+      {/* Full-screen mobile navigation drawer (big tap targets, focus trapped, Esc & Back gesture close) */}
       <div
+        ref={drawerRef}
         id="mobile-nav-drawer"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Mobile navigation"
         hidden={!menuOpen}
-        className="pointer-events-auto mt-2.5 w-full max-w-[368px] overflow-hidden rounded-3xl border border-bone/12 bg-ink/95 p-5 shadow-[0_24px_60px_rgba(12,12,13,0.65)] backdrop-blur-md md:hidden"
+        style={{
+          paddingTop: "calc(max(5.5rem, env(safe-area-inset-top) + 4.75rem))",
+          paddingBottom: "max(2rem, env(safe-area-inset-bottom))",
+          paddingLeft: "max(1.5rem, env(safe-area-inset-left))",
+          paddingRight: "max(1.5rem, env(safe-area-inset-right))",
+        }}
+        className="pointer-events-auto fixed inset-0 z-[101] flex flex-col justify-between overflow-y-auto bg-ink md:hidden"
       >
-        <ul className="divide-y divide-bone/10">
+        <ul className="divide-y divide-bone/12">
           {nav.links.map((item, idx) => (
             <li key={item.href}>
               <a
                 href={item.href}
-                onClick={() => setMenuOpen(false)}
-                className="flex items-baseline justify-between py-3.5 text-bone transition-colors duration-300 hover:text-volt"
+                onClick={() => closeMenu(false)}
+                className="flex min-h-[60px] items-baseline justify-between py-4 text-bone transition-colors duration-300 hover:text-volt active:text-volt"
               >
-                <span className="font-display text-2xl font-semibold tracking-[-0.02em]">{item.label}</span>
-                <span className="label text-smoke tabular-nums">{String(idx + 1).padStart(2, "0")}</span>
+                <span className="font-display text-3xl font-bold tracking-[-0.025em]">{item.label}</span>
+                <span className="label text-bone/70 tabular-nums">{String(idx + 1).padStart(2, "0")}</span>
               </a>
             </li>
           ))}
         </ul>
+
+        <div className="mt-8 border-t border-bone/12 pt-6">
+          <a
+            href={nav.cta.href}
+            onClick={() => closeMenu(false)}
+            className="flex min-h-[52px] w-full items-center justify-between rounded-full bg-volt px-6 py-3 text-base font-medium text-ink transition-transform duration-300 active:scale-[0.99]"
+          >
+            <span>{nav.cta.label}</span>
+            <span aria-hidden="true" className="grid size-8 place-items-center rounded-full bg-ink text-volt">
+              <svg viewBox="0 0 12 12" className="size-3" fill="none" stroke="currentColor" strokeWidth="1.7">
+                <path d="M2 10 10 2M4 2h6v6" strokeLinecap="square" />
+              </svg>
+            </span>
+          </a>
+        </div>
       </div>
     </header>
   );

@@ -4,6 +4,7 @@ import { useRef } from "react";
 import Logo from "@/components/Logo";
 import { colors } from "@/site.config";
 import { gsap, useGSAP } from "@/lib/gsap";
+import { isLowPowerDevice } from "@/lib/useLowPower";
 import {
   INTRO_DONE_EVENT,
   INTRO_REVEAL_EVENT,
@@ -133,6 +134,8 @@ export default function Intro() {
       const push = { p: 0 };
 
       const tl = gsap.timeline({ onComplete: finish });
+      // Shorten total intro duration to ~1.2s on low-power mobile devices without changing sequence structure.
+      if (isLowPowerDevice()) tl.timeScale(2.15);
 
       // 1 · cursor blink (hard on/off like a caret; no easing involved)
       tl.set(c, { opacity: 1 }, 0)
@@ -224,7 +227,11 @@ export default function Intro() {
       <button
         ref={skipBtn}
         type="button"
-        className="label absolute right-6 bottom-6 rounded-full border border-graphite px-4 py-2.5 text-smoke transition-colors duration-500 hover:border-smoke hover:text-bone md:right-10 md:bottom-10"
+        style={{
+          right: "max(1.5rem, env(safe-area-inset-right))",
+          bottom: "max(1.5rem, env(safe-area-inset-bottom))",
+        }}
+        className="label absolute inline-flex min-h-[44px] min-w-[44px] items-center rounded-full border border-graphite px-4 py-2.5 text-smoke transition-colors duration-500 hover:border-smoke hover:text-bone md:right-10 md:bottom-10"
       >
         Skip intro <span aria-hidden="true">→</span>
       </button>

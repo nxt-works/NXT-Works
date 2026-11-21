@@ -72,11 +72,11 @@ box, continue from there. Commit after each checkpoint.
 - [x] Highlighted active headline / italic accent outline inside the lens with stronger Volt stroke
 - [x] Git commit
 
-#### Checkpoint B — Mobile & tablet first responsive pass
-- [ ] Create `RESPONSIVE_RULES.md` in project root
-- [ ] Apply responsive rules across site (`dvh/svh`, `env(safe-area-inset-*)`, `≥ 44px` tap targets with `≥ 8px` gap, `≥ 12px` labels & `≥ 16px` body copy, capability-based touch/mouse detection, orientation resilience, low-power device detection + mid-range Android smoothness, full accessible mobile drawer with focus trap + back-gesture/Esc close, `≥ 16px` inputs)
-- [ ] Test & inspect screenshots at 360×740, 390×844, 412×915, 768×1024, 820×1180, 1024×768, 1180×820, 1440×900
-- [ ] Fix every issue found & git commit
+#### Checkpoint B — Mobile & tablet first responsive pass ✅
+- [x] Created `RESPONSIVE_RULES.md` in project root
+- [x] Applied responsive rules across site (`dvh`, `viewport-fit=cover` + `env(safe-area-inset-*)`, `≥ 44×44px` tap targets with `≥ 8px` gap, `≥ 12px` labels & `≥ 16px` body/inputs, capability-based touch/mouse detection, orientation-change guards on `SplitText` so animations never restart, `lib/useLowPower.ts` disabling custom cursor / lens drift / ticker boost and shortening intro to ~1.2s, lighter mobile grain, removed mobile nav `backdrop-blur`, full-screen mobile drawer with focus trap + scroll lock + Escape/Back-gesture close)
+- [x] Visually verified all 8 matrix viewports (`360×740`, `390×844`, `412×915`, `768×1024`, `820×1180`, `1024×768`, `1180×820`, `1440×900`) + `360×740` drawer + `740×360` landscape; fixed `360×740` docked-card vs `Blueprint` pill clearance
+- [x] Git commit
 
 #### Checkpoint C — Clean-up
 - [ ] Lint + production build clean, zero console errors/hydration warnings
