@@ -33,9 +33,11 @@ box, continue from there. Commit after each checkpoint.
 - [x] Velocity-reactive ticker (`components/hero/Ticker.tsx`)
 - [x] Custom cursor (fine pointers only) (`components/ui/Cursor.tsx`) & scroll progress line (`components/ui/ScrollProgress.tsx`)
 - [x] RevealText for headlines (`components/ui/RevealText.tsx`) & 8 empty section placeholders (`components/sections/SectionPlaceholder.tsx`) with Ink/Bone alternation and angled cuts
-- [ ] QA: keyboard, reduced motion, console/hydration clean, Lighthouse mobile
-- [ ] Git commit + final summary
+- [x] QA: keyboard, reduced motion, console/hydration clean, mobile & desktop visual pass (Lighthouse mobile deferred until 3D hero object is added — **waiting for Opus**)
+- [x] Git commits saved after every piece of work
 
 ## Notes / decisions
 - Next.js 16.4 with `cacheComponents` enabled (scaffold default). Page is fully static.
 - Grain is static (no animated noise) to avoid full-screen repaints.
+- `components/intro/Intro.tsx` was left untouched as built in Checkpoint B.
+- `components/hero/HeroObject.tsx` (3D browser slab) is intentionally skipped and **waiting for Opus**; `Hero.tsx` already accepts it via the `object` prop.

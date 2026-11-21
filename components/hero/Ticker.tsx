@@ -80,9 +80,14 @@ export default function Ticker() {
     >
       <div
         ref={railRef}
-        className={`flex w-max will-change-transform ${reducedMotion ? "mx-auto flex-wrap justify-center gap-y-2 px-5" : ""}`}
+        className={`flex will-change-transform ${
+          reducedMotion ? "mx-auto w-full flex-wrap justify-center gap-y-2 px-5" : "w-max"
+        }`}
       >
-        <ul ref={firstTrackRef} className="flex shrink-0 items-center">
+        <ul
+          ref={firstTrackRef}
+          className={`flex items-center ${reducedMotion ? "flex-wrap justify-center gap-y-2" : "shrink-0"}`}
+        >
           {items.map((phrase) => (
             <li key={phrase} className="label flex shrink-0 items-center text-bone/70">
               <span className="px-5 md:px-7">{phrase}</span>

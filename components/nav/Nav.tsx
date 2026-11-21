@@ -119,8 +119,8 @@ export default function Nav() {
 
       <nav
         aria-label="Primary"
-        className={`pointer-events-auto flex w-full max-w-[368px] items-center justify-between gap-2 rounded-full border border-bone/12 bg-ink/84 p-1.5 pl-2.5 shadow-[0_14px_40px_rgba(12,12,13,0.45)] backdrop-blur-md transition-transform duration-500 md:w-auto md:max-w-none md:gap-5 md:pl-3 ${
-          isHidden ? "-translate-y-[160%]" : "translate-y-0"
+        className={`flex w-full max-w-[368px] items-center justify-between gap-2 rounded-full border border-bone/12 bg-ink/84 p-1.5 pl-2.5 shadow-[0_14px_40px_rgba(12,12,13,0.45)] backdrop-blur-md transition-[transform,opacity] duration-500 md:w-auto md:max-w-none md:gap-5 md:pl-3 ${
+          isHidden ? "pointer-events-none -translate-y-[180%] opacity-0" : "pointer-events-auto translate-y-0 opacity-100"
         }`}
       >
         {/* Left: X mark */}
