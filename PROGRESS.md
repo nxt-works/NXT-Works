@@ -25,14 +25,14 @@ box, continue from there. Commit after each checkpoint.
 - [x] Git commit
 
 ## Checkpoint C — Navigation and hero
-- [ ] Lenis smooth scroll provider synced to GSAP ticker / ScrollTrigger
+- [x] Lenis smooth scroll provider synced to GSAP ticker / ScrollTrigger (`components/providers/SmoothScroll.tsx`)
 - [ ] Floating pill nav: X mark, links, Volt CTA, hide on scroll down / show on up, mobile menu
 - [ ] Magnetic button with spring physics
 - [x] Hero: eyebrow, headline (line reveal), subline, 2 CTAs (built in Checkpoint B; ticker & 3D slots ready)
 - [ ] 3D browser slab (R3F, lazy, `progress` 0–1 input, cursor tilt, simpler on mobile, paused off-screen) — **waiting for Opus**
 - [ ] Velocity-reactive ticker
-- [ ] Custom cursor (fine pointers only), scroll progress line, RevealText for headlines
-- [ ] 8 empty section placeholders (Ink/Bone alternation, angled cuts)
+- [x] Custom cursor (fine pointers only) (`components/ui/Cursor.tsx`) & scroll progress line (`components/ui/ScrollProgress.tsx`)
+- [ ] RevealText for headlines & 8 empty section placeholders (Ink/Bone alternation, angled cuts)
 - [ ] QA: keyboard, reduced motion, console/hydration clean, Lighthouse mobile
 - [ ] Git commit + final summary
 

@@ -2,6 +2,9 @@ import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Geist, Instrument_Serif, JetBrains_Mono } from "next/font/google";
 import { brand, colors, meta } from "@/site.config";
 import { INTRO_STORAGE_KEY } from "@/lib/intro";
+import SmoothScroll from "@/components/providers/SmoothScroll";
+import ScrollProgress from "@/components/ui/ScrollProgress";
+import Cursor from "@/components/ui/Cursor";
 import "./globals.css";
 
 const bricolage = Bricolage_Grotesque({
@@ -59,7 +62,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: prePaintScript }} />
       </head>
       <body>
-        {children}
+        <SmoothScroll>
+          <ScrollProgress />
+          {children}
+          <Cursor />
+        </SmoothScroll>
         <div className="grain" aria-hidden="true" />
       </body>
     </html>
