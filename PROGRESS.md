@@ -57,13 +57,13 @@ box, continue from there. Commit after each checkpoint.
 - [x] Kept bottom-pinned ticker and short-screen top clearance below the floating pill nav
 - [x] Git commit
 
-### Refinement Checkpoint B — X-ray lens refinement
-- [ ] Smaller default lens (`clamp(170px, 15vw, 210px)`) and 520px press-and-hold max (≤ 46% viewport width)
-- [ ] Move `X-RAY` badge + live coordinates outside the bottom of the ring so outlined text stays clear
-- [ ] Context-sensitive right-side readout tag with leader line (headline / italic accent / subline / buttons / empty space colour tokens)
-- [ ] Pixel-exact outlined headline alignment inside the lens
-- [ ] Touch screens: remove press-and-hold, add `"Blueprint"` toggle button reusing the full-hero blueprint toggle while lens keeps auto-drifting
-- [ ] Desktop & mobile screenshot check, lint, build, git commit
+### Refinement Checkpoint B — X-ray lens refinement ✅
+- [x] Smaller default lens (`clamp(170px, 15vw, 210px)`) and 520px press-and-hold max (≤ 46% viewport width)
+- [x] Moved `X-RAY` badge + live coordinates outside the bottom of the ring so outlined text stays clear
+- [x] Added context-sensitive right-side readout tag with Volt leader line (headline / italic accent / subline / buttons / eyebrow / empty-space colour tokens; auto-flips near right edge, stacks below bottom rim on narrow mobile)
+- [x] Pixel-exact outlined headline alignment locked directly to measured `#hero-title` rect
+- [x] Touch screens: removed press-and-hold expansion, added `"Blueprint"` toggle button reusing the full-hero blueprint toggle while lens keeps auto-drifting
+- [x] Desktop & mobile screenshot check, lint, build, git commit
 
 ## Notes / decisions
 - Next.js 16.4 with `cacheComponents` enabled (scaffold default). Page is fully static.

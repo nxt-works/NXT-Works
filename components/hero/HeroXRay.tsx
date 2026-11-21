@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { easing, hero } from "@/site.config";
-import Label from "@/components/ui/Label";
 import { onIntroDone, onIntroReveal } from "@/lib/intro";
 import { useIsTouch } from "@/lib/useIsTouch";
 import { useReducedMotion } from "@/lib/useReducedMotion";
@@ -19,29 +18,43 @@ type BlueprintMetrics = {
   heroHeight: number;
   containerLeft: number;
   containerWidth: number;
+  h1Box: RectBox | null;
+  accentBox: RectBox | null;
   lineBoxes: RectBox[];
   eyebrowBox: RectBox | null;
   sublineBox: RectBox | null;
   ctaBox: RectBox | null;
+  buttonBoxes: RectBox[];
   displayFont: string;
   displaySize: string;
   displayTracking: string;
   displayLeading: string;
   accentFont: string;
   accentSize: string;
+  sublineFont: string;
+  sublineSize: string;
+  buttonFont: string;
+  buttonSize: string;
+  eyebrowFont: string;
+  eyebrowSize: string;
   palette: { label: string; hex: string }[];
+  paletteInline: string;
   easeCurve: string;
 };
 
-const BASE_RADIUS_DESKTOP = 130; // 260px diameter
-const BASE_RADIUS_MOBILE = 105; // 210px diameter on narrow screens
-const EXPANDED_RADIUS = 300; // 600px diameter on press-and-hold
+const RING_BASE_RADIUS = 100; // 200px base DOM ring, GPU-scaled to live radius `r`
+const EXPANDED_MAX_RADIUS = 260; // 520px desktop press-and-hold diameter
 const IDLE_DELAY_MS = 3000;
+
+/** Default lens radius: clamp(170px, 15vw, 210px) / 2. */
+function getBaseRadius(viewportWidth: number): number {
+  const diameter = Math.max(170, Math.min(210, viewportWidth * 0.15));
+  return diameter / 2;
+}
 
 /** Extracts a clean human-readable family name from getComputedStyle().fontFamily. */
 function cleanFontName(raw: string): string {
   const first = raw.split(",")[0]?.replace(/["']/g, "").trim() ?? "";
-  // Handle Next.js hashed family names if present (e.g. "__Bricolage_Grotesque_1234").
   if (first.startsWith("__")) {
     return first
       .replace(/^__/, "")
@@ -61,45 +74,47 @@ function normalizeHex(raw: string): string {
   return `#${toHex(m[1])}${toHex(m[2])}${toHex(m[3])}`;
 }
 
+function pointInBox(px: number, py: number, box: RectBox | null, pad = 0): boolean {
+  if (!box) return false;
+  return px >= box.x - pad && px <= box.x + box.width + pad && py >= box.y - pad && py <= box.y + box.height + pad;
+}
+
 type HeroXRayProps = {
   heroRef: React.RefObject<HTMLDivElement | null>;
   contentRef: React.RefObject<HTMLDivElement | null>;
-  /** Identical padding classes as Hero's real inner container so outlined copy aligns to the pixel. */
-  containerClassName: string;
-  /** Controlled toggle state used only when prefers-reduced-motion is active. */
-  reducedBlueprintOpen: boolean;
+  /** Full-hero blueprint toggle shared by touch screens and prefers-reduced-motion. */
+  fullBlueprintOpen: boolean;
 };
 
 /**
  * HeroXRay — Circular architectural blueprint lens revealed over the hero.
  *
- * - Strictly non-blocking (`pointer-events-none`) so real text stays selectable
- *   and buttons/links stay clickable.
- * - Reads live font metrics, bounding boxes, CSS custom-property colours and
- *   easing values directly from the DOM (never invented numbers).
- * - Animates exclusively with `clip-path` and `transform` (zero WebGL), pauses
- *   when off-screen, auto-drifts after 3s idle or on touch, expands to 600px on
- *   press-and-hold, and switches to a manual "Show blueprint" toggle under
- *   prefers-reduced-motion.
+ * - Strictly non-blocking (`pointer-events-none`) & `aria-hidden`
+ * - Default diameter `clamp(170px, 15vw, 210px)`; desktop press-and-hold grows to
+ *   520px (capped at 46% viewport width); touch devices disable press-and-hold
+ * - Keeps inside of the circle clean: `X-RAY` + coordinates sit outside the bottom rim
+ * - Right-side leader-line tag shows live-measured computed specs of whatever sits
+ *   under the lens centre (headline, italic accent, subline, buttons, or colour tokens)
+ * - Pure `clip-path` + `transform`, paused off-screen, zero WebGL
  */
-export default function HeroXRay({
-  heroRef,
-  contentRef,
-  containerClassName,
-  reducedBlueprintOpen,
-}: HeroXRayProps) {
+export default function HeroXRay({ heroRef, contentRef, fullBlueprintOpen }: HeroXRayProps) {
   const isTouch = useIsTouch();
   const reducedMotion = useReducedMotion();
 
   const blueprintRef = useRef<HTMLDivElement>(null);
   const reticleRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
+  const bottomTagRef = useRef<HTMLDivElement>(null);
   const coordsRef = useRef<HTMLSpanElement>(null);
+  const sideTagRef = useRef<HTMLDivElement>(null);
+  const sideKindRef = useRef<HTMLSpanElement>(null);
+  const sideValueRef = useRef<HTMLSpanElement>(null);
 
   const [metrics, setMetrics] = useState<BlueprintMetrics | null>(null);
+  const metricsRef = useRef<BlueprintMetrics | null>(null);
   const [introReady, setIntroReady] = useState(false);
 
-  // Measure real hero typography, line boxes, and CSS variables after fonts load and on resize.
+  // Measure real hero typography, bounding boxes, and CSS variables after fonts load and on resize.
   useEffect(() => {
     const heroEl = heroRef.current;
     const contentEl = contentRef.current;
@@ -119,10 +134,10 @@ export default function HeroXRay({
         const r = el.getBoundingClientRect();
         if (r.width === 0 || r.height === 0) return null;
         return {
-          x: Math.round(r.left - heroRect.left),
-          y: Math.round(r.top - heroRect.top),
-          width: Math.round(r.width),
-          height: Math.round(r.height),
+          x: r.left - heroRect.left,
+          y: r.top - heroRect.top,
+          width: r.width,
+          height: r.height,
         };
       };
 
@@ -131,13 +146,12 @@ export default function HeroXRay({
       const eyebrow = heroEl.querySelector<HTMLElement>("[data-xray='eyebrow']");
       const subline = heroEl.querySelector<HTMLElement>("[data-xray='subline']");
       const ctas = heroEl.querySelector<HTMLElement>("[data-xray='ctas']");
+      const buttons = ctas ? Array.from(ctas.querySelectorAll<HTMLElement>("a, button")) : [];
 
-      // Measure each SplitText line wrapper (or line mask) if split, else fall back to h1 rect.
       const splitLines = Array.from(heroEl.querySelectorAll<HTMLElement>("#hero-title .hero-line"));
       const lineBoxes: RectBox[] = [];
       if (splitLines.length > 0) {
         for (const lineEl of splitLines) {
-          // Use Range over text nodes inside the line so width reflects actual glyph span, not 100% block width.
           const range = document.createRange();
           range.selectNodeContents(lineEl);
           const rr = range.getBoundingClientRect();
@@ -151,12 +165,22 @@ export default function HeroXRay({
         }
       } else if (h1) {
         const box = relBox(h1);
-        if (box) lineBoxes.push(box);
+        if (box) {
+          lineBoxes.push({
+            x: Math.round(box.x),
+            y: Math.round(box.y),
+            width: Math.round(box.width),
+            height: Math.round(box.height),
+          });
+        }
       }
 
       const rootStyle = getComputedStyle(document.documentElement);
       const h1Style = h1 ? getComputedStyle(h1) : null;
       const accentStyle = accent ? getComputedStyle(accent) : null;
+      const sublineStyle = subline ? getComputedStyle(subline) : null;
+      const btnStyle = buttons[0] ? getComputedStyle(buttons[0]) : null;
+      const eyebrowStyle = eyebrow ? getComputedStyle(eyebrow.querySelector("p") ?? eyebrow) : null;
 
       const fontSizePx = h1Style ? Math.round(parseFloat(h1Style.fontSize)) : 0;
       const trackingPx = h1Style && h1Style.letterSpacing !== "normal" ? parseFloat(h1Style.letterSpacing) : 0;
@@ -175,30 +199,43 @@ export default function HeroXRay({
         { label: "SMOKE", hex: normalizeHex(rootStyle.getPropertyValue("--color-smoke")) },
       ];
 
-      setMetrics({
+      const nextMetrics: BlueprintMetrics = {
         heroWidth: Math.round(heroRect.width),
         heroHeight: Math.round(heroRect.height),
         containerLeft: Math.round(contentRect.left - heroRect.left + padLeft),
         containerWidth: Math.round(contentRect.width - padLeft - padRight),
+        h1Box: relBox(h1),
+        accentBox: relBox(accent),
         lineBoxes,
         eyebrowBox: relBox(eyebrow),
         sublineBox: relBox(subline),
         ctaBox: relBox(ctas),
+        buttonBoxes: buttons.map((b) => relBox(b)).filter((b): b is RectBox => b !== null),
         displayFont: h1Style ? cleanFontName(h1Style.fontFamily) : "",
         displaySize: `${fontSizePx}px`,
         displayTracking: `${trackingPx.toFixed(1)}px (${trackingEm}em)`,
         displayLeading: `${lineHeightPx}px (${lineHeightRatio})`,
         accentFont: accentStyle ? `${cleanFontName(accentStyle.fontFamily)} Italic` : "",
         accentSize: accentStyle ? `${Math.round(parseFloat(accentStyle.fontSize))}px` : "",
+        sublineFont: sublineStyle ? cleanFontName(sublineStyle.fontFamily) : "",
+        sublineSize: sublineStyle ? `${Math.round(parseFloat(sublineStyle.fontSize))}px` : "",
+        buttonFont: btnStyle ? cleanFontName(btnStyle.fontFamily) : "",
+        buttonSize: btnStyle ? `${Math.round(parseFloat(btnStyle.fontSize))}px` : "",
+        eyebrowFont: eyebrowStyle ? cleanFontName(eyebrowStyle.fontFamily) : "",
+        eyebrowSize: eyebrowStyle ? `${Math.round(parseFloat(eyebrowStyle.fontSize))}px` : "",
         palette,
+        paletteInline: palette.map((c) => c.hex).join(" · "),
         easeCurve: rootStyle.getPropertyValue("--ease-nxt").trim() || easing.css,
-      });
+      };
+
+      metricsRef.current = nextMetrics;
+      setMetrics(nextMetrics);
     };
 
     const scheduleRemeasure = () => {
       document.fonts.ready.then(() => {
         measure();
-        // Re-measure right after the 0.8s hero SplitText reveal settles so line boxes are pixel-exact.
+        // Re-measure right after the 0.8s hero SplitText reveal settles so boxes are pixel-exact.
         if (settleTimer) clearTimeout(settleTimer);
         settleTimer = setTimeout(measure, 1050);
       });
@@ -223,21 +260,32 @@ export default function HeroXRay({
     };
   }, [heroRef, contentRef]);
 
-  // Interactive spring lens controller (disabled under prefers-reduced-motion).
+  // Interactive spring lens controller (handles desktop cursor, touch drift, and full-blueprint toggle).
   useEffect(() => {
     const heroEl = heroRef.current;
     const blueprintEl = blueprintRef.current;
     if (!heroEl || !blueprintEl) return;
 
-    // Reduced-motion mode: full blueprint controlled solely by the manual button.
-    if (reducedMotion) {
-      blueprintEl.style.clipPath = reducedBlueprintOpen ? "inset(0% 0% 0% 0%)" : "circle(0px at 50% 50%)";
+    const reticleEl = reticleRef.current;
+
+    // Full-hero blueprint toggle (touch "Blueprint" button or reduced-motion "Show blueprint" button).
+    if (fullBlueprintOpen) {
+      blueprintEl.style.clipPath = "inset(0% 0% 0% 0%)";
+      if (reticleEl) reticleEl.style.opacity = "0";
       return;
     }
 
-    const reticleEl = reticleRef.current;
+    // Reduced-motion closed state: completely hidden, zero drift.
+    if (reducedMotion) {
+      blueprintEl.style.clipPath = "circle(0px at 50% 50%)";
+      if (reticleEl) reticleEl.style.opacity = "0";
+      return;
+    }
+
     const ringEl = ringRef.current;
-    if (!reticleEl || !ringEl) return;
+    const bottomTagEl = bottomTagRef.current;
+    const sideTagEl = sideTagRef.current;
+    if (!reticleEl || !ringEl || !bottomTagEl || !sideTagEl) return;
 
     if (!introReady) {
       blueprintEl.style.clipPath = "circle(0px at 50% 42%)";
@@ -248,14 +296,12 @@ export default function HeroXRay({
     let rafId = 0;
     let visible = true;
     let pressing = false;
-    let lastMoveTime = 0; // 0 → begins in gentle discovery drift until user moves pointer
-    let driftPhase = 0.65;
+    let lastMoveTime = 0; // 0 → begins in discovery drift until user moves pointer
+    let driftPhase = 0.55;
+    let lastReadoutKey = "";
 
-    const getBaseRadius = () => (heroEl.clientWidth < 640 ? BASE_RADIUS_MOBILE : BASE_RADIUS_DESKTOP);
-
-    // Start the lens smoothly right across the "next" word on the hero headline.
-    const initX = heroEl.clientWidth * 0.48;
-    const initY = heroEl.clientHeight * 0.37;
+    const initX = heroEl.clientWidth * 0.44;
+    const initY = heroEl.clientHeight * 0.42;
 
     let targetX = initX;
     let targetY = initY;
@@ -289,17 +335,15 @@ export default function HeroXRay({
       lastMoveTime = performance.now();
     };
 
+    // Press-and-hold expansion: desktop mouse only (explicitly disabled on touch screens).
     const onPointerDown = (e: PointerEvent) => {
-      if (e.button !== 0 && e.pointerType === "mouse") return;
-      // Never interfere with real buttons or links.
+      if (isTouch || e.pointerType !== "mouse" || e.button !== 0) return;
       const el = e.target as HTMLElement | null;
       if (el?.closest("a, button")) return;
       const rect = heroEl.getBoundingClientRect();
       if (e.clientY < rect.top || e.clientY > rect.bottom) return;
-      if (e.pointerType === "mouse") {
-        updateTargetFromEvent(e);
-        lastMoveTime = performance.now();
-      }
+      updateTargetFromEvent(e);
+      lastMoveTime = performance.now();
       pressing = true;
     };
 
@@ -315,6 +359,29 @@ export default function HeroXRay({
     );
     io.observe(heroEl);
 
+    const resolveReadout = (px: number, py: number, m: BlueprintMetrics): { key: string; kind: string; value: string } => {
+      if (pointInBox(px, py, m.accentBox, 6)) {
+        return { key: "accent", kind: "ACCENT", value: `${m.accentFont} / ${m.accentSize}` };
+      }
+      if (m.lineBoxes.some((b) => pointInBox(px, py, b, 4)) || pointInBox(px, py, m.h1Box, 0)) {
+        return {
+          key: "headline",
+          kind: "HEADLINE",
+          value: `${m.displayFont} / ${m.displaySize} / ${m.displayTracking}`,
+        };
+      }
+      if (m.buttonBoxes.some((b) => pointInBox(px, py, b, 4)) || pointInBox(px, py, m.ctaBox, 2)) {
+        return { key: "button", kind: "BUTTON", value: `${m.buttonFont} / ${m.buttonSize}` };
+      }
+      if (pointInBox(px, py, m.sublineBox, 6)) {
+        return { key: "subline", kind: "SUBLINE", value: `${m.sublineFont} / ${m.sublineSize}` };
+      }
+      if (pointInBox(px, py, m.eyebrowBox, 6)) {
+        return { key: "eyebrow", kind: "LABEL", value: `${m.eyebrowFont} / ${m.eyebrowSize}` };
+      }
+      return { key: "tokens", kind: "TOKENS", value: m.paletteInline };
+    };
+
     const tick = (now: number) => {
       const dt = Math.min((now - lastTime) / 1000, 0.05);
       lastTime = now;
@@ -322,43 +389,77 @@ export default function HeroXRay({
       if (visible && document.visibilityState === "visible") {
         const w = heroEl.clientWidth;
         const h = heroEl.clientHeight;
-        const baseR = getBaseRadius();
+        const baseR = getBaseRadius(w);
         const isIdle = isTouch || lastMoveTime === 0 || now - lastMoveTime > IDLE_DELAY_MS;
 
         if (isIdle && !pressing) {
-          // Slow Lissajous drift across the headline band so visitors discover the X-ray lens.
+          // Gentle Lissajous drift across the headline band so visitors discover the X-ray lens.
           driftPhase += dt * 0.42;
-          const cx = w * 0.45;
-          const cy = h * 0.38;
-          const rx = w < 640 ? w * 0.18 : Math.min(w * 0.25, 360);
-          const ry = Math.min(h * 0.11, 90);
+          const m = metricsRef.current;
+          const bandY = m?.h1Box ? m.h1Box.y + m.h1Box.height * 0.52 : h * 0.44;
+          const cx = w < 640 ? w * 0.38 : w * 0.46;
+          const rx = w < 640 ? w * 0.14 : Math.min(w * 0.24, 340);
+          const ry = Math.min(h * 0.09, 76);
           targetX = cx + Math.sin(driftPhase) * rx;
-          targetY = cy + Math.sin(driftPhase * 2) * ry * 0.65;
+          targetY = bandY + Math.sin(driftPhase * 2) * ry * 0.65;
         }
 
-        const targetR = pressing ? Math.min(EXPANDED_RADIUS, w * 0.46) : baseR;
+        // Expanded diameter ≤ 520px and ≤ 46% of viewport width (radius ≤ 23% of width).
+        const targetR = pressing ? Math.min(EXPANDED_MAX_RADIUS, w * 0.23) : baseR;
 
         // Soft spring physics for position & radius.
-        const posStiff = isIdle ? 18 : 64;
-        const posDamp = isIdle ? 8.5 : 13;
+        const posStiff = isIdle ? 18 : 66;
+        const posDamp = isIdle ? 8.5 : 13.5;
         vx += ((targetX - x) * posStiff - vx * posDamp) * dt;
         vy += ((targetY - y) * posStiff - vy * posDamp) * dt;
         x += vx * dt;
         y += vy * dt;
 
-        const rStiff = 92;
-        const rDamp = 14.5;
+        const rStiff = 94;
+        const rDamp = 15;
         vr += ((targetR - r) * rStiff - vr * rDamp) * dt;
         r = Math.max(0, r + vr * dt);
 
         blueprintEl.style.clipPath = `circle(${r.toFixed(1)}px at ${x.toFixed(1)}px ${y.toFixed(1)}px)`;
         reticleEl.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
 
-        const scale = r / BASE_RADIUS_DESKTOP;
+        const scale = r / RING_BASE_RADIUS;
         ringEl.style.transform = `scale(${scale.toFixed(4)})`;
 
+        // Place "X-RAY · coords" just outside the bottom rim of the ring.
+        bottomTagEl.style.transform = `translate3d(-50%, ${(r + 10).toFixed(1)}px, 0)`;
+
         if (coordsRef.current) {
-          coordsRef.current.textContent = `X ${String(Math.round(x)).padStart(4, "0")} · Y ${String(Math.round(y)).padStart(4, "0")}`;
+          coordsRef.current.textContent = `${String(Math.round(x)).padStart(4, "0")}, ${String(Math.round(y)).padStart(4, "0")}`;
+        }
+
+        // Update live context-sensitive readout tag:
+        // Desktop/tablet (>= 640px): attached to the right rim with leader line (flips left only near right edge).
+        // Narrow mobile (< 640px): stacked neatly below the bottom rim so it never clips or overlaps the circle.
+        const m = metricsRef.current;
+        if (m && sideKindRef.current && sideValueRef.current) {
+          const readout = resolveReadout(x, y, m);
+          if (readout.key !== lastReadoutKey) {
+            lastReadoutKey = readout.key;
+            sideKindRef.current.textContent = readout.kind;
+            sideValueRef.current.textContent = readout.value;
+          }
+
+          if (w < 640) {
+            sideTagEl.dataset.side = "bottom";
+            const tagW = sideTagEl.offsetWidth || 220;
+            const minX = 12 - x;
+            const maxX = w - 12 - tagW - x;
+            const centeredX = Math.max(minX, Math.min(maxX, -tagW / 2));
+            sideTagEl.style.transform = `translate3d(${centeredX.toFixed(1)}px, ${(r + 42).toFixed(1)}px, 0)`;
+          } else {
+            const tagW = sideTagEl.offsetWidth || 260;
+            const flipLeft = x + r + tagW > w - 12 && x - r - tagW > 12;
+            sideTagEl.dataset.side = flipLeft ? "left" : "right";
+            sideTagEl.style.transform = flipLeft
+              ? `translate3d(${(-r - tagW).toFixed(1)}px, -50%, 0)`
+              : `translate3d(${r.toFixed(1)}px, -50%, 0)`;
+          }
         }
       }
 
@@ -381,7 +482,7 @@ export default function HeroXRay({
       window.removeEventListener("pointercancel", onRelease);
       window.removeEventListener("blur", onRelease);
     };
-  }, [heroRef, isTouch, reducedMotion, introReady, reducedBlueprintOpen]);
+  }, [heroRef, isTouch, reducedMotion, introReady, fullBlueprintOpen]);
 
   // Generate ruler tick positions along edges (every 40px, major every 160px).
   const topTicks: number[] = [];
@@ -391,7 +492,7 @@ export default function HeroXRay({
     for (let px = 40; px < metrics.heroHeight; px += 40) leftTicks.push(px);
   }
 
-  // 12-column architectural guide lines matching the hero container.
+  // Column architectural guide lines matching the hero container.
   const colLines: number[] = [];
   if (metrics && metrics.containerWidth > 0) {
     const cols = metrics.heroWidth < 768 ? 4 : 12;
@@ -405,7 +506,7 @@ export default function HeroXRay({
 
   return (
     <>
-      {/* ── BLUEPRINT LAYER (clipped to the X-ray circle; never blocks clicks) ── */}
+      {/* ── BLUEPRINT LAYER (clipped to the X-ray circle or full hero; never blocks clicks) ── */}
       <div
         ref={blueprintRef}
         aria-hidden="true"
@@ -421,7 +522,7 @@ export default function HeroXRay({
             className="absolute inset-0 h-full w-full"
             fill="none"
           >
-            {/* Vertical column guides (Volt 70% opacity, 1.5px stroke) */}
+            {/* Vertical column guides (Volt 70–85% opacity, 1.5px stroke) */}
             {colLines.map((cx, i) => (
               <line
                 key={`col-${cx}`}
@@ -493,7 +594,6 @@ export default function HeroXRay({
               const baselineY = Math.round(box.y + box.height * 0.86);
               return (
                 <g key={`line-${idx}`}>
-                  {/* Cap-height guide */}
                   <line
                     x1={0}
                     y1={box.y}
@@ -504,7 +604,6 @@ export default function HeroXRay({
                     strokeWidth="1.5"
                     strokeDasharray="6 6"
                   />
-                  {/* Baseline guide */}
                   <line
                     x1={0}
                     y1={baselineY}
@@ -515,7 +614,6 @@ export default function HeroXRay({
                     strokeWidth="1.5"
                     strokeDasharray="3 5"
                   />
-                  {/* Exact line bounding box */}
                   <rect
                     x={box.x - 4}
                     y={box.y - 2}
@@ -525,7 +623,6 @@ export default function HeroXRay({
                     strokeOpacity="1"
                     strokeWidth="1.75"
                   />
-                  {/* Corner registration brackets */}
                   <path
                     d={`M${box.x - 10} ${box.y - 2}H${box.x - 4}V${box.y + 8} M${box.x + box.width + 10} ${box.y + box.height + 2}H${box.x + box.width + 4}V${box.y + box.height - 8}`}
                     stroke="var(--color-volt)"
@@ -535,13 +632,13 @@ export default function HeroXRay({
               );
             })}
 
-            {/* Outlined boxes around eyebrow, subline, and CTA group */}
+            {/* Outlined boxes around eyebrow, subline, and individual buttons */}
             {metrics.eyebrowBox && (
               <rect
-                x={metrics.eyebrowBox.x - 4}
-                y={metrics.eyebrowBox.y - 4}
-                width={metrics.eyebrowBox.width + 8}
-                height={metrics.eyebrowBox.height + 8}
+                x={Math.round(metrics.eyebrowBox.x) - 4}
+                y={Math.round(metrics.eyebrowBox.y) - 4}
+                width={Math.round(metrics.eyebrowBox.width) + 8}
+                height={Math.round(metrics.eyebrowBox.height) + 8}
                 stroke="var(--color-volt)"
                 strokeOpacity="0.85"
                 strokeWidth="1.5"
@@ -550,60 +647,59 @@ export default function HeroXRay({
             )}
             {metrics.sublineBox && (
               <rect
-                x={metrics.sublineBox.x - 6}
-                y={metrics.sublineBox.y - 6}
-                width={metrics.sublineBox.width + 12}
-                height={metrics.sublineBox.height + 12}
+                x={Math.round(metrics.sublineBox.x) - 6}
+                y={Math.round(metrics.sublineBox.y) - 6}
+                width={Math.round(metrics.sublineBox.width) + 12}
+                height={Math.round(metrics.sublineBox.height) + 12}
                 stroke="var(--color-volt)"
                 strokeOpacity="0.85"
                 strokeWidth="1.5"
               />
             )}
-            {metrics.ctaBox && (
+            {metrics.buttonBoxes.map((b, i) => (
               <rect
-                x={metrics.ctaBox.x - 6}
-                y={metrics.ctaBox.y - 6}
-                width={metrics.ctaBox.width + 12}
-                height={metrics.ctaBox.height + 12}
-                rx="28"
+                key={`btn-${i}`}
+                x={Math.round(b.x)}
+                y={Math.round(b.y)}
+                width={Math.round(b.width)}
+                height={Math.round(b.height)}
+                rx={Math.round(b.height / 2)}
                 stroke="var(--color-volt)"
                 strokeOpacity="0.95"
                 strokeWidth="1.75"
               />
-            )}
+            ))}
           </svg>
         )}
 
-        {/* 2. Pixel-identical mirrored hero geometry with hollow Volt-stroked headline (NO filled text) */}
-        <div className={containerClassName}>
-          {/* Exact eyebrow spacer so headline vertical offset matches to the sub-pixel on mobile & desktop */}
-          <div className="invisible">
-            <Label index={1} className="text-[0.75rem] md:text-[0.8125rem]">
-              {hero.eyebrow}
-            </Label>
-          </div>
-
+        {/* 2. Pixel-exact hollow Volt-stroked headline locked directly to measured #hero-title rect */}
+        {metrics?.h1Box && (
           <div
-            className="headline xray-stroke mt-6 max-w-full text-display md:mt-8 lg:max-w-[94%]"
+            style={{
+              left: `${metrics.h1Box.x}px`,
+              top: `${metrics.h1Box.y}px`,
+              width: `${metrics.h1Box.width}px`,
+            }}
+            className="headline xray-stroke absolute text-display"
           >
             {hero.headline.before}
             <span className="accent xray-stroke">{hero.headline.accent}</span>
             <br />
             {hero.headline.after}
           </div>
-        </div>
+        )}
 
-        {/* 3. Live-measured JetBrains Mono spec notes (>= 12px, high contrast Volt/Bone on Ink) */}
+        {/* 3. Architectural blueprint notes (shown in full-hero blueprint & 520px expanded view) */}
         {metrics && (
           <div className="absolute inset-0 font-mono text-[12px] leading-[1.35] font-medium tracking-[0.05em]">
-            {/* Note A: Headline display font + live px size + tracking + line-height */}
+            {/* Headline display font + live px size + tracking + line-height (above L1) */}
             {firstLine && (
               <div
                 style={{
                   left: Math.max(16, Math.min(firstLine.x, metrics.heroWidth - 360)),
-                  top: Math.max(82, firstLine.y - 42),
+                  top: Math.max(82, firstLine.y - 44),
                 }}
-                className="absolute inline-flex max-w-[calc(100%-32px)] flex-wrap items-center gap-x-3 gap-y-1 border-[1.5px] border-volt bg-ink/96 px-3 py-1.5 text-volt"
+                className="absolute inline-flex max-w-[calc(100%-32px)] flex-wrap items-center gap-x-3 gap-y-1 border-[1.5px] border-volt bg-ink px-3 py-1.5 text-volt"
               >
                 <span>{metrics.displayFont}</span>
                 <span className="text-bone">{metrics.displaySize}</span>
@@ -612,30 +708,14 @@ export default function HeroXRay({
               </div>
             )}
 
-            {/* Note B: Accent italic serif spec near the first headline line right edge */}
-            {firstLine && (
-              <div
-                style={{
-                  left: Math.max(16, Math.min(firstLine.x + firstLine.width - 280, metrics.heroWidth - 296)),
-                  top: firstLine.y + firstLine.height + 8,
-                }}
-                className="absolute inline-flex max-w-[calc(100%-32px)] items-center gap-2.5 border-[1.5px] border-volt bg-ink/96 px-3 py-1.5 text-volt"
-              >
-                <span>ACCENT</span>
-                <span className="text-bone">
-                  {metrics.accentFont} · {metrics.accentSize}
-                </span>
-              </div>
-            )}
-
-            {/* Note C: Exact measured headline line widths + easing curve */}
+            {/* Easing curve & measured headline dimensions (below headline, right of copy on desktop) */}
             {lastLine && (
               <div
                 style={{
-                  left: Math.max(16, Math.min(lastLine.x, metrics.heroWidth - 420)),
-                  top: Math.min(lastLine.y + lastLine.height + 10, metrics.heroHeight - 180),
+                  right: Math.max(16, metrics.heroWidth - (metrics.containerLeft + metrics.containerWidth)),
+                  top: Math.min(lastLine.y + lastLine.height + 12, metrics.heroHeight - 170),
                 }}
-                className="absolute inline-flex max-w-[calc(100%-32px)] flex-wrap items-center gap-x-3 gap-y-1 border-[1.5px] border-volt bg-ink/96 px-3 py-1.5 text-volt"
+                className="absolute hidden max-w-[calc(100%-32px)] flex-wrap items-center gap-x-3 gap-y-1 border-[1.5px] border-volt bg-ink px-3 py-1.5 text-volt lg:inline-flex"
               >
                 <span>
                   L1 {metrics.lineBoxes[0]?.width ?? 0}×{metrics.lineBoxes[0]?.height ?? 0}px
@@ -651,13 +731,13 @@ export default function HeroXRay({
               </div>
             )}
 
-            {/* Note D: Live CSS custom property palette readout */}
+            {/* Live CSS custom property palette readout (bottom-right, clear of toggle button) */}
             <div
               style={{
                 right: Math.max(16, metrics.heroWidth - (metrics.containerLeft + metrics.containerWidth)),
-                bottom: metrics.heroWidth < 768 ? 72 : 120,
+                bottom: fullBlueprintOpen ? 68 : 28,
               }}
-              className="absolute flex max-w-[calc(100%-32px)] flex-col gap-1.5 border-[1.5px] border-volt bg-ink/96 px-3.5 py-2.5 text-volt"
+              className="absolute flex max-w-[calc(100%-32px)] flex-col gap-1.5 border-[1.5px] border-volt bg-ink px-3.5 py-2.5 text-volt"
             >
               <span className="text-bone">TOKENS · LIVE CSS VARS</span>
               <div className="flex flex-wrap gap-x-3.5 gap-y-1">
@@ -674,29 +754,11 @@ export default function HeroXRay({
                 ))}
               </div>
             </div>
-
-            {/* Note E: Subline & CTA wireframe dimension tag */}
-            {metrics.sublineBox && (
-              <div
-                style={{
-                  left: Math.max(16, metrics.sublineBox.x),
-                  top: Math.max(16, metrics.sublineBox.y - 36),
-                }}
-                className="absolute inline-flex max-w-[calc(100%-32px)] flex-wrap items-center gap-2.5 border-[1.5px] border-volt bg-ink/96 px-2.5 py-1 text-volt"
-              >
-                <span>COPY {metrics.sublineBox.width}×{metrics.sublineBox.height}px</span>
-                {metrics.ctaBox && (
-                  <span className="text-bone">
-                    CTA {metrics.ctaBox.width}×{metrics.ctaBox.height}px
-                  </span>
-                )}
-              </div>
-            )}
           </div>
         )}
       </div>
 
-      {/* ── LENS RING, CROSSHAIR & "X-RAY" TAG (pure transform, pointer-events-none) ── */}
+      {/* ── LENS RING, CROSSHAIR, OUTSIDE BOTTOM TAG & LEADER-LINE READOUT ── */}
       {!reducedMotion && (
         <div
           ref={reticleRef}
@@ -706,31 +768,54 @@ export default function HeroXRay({
           {/* Scalable Volt circular ring */}
           <div
             ref={ringRef}
-            style={{ width: BASE_RADIUS_DESKTOP * 2, height: BASE_RADIUS_DESKTOP * 2 }}
+            style={{ width: RING_BASE_RADIUS * 2, height: RING_BASE_RADIUS * 2 }}
             className="-translate-x-1/2 -translate-y-1/2 rounded-full border-[1.75px] border-volt will-change-transform"
           />
 
-          {/* Crisp 1.5px Volt crosshair locked at lens centre */}
+          {/* Crisp 1.5px Volt crosshair at lens centre (only element inside the circle) */}
           <svg
-            width="28"
-            height="28"
-            viewBox="0 0 28 28"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
             className="absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2"
             fill="none"
           >
-            <line x1="14" y1="0" x2="14" y2="10" stroke="var(--color-volt)" strokeWidth="1.75" />
-            <line x1="14" y1="18" x2="14" y2="28" stroke="var(--color-volt)" strokeWidth="1.75" />
-            <line x1="0" y1="14" x2="10" y2="14" stroke="var(--color-volt)" strokeWidth="1.75" />
-            <line x1="18" y1="14" x2="28" y2="14" stroke="var(--color-volt)" strokeWidth="1.75" />
-            <circle cx="14" cy="14" r="2.2" stroke="var(--color-volt)" strokeWidth="1.5" />
+            <line x1="12" y1="0" x2="12" y2="8.5" stroke="var(--color-volt)" strokeWidth="1.5" />
+            <line x1="12" y1="15.5" x2="12" y2="24" stroke="var(--color-volt)" strokeWidth="1.5" />
+            <line x1="0" y1="12" x2="8.5" y2="12" stroke="var(--color-volt)" strokeWidth="1.5" />
+            <line x1="15.5" y1="12" x2="24" y2="12" stroke="var(--color-volt)" strokeWidth="1.5" />
+            <circle cx="12" cy="12" r="2" stroke="var(--color-volt)" strokeWidth="1.5" />
           </svg>
 
-          {/* Tiny "X-RAY" mono badge & live cursor coordinates centred directly below the crosshair */}
-          <div className="absolute top-6 left-0 flex -translate-x-1/2 items-center gap-2 whitespace-nowrap font-mono text-[12px] font-medium tracking-[0.12em]">
-            <span className="border-[1.5px] border-volt bg-ink px-2 py-0.5 text-volt">X-RAY</span>
-            <span ref={coordsRef} className="hidden bg-ink/94 px-1.5 py-0.5 text-bone tabular-nums sm:inline">
-              X 0000 · Y 0000
+          {/* Single compact "X-RAY · coords" tag positioned just outside the bottom rim of the ring */}
+          <div
+            ref={bottomTagRef}
+            className="absolute top-0 left-0 inline-flex items-center gap-2 whitespace-nowrap border-[1.5px] border-volt bg-ink px-2.5 py-1 font-mono text-[12px] leading-none font-medium tracking-[0.08em] will-change-transform"
+          >
+            <span className="text-volt">X-RAY</span>
+            <span className="text-volt/70" aria-hidden="true">
+              ·
             </span>
+            <span ref={coordsRef} className="text-bone tabular-nums">
+              0000, 0000
+            </span>
+          </div>
+
+          {/* Live-measured context readout attached to the right rim with a short Volt leader line */}
+          <div
+            ref={sideTagRef}
+            data-side="right"
+            className="group absolute top-0 left-0 flex items-center will-change-transform data-[side=left]:flex-row-reverse"
+          >
+            <span className="block h-[1.5px] w-6 shrink-0 bg-volt group-data-[side=bottom]:hidden" />
+            <div className="flex max-w-[calc(100vw-24px)] flex-col gap-0.5 border-[1.5px] border-volt bg-ink px-2.5 py-1.5 font-mono text-[12px] leading-[1.3] font-medium tracking-[0.03em] sm:max-w-none sm:whitespace-nowrap">
+              <span ref={sideKindRef} className="text-volt">
+                HEADLINE
+              </span>
+              <span ref={sideValueRef} className="text-bone">
+                Bricolage Grotesque
+              </span>
+            </div>
           </div>
         </div>
       )}

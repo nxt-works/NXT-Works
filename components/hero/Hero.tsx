@@ -8,9 +8,10 @@ import Button from "@/components/ui/Button";
 import Label from "@/components/ui/Label";
 import { gsap, SplitText, useGSAP } from "@/lib/gsap";
 import { onIntroReveal } from "@/lib/intro";
+import { useIsTouch } from "@/lib/useIsTouch";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 
-/** Shared container layout so the X-ray blueprint headline aligns to the pixel with the real hero. */
+/** Shared container layout for the vertically centred hero block above the ticker. */
 const HERO_CONTAINER_CLASS =
   "mx-auto flex w-full max-w-[1600px] flex-1 flex-col justify-center px-5 pt-28 pb-10 md:px-10 md:pt-32 md:pb-12 lg:pt-32 [@media(max-height:800px)]:pt-28 [@media(max-height:800px)]:pb-8";
 
@@ -23,8 +24,11 @@ export default function Hero({ object, ticker }: { object?: React.ReactNode; tic
   const root = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const isTouch = useIsTouch();
   const reducedMotion = useReducedMotion();
-  const [reducedBlueprintOpen, setReducedBlueprintOpen] = useState(false);
+  const [fullBlueprintOpen, setFullBlueprintOpen] = useState(false);
+
+  const showBlueprintButton = reducedMotion || isTouch;
 
   useGSAP(
     (_ctx, contextSafe) => {
@@ -112,7 +116,7 @@ export default function Hero({ object, ticker }: { object?: React.ReactNode; tic
                   {hero.status}
                 </p>
 
-                {!reducedMotion && (
+                {!showBlueprintButton && (
                   <p className="font-mono text-[12px] tracking-[0.08em] text-bone/80 uppercase">
                     Move your cursor. See how it&apos;s built.
                   </p>
@@ -126,21 +130,26 @@ export default function Hero({ object, ticker }: { object?: React.ReactNode; tic
         <HeroXRay
           heroRef={stageRef}
           contentRef={contentRef}
-          containerClassName={HERO_CONTAINER_CLASS}
-          reducedBlueprintOpen={reducedBlueprintOpen}
+          fullBlueprintOpen={fullBlueprintOpen}
         />
 
-        {/* Reduced-motion manual blueprint toggle — stays visually above the z-20 blueprint layer */}
-        {reducedMotion && (
+        {/* Manual full-hero blueprint toggle for touch screens and reduced motion (always above z-20 blueprint) */}
+        {showBlueprintButton && (
           <div className="absolute right-5 bottom-5 z-30 md:right-10 md:bottom-7">
             <button
               type="button"
-              aria-pressed={reducedBlueprintOpen}
-              onClick={() => setReducedBlueprintOpen((v) => !v)}
-              className="label inline-flex items-center gap-2.5 rounded-full border-[1.5px] border-volt bg-ink px-4 py-2 text-[12px] text-volt transition-colors duration-300 hover:bg-volt hover:text-ink"
+              aria-pressed={fullBlueprintOpen}
+              onClick={() => setFullBlueprintOpen((v) => !v)}
+              className="label inline-flex items-center gap-2 rounded-full border-[1.5px] border-volt bg-ink px-4 py-2 text-[12px] text-volt transition-colors duration-300 hover:bg-volt hover:text-ink"
             >
               <span aria-hidden="true" className="size-1.5 rounded-full bg-current" />
-              {reducedBlueprintOpen ? "Hide blueprint" : "Show blueprint"}
+              {reducedMotion
+                ? fullBlueprintOpen
+                  ? "Hide blueprint"
+                  : "Show blueprint"
+                : fullBlueprintOpen
+                  ? "Close blueprint"
+                  : "Blueprint"}
             </button>
           </div>
         )}
