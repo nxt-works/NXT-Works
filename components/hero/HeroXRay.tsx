@@ -42,6 +42,12 @@ type BlueprintMetrics = {
   easeCurve: string;
 };
 
+export type XRayDockRefs = {
+  coords: React.RefObject<HTMLSpanElement | null>;
+  kind: React.RefObject<HTMLSpanElement | null>;
+  value: React.RefObject<HTMLSpanElement | null>;
+};
+
 const RING_BASE_RADIUS = 100; // 200px base DOM ring, GPU-scaled to live radius `r`
 const EXPANDED_MAX_RADIUS = 260; // 520px desktop press-and-hold diameter
 const IDLE_DELAY_MS = 3000;
@@ -84,37 +90,50 @@ type HeroXRayProps = {
   contentRef: React.RefObject<HTMLDivElement | null>;
   /** Full-hero blueprint toggle shared by touch screens and prefers-reduced-motion. */
   fullBlueprintOpen: boolean;
+  /** Refs for the single docked spec card in the bottom-right of the hero (updated without React re-renders). */
+  dockRefs: XRayDockRefs;
+  /** Called once when the lens begins moving (user pointer or idle/touch drift) to swap hint → docked spec card. */
+  onLensActive: () => void;
+  /** Disables idle/touch lens drift on low-power mobile devices. */
+  disableDrift?: boolean;
 };
 
 /**
  * HeroXRay — Circular architectural blueprint lens revealed over the hero.
  *
  * - Strictly non-blocking (`pointer-events-none`) & `aria-hidden`
- * - Default diameter `clamp(170px, 15vw, 210px)`; desktop press-and-hold grows to
- *   520px (capped at 46% viewport width); touch devices disable press-and-hold
- * - Keeps inside of the circle clean: `X-RAY` + coordinates sit outside the bottom rim
- * - Right-side leader-line tag shows live-measured computed specs of whatever sits
- *   under the lens centre (headline, italic accent, subline, buttons, or colour tokens)
+ * - Only the thin Volt ring, crosshair, and hollow outlined letters appear on the lens
+ *   (no floating tags ever cover headline or page copy)
+ * - Highlights the active headline segment inside the lens with a brighter Volt stroke
+ * - Feeds live-measured DOM/CSS values into one docked spec card in the bottom-right of the hero
  * - Pure `clip-path` + `transform`, paused off-screen, zero WebGL
  */
-export default function HeroXRay({ heroRef, contentRef, fullBlueprintOpen }: HeroXRayProps) {
+export default function HeroXRay({
+  heroRef,
+  contentRef,
+  fullBlueprintOpen,
+  dockRefs,
+  onLensActive,
+  disableDrift = false,
+}: HeroXRayProps) {
   const isTouch = useIsTouch();
   const reducedMotion = useReducedMotion();
 
   const blueprintRef = useRef<HTMLDivElement>(null);
+  const headlineMirrorRef = useRef<HTMLDivElement>(null);
   const reticleRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
-  const bottomTagRef = useRef<HTMLDivElement>(null);
-  const coordsRef = useRef<HTMLSpanElement>(null);
-  const sideTagRef = useRef<HTMLDivElement>(null);
-  const sideKindRef = useRef<HTMLSpanElement>(null);
-  const sideValueRef = useRef<HTMLSpanElement>(null);
 
   const [metrics, setMetrics] = useState<BlueprintMetrics | null>(null);
   const metricsRef = useRef<BlueprintMetrics | null>(null);
   const [introReady, setIntroReady] = useState(false);
 
-  // Measure real hero typography, bounding boxes, and CSS variables after fonts load and on resize.
+  const onLensActiveRef = useRef(onLensActive);
+  useEffect(() => {
+    onLensActiveRef.current = onLensActive;
+  });
+
+  // Measure real hero typography, bounding boxes, and CSS variables after fonts load, on resize, and orientation change.
   useEffect(() => {
     const heroEl = heroRef.current;
     const contentEl = contentRef.current;
@@ -235,7 +254,6 @@ export default function HeroXRay({ heroRef, contentRef, fullBlueprintOpen }: Her
     const scheduleRemeasure = () => {
       document.fonts.ready.then(() => {
         measure();
-        // Re-measure right after the 0.8s hero SplitText reveal settles so boxes are pixel-exact.
         if (settleTimer) clearTimeout(settleTimer);
         settleTimer = setTimeout(measure, 1050);
       });
@@ -251,16 +269,22 @@ export default function HeroXRay({ heroRef, contentRef, fullBlueprintOpen }: Her
     ro.observe(heroEl);
     ro.observe(contentEl);
 
+    const onOrientationChange = () => {
+      setTimeout(measure, 180);
+    };
+    window.addEventListener("orientationchange", onOrientationChange);
+
     return () => {
       cancelled = true;
       offReveal();
       offDone();
       ro.disconnect();
+      window.removeEventListener("orientationchange", onOrientationChange);
       if (settleTimer) clearTimeout(settleTimer);
     };
   }, [heroRef, contentRef]);
 
-  // Interactive spring lens controller (handles desktop cursor, touch drift, and full-blueprint toggle).
+  // Interactive spring lens controller (desktop cursor, touch drift, and full-blueprint toggle).
   useEffect(() => {
     const heroEl = heroRef.current;
     const blueprintEl = blueprintRef.current;
@@ -272,20 +296,19 @@ export default function HeroXRay({ heroRef, contentRef, fullBlueprintOpen }: Her
     if (fullBlueprintOpen) {
       blueprintEl.style.clipPath = "inset(0% 0% 0% 0%)";
       if (reticleEl) reticleEl.style.opacity = "0";
+      if (headlineMirrorRef.current) headlineMirrorRef.current.dataset.active = "headline";
       return;
     }
 
-    // Reduced-motion closed state: completely hidden, zero drift.
-    if (reducedMotion) {
+    // Reduced-motion closed state, or low-power touch device with drift disabled: hidden, zero RAF work.
+    if (reducedMotion || (disableDrift && isTouch)) {
       blueprintEl.style.clipPath = "circle(0px at 50% 50%)";
       if (reticleEl) reticleEl.style.opacity = "0";
       return;
     }
 
     const ringEl = ringRef.current;
-    const bottomTagEl = bottomTagRef.current;
-    const sideTagEl = sideTagRef.current;
-    if (!reticleEl || !ringEl || !bottomTagEl || !sideTagEl) return;
+    if (!reticleEl || !ringEl) return;
 
     if (!introReady) {
       blueprintEl.style.clipPath = "circle(0px at 50% 42%)";
@@ -296,11 +319,13 @@ export default function HeroXRay({ heroRef, contentRef, fullBlueprintOpen }: Her
     let rafId = 0;
     let visible = true;
     let pressing = false;
-    let lastMoveTime = 0; // 0 → begins in discovery drift until user moves pointer
+    let activated = false;
+    let lastMoveTime = 0;
+    const readyAt = performance.now();
     let driftPhase = 0.55;
     let lastReadoutKey = "";
 
-    const initX = heroEl.clientWidth * 0.44;
+    const initX = heroEl.clientWidth * 0.46;
     const initY = heroEl.clientHeight * 0.42;
 
     let targetX = initX;
@@ -314,7 +339,17 @@ export default function HeroXRay({ heroRef, contentRef, fullBlueprintOpen }: Her
     let vr = 0;
     let lastTime = performance.now();
 
-    reticleEl.style.opacity = "1";
+    const activateLens = () => {
+      if (activated) return;
+      activated = true;
+      reticleEl.style.opacity = "1";
+      onLensActiveRef.current();
+    };
+
+    // On touch devices (non-low-power), auto-drift begins immediately.
+    if (isTouch && !disableDrift) {
+      activateLens();
+    }
 
     const updateTargetFromEvent = (e: PointerEvent) => {
       const rect = heroEl.getBoundingClientRect();
@@ -331,11 +366,18 @@ export default function HeroXRay({ heroRef, contentRef, fullBlueprintOpen }: Her
         e.clientY >= rect.top &&
         e.clientY <= rect.bottom;
       if (!inside) return;
-      updateTargetFromEvent(e);
+      if (!activated) {
+        updateTargetFromEvent(e);
+        x = targetX;
+        y = targetY;
+        activateLens();
+      } else {
+        updateTargetFromEvent(e);
+      }
       lastMoveTime = performance.now();
     };
 
-    // Press-and-hold expansion: desktop mouse only (explicitly disabled on touch screens).
+    // Press-and-hold expansion: desktop mouse only (disabled on touch screens).
     const onPointerDown = (e: PointerEvent) => {
       if (isTouch || e.pointerType !== "mouse" || e.button !== 0) return;
       const el = e.target as HTMLElement | null;
@@ -343,6 +385,7 @@ export default function HeroXRay({ heroRef, contentRef, fullBlueprintOpen }: Her
       const rect = heroEl.getBoundingClientRect();
       if (e.clientY < rect.top || e.clientY > rect.bottom) return;
       updateTargetFromEvent(e);
+      activateLens();
       lastMoveTime = performance.now();
       pressing = true;
     };
@@ -359,7 +402,11 @@ export default function HeroXRay({ heroRef, contentRef, fullBlueprintOpen }: Her
     );
     io.observe(heroEl);
 
-    const resolveReadout = (px: number, py: number, m: BlueprintMetrics): { key: string; kind: string; value: string } => {
+    const resolveReadout = (
+      px: number,
+      py: number,
+      m: BlueprintMetrics,
+    ): { key: string; kind: string; value: string } => {
       if (pointInBox(px, py, m.accentBox, 6)) {
         return { key: "accent", kind: "ACCENT", value: `${m.accentFont} / ${m.accentSize}` };
       }
@@ -387,78 +434,69 @@ export default function HeroXRay({ heroRef, contentRef, fullBlueprintOpen }: Her
       lastTime = now;
 
       if (visible && document.visibilityState === "visible") {
-        const w = heroEl.clientWidth;
-        const h = heroEl.clientHeight;
-        const baseR = getBaseRadius(w);
-        const isIdle = isTouch || lastMoveTime === 0 || now - lastMoveTime > IDLE_DELAY_MS;
-
-        if (isIdle && !pressing) {
-          // Gentle Lissajous drift across the headline band so visitors discover the X-ray lens.
-          driftPhase += dt * 0.42;
-          const m = metricsRef.current;
-          const bandY = m?.h1Box ? m.h1Box.y + m.h1Box.height * 0.52 : h * 0.44;
-          const cx = w < 640 ? w * 0.38 : w * 0.46;
-          const rx = w < 640 ? w * 0.14 : Math.min(w * 0.24, 340);
-          const ry = Math.min(h * 0.09, 76);
-          targetX = cx + Math.sin(driftPhase) * rx;
-          targetY = bandY + Math.sin(driftPhase * 2) * ry * 0.65;
+        // After 3 seconds of idle on desktop (when drift isn't disabled), wake the discovery drift.
+        if (!activated && !disableDrift && now - readyAt >= IDLE_DELAY_MS) {
+          activateLens();
         }
 
-        // Expanded diameter ≤ 520px and ≤ 46% of viewport width (radius ≤ 23% of width).
-        const targetR = pressing ? Math.min(EXPANDED_MAX_RADIUS, w * 0.23) : baseR;
+        if (activated) {
+          const w = heroEl.clientWidth;
+          const h = heroEl.clientHeight;
+          const baseR = getBaseRadius(w);
+          const isIdle =
+            !disableDrift &&
+            (isTouch || (lastMoveTime === 0 ? now - readyAt >= IDLE_DELAY_MS : now - lastMoveTime > IDLE_DELAY_MS));
 
-        // Soft spring physics for position & radius.
-        const posStiff = isIdle ? 18 : 66;
-        const posDamp = isIdle ? 8.5 : 13.5;
-        vx += ((targetX - x) * posStiff - vx * posDamp) * dt;
-        vy += ((targetY - y) * posStiff - vy * posDamp) * dt;
-        x += vx * dt;
-        y += vy * dt;
-
-        const rStiff = 94;
-        const rDamp = 15;
-        vr += ((targetR - r) * rStiff - vr * rDamp) * dt;
-        r = Math.max(0, r + vr * dt);
-
-        blueprintEl.style.clipPath = `circle(${r.toFixed(1)}px at ${x.toFixed(1)}px ${y.toFixed(1)}px)`;
-        reticleEl.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
-
-        const scale = r / RING_BASE_RADIUS;
-        ringEl.style.transform = `scale(${scale.toFixed(4)})`;
-
-        // Place "X-RAY · coords" just outside the bottom rim of the ring.
-        bottomTagEl.style.transform = `translate3d(-50%, ${(r + 10).toFixed(1)}px, 0)`;
-
-        if (coordsRef.current) {
-          coordsRef.current.textContent = `${String(Math.round(x)).padStart(4, "0")}, ${String(Math.round(y)).padStart(4, "0")}`;
-        }
-
-        // Update live context-sensitive readout tag:
-        // Desktop/tablet (>= 640px): attached to the right rim with leader line (flips left only near right edge).
-        // Narrow mobile (< 640px): stacked neatly below the bottom rim so it never clips or overlaps the circle.
-        const m = metricsRef.current;
-        if (m && sideKindRef.current && sideValueRef.current) {
-          const readout = resolveReadout(x, y, m);
-          if (readout.key !== lastReadoutKey) {
-            lastReadoutKey = readout.key;
-            sideKindRef.current.textContent = readout.kind;
-            sideValueRef.current.textContent = readout.value;
+          if (isIdle && !pressing) {
+            driftPhase += dt * 0.42;
+            const m = metricsRef.current;
+            const bandY = m?.h1Box ? m.h1Box.y + m.h1Box.height * 0.52 : h * 0.44;
+            const cx = w < 640 ? w * 0.46 : w * 0.48;
+            const rx = w < 640 ? w * 0.2 : Math.min(w * 0.25, 340);
+            const ry = Math.min(h * 0.09, 76);
+            targetX = cx + Math.sin(driftPhase) * rx;
+            targetY = bandY + Math.sin(driftPhase * 2) * ry * 0.65;
           }
 
-          if (w < 640) {
-            sideTagEl.dataset.side = "bottom";
-            const tagW = sideTagEl.offsetWidth || 220;
-            const minX = 12 - x;
-            const maxX = w - 12 - tagW - x;
-            const centeredX = Math.max(minX, Math.min(maxX, -tagW / 2));
-            sideTagEl.style.transform = `translate3d(${centeredX.toFixed(1)}px, ${(r + 42).toFixed(1)}px, 0)`;
-          } else {
-            const tagW = sideTagEl.offsetWidth || 260;
-            const flipLeft = x + r + tagW > w - 12 && x - r - tagW > 12;
-            sideTagEl.dataset.side = flipLeft ? "left" : "right";
-            sideTagEl.style.transform = flipLeft
-              ? `translate3d(${(-r - tagW).toFixed(1)}px, -50%, 0)`
-              : `translate3d(${r.toFixed(1)}px, -50%, 0)`;
+          // Expanded diameter ≤ 520px and ≤ 46% of viewport width (radius ≤ 23% of width).
+          const targetR = pressing ? Math.min(EXPANDED_MAX_RADIUS, w * 0.23) : baseR;
+
+          const posStiff = isIdle ? 18 : 66;
+          const posDamp = isIdle ? 8.5 : 13.5;
+          vx += ((targetX - x) * posStiff - vx * posDamp) * dt;
+          vy += ((targetY - y) * posStiff - vy * posDamp) * dt;
+          x += vx * dt;
+          y += vy * dt;
+
+          const rStiff = 94;
+          const rDamp = 15;
+          vr += ((targetR - r) * rStiff - vr * rDamp) * dt;
+          r = Math.max(0, r + vr * dt);
+
+          blueprintEl.style.clipPath = `circle(${r.toFixed(1)}px at ${x.toFixed(1)}px ${y.toFixed(1)}px)`;
+          reticleEl.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
+
+          const scale = r / RING_BASE_RADIUS;
+          ringEl.style.transform = `scale(${scale.toFixed(4)})`;
+
+          // Update docked bottom-right spec card (never floats over headline/copy).
+          if (dockRefs.coords.current) {
+            dockRefs.coords.current.textContent = `${String(Math.round(x)).padStart(4, "0")}, ${String(Math.round(y)).padStart(4, "0")}`;
+          }
+
+          const m = metricsRef.current;
+          if (m) {
+            const readout = resolveReadout(x, y, m);
+            if (readout.key !== lastReadoutKey) {
+              lastReadoutKey = readout.key;
+              if (dockRefs.kind.current) dockRefs.kind.current.textContent = readout.kind;
+              if (dockRefs.value.current) dockRefs.value.current.textContent = readout.value;
+              // Highlight the matching part of the headline inside the lens with a brighter outline.
+              if (headlineMirrorRef.current) {
+                headlineMirrorRef.current.dataset.active =
+                  readout.key === "accent" || readout.key === "headline" ? readout.key : "";
+              }
+            }
           }
         }
       }
@@ -482,7 +520,7 @@ export default function HeroXRay({ heroRef, contentRef, fullBlueprintOpen }: Her
       window.removeEventListener("pointercancel", onRelease);
       window.removeEventListener("blur", onRelease);
     };
-  }, [heroRef, isTouch, reducedMotion, introReady, fullBlueprintOpen]);
+  }, [heroRef, isTouch, reducedMotion, introReady, fullBlueprintOpen, dockRefs, disableDrift]);
 
   // Generate ruler tick positions along edges (every 40px, major every 160px).
   const topTicks: number[] = [];
@@ -675,6 +713,8 @@ export default function HeroXRay({ heroRef, contentRef, fullBlueprintOpen }: Her
         {/* 2. Pixel-exact hollow Volt-stroked headline locked directly to measured #hero-title rect */}
         {metrics?.h1Box && (
           <div
+            ref={headlineMirrorRef}
+            data-active=""
             style={{
               left: `${metrics.h1Box.x}px`,
               top: `${metrics.h1Box.y}px`,
@@ -689,10 +729,9 @@ export default function HeroXRay({ heroRef, contentRef, fullBlueprintOpen }: Her
           </div>
         )}
 
-        {/* 3. Architectural blueprint notes (shown in full-hero blueprint & 520px expanded view) */}
-        {metrics && (
+        {/* 3. Full-hero blueprint annotations (only rendered when full blueprint is toggled open or lens expands) */}
+        {metrics && fullBlueprintOpen && (
           <div className="absolute inset-0 font-mono text-[12px] leading-[1.35] font-medium tracking-[0.05em]">
-            {/* Headline display font + live px size + tracking + line-height (above L1) */}
             {firstLine && (
               <div
                 style={{
@@ -708,34 +747,27 @@ export default function HeroXRay({ heroRef, contentRef, fullBlueprintOpen }: Her
               </div>
             )}
 
-            {/* Easing curve & measured headline dimensions (below headline, right of copy on desktop) */}
             {lastLine && (
               <div
                 style={{
-                  right: Math.max(16, metrics.heroWidth - (metrics.containerLeft + metrics.containerWidth)),
-                  top: Math.min(lastLine.y + lastLine.height + 12, metrics.heroHeight - 170),
+                  left: Math.max(16, Math.min(lastLine.x, metrics.heroWidth - 420)),
+                  top: Math.min(lastLine.y + lastLine.height + 12, metrics.heroHeight - 160),
                 }}
-                className="absolute hidden max-w-[calc(100%-32px)] flex-wrap items-center gap-x-3 gap-y-1 border-[1.5px] border-volt bg-ink px-3 py-1.5 text-volt lg:inline-flex"
+                className="absolute inline-flex max-w-[calc(100%-32px)] flex-wrap items-center gap-x-3 gap-y-1 border-[1.5px] border-volt bg-ink px-3 py-1.5 text-volt"
               >
                 <span>
-                  L1 {metrics.lineBoxes[0]?.width ?? 0}×{metrics.lineBoxes[0]?.height ?? 0}px
+                  ACCENT <span className="text-bone">{metrics.accentFont} {metrics.accentSize}</span>
                 </span>
-                {metrics.lineBoxes[1] && (
-                  <span>
-                    L2 {metrics.lineBoxes[1].width}×{metrics.lineBoxes[1].height}px
-                  </span>
-                )}
                 <span className="text-bone">
                   EASE &ldquo;{easing.name}&rdquo; {metrics.easeCurve}
                 </span>
               </div>
             )}
 
-            {/* Live CSS custom property palette readout (bottom-right, clear of toggle button) */}
             <div
               style={{
-                right: Math.max(16, metrics.heroWidth - (metrics.containerLeft + metrics.containerWidth)),
-                bottom: fullBlueprintOpen ? 68 : 28,
+                left: Math.max(16, metrics.containerLeft),
+                bottom: 72,
               }}
               className="absolute flex max-w-[calc(100%-32px)] flex-col gap-1.5 border-[1.5px] border-volt bg-ink px-3.5 py-2.5 text-volt"
             >
@@ -743,10 +775,7 @@ export default function HeroXRay({ heroRef, contentRef, fullBlueprintOpen }: Her
               <div className="flex flex-wrap gap-x-3.5 gap-y-1">
                 {metrics.palette.map((c) => (
                   <span key={c.label} className="inline-flex items-center gap-1.5">
-                    <span
-                      className="inline-block size-2.5 border border-volt"
-                      style={{ backgroundColor: c.hex }}
-                    />
+                    <span className="inline-block size-2.5 border border-volt" style={{ backgroundColor: c.hex }} />
                     <span>
                       {c.label} <span className="text-bone">{c.hex}</span>
                     </span>
@@ -758,8 +787,8 @@ export default function HeroXRay({ heroRef, contentRef, fullBlueprintOpen }: Her
         )}
       </div>
 
-      {/* ── LENS RING, CROSSHAIR, OUTSIDE BOTTOM TAG & LEADER-LINE READOUT ── */}
-      {!reducedMotion && (
+      {/* ── PURE OPTICAL LENS RETICLE (ONLY thin Volt ring + crosshair — ZERO floating tags) ── */}
+      {!reducedMotion && !(disableDrift && isTouch) && (
         <div
           ref={reticleRef}
           aria-hidden="true"
@@ -772,7 +801,7 @@ export default function HeroXRay({ heroRef, contentRef, fullBlueprintOpen }: Her
             className="-translate-x-1/2 -translate-y-1/2 rounded-full border-[1.75px] border-volt will-change-transform"
           />
 
-          {/* Crisp 1.5px Volt crosshair at lens centre (only element inside the circle) */}
+          {/* Crisp 1.5px Volt crosshair at lens centre */}
           <svg
             width="24"
             height="24"
@@ -786,37 +815,6 @@ export default function HeroXRay({ heroRef, contentRef, fullBlueprintOpen }: Her
             <line x1="15.5" y1="12" x2="24" y2="12" stroke="var(--color-volt)" strokeWidth="1.5" />
             <circle cx="12" cy="12" r="2" stroke="var(--color-volt)" strokeWidth="1.5" />
           </svg>
-
-          {/* Single compact "X-RAY · coords" tag positioned just outside the bottom rim of the ring */}
-          <div
-            ref={bottomTagRef}
-            className="absolute top-0 left-0 inline-flex items-center gap-2 whitespace-nowrap border-[1.5px] border-volt bg-ink px-2.5 py-1 font-mono text-[12px] leading-none font-medium tracking-[0.08em] will-change-transform"
-          >
-            <span className="text-volt">X-RAY</span>
-            <span className="text-volt/70" aria-hidden="true">
-              ·
-            </span>
-            <span ref={coordsRef} className="text-bone tabular-nums">
-              0000, 0000
-            </span>
-          </div>
-
-          {/* Live-measured context readout attached to the right rim with a short Volt leader line */}
-          <div
-            ref={sideTagRef}
-            data-side="right"
-            className="group absolute top-0 left-0 flex items-center will-change-transform data-[side=left]:flex-row-reverse"
-          >
-            <span className="block h-[1.5px] w-6 shrink-0 bg-volt group-data-[side=bottom]:hidden" />
-            <div className="flex max-w-[calc(100vw-24px)] flex-col gap-0.5 border-[1.5px] border-volt bg-ink px-2.5 py-1.5 font-mono text-[12px] leading-[1.3] font-medium tracking-[0.03em] sm:max-w-none sm:whitespace-nowrap">
-              <span ref={sideKindRef} className="text-volt">
-                HEADLINE
-              </span>
-              <span ref={sideValueRef} className="text-bone">
-                Bricolage Grotesque
-              </span>
-            </div>
-          </div>
         </div>
       )}
     </>

@@ -65,6 +65,23 @@ box, continue from there. Commit after each checkpoint.
 - [x] Touch screens: removed press-and-hold expansion, added `"Blueprint"` toggle button reusing the full-hero blueprint toggle while lens keeps auto-drifting
 - [x] Desktop & mobile screenshot check, lint, build, git commit
 
+### Responsive & Readout Pass (`hero-xray`)
+#### Checkpoint A — X-ray docked readout fix ✅
+- [x] Removed floating readout tag, leader line, and bottom `X-RAY` badge from the lens ring (only Volt ring, crosshair, and hollow outlined letters remain on the lens)
+- [x] Docked one fixed solid-Ink / Volt-bordered spec card (`≥ 12px`) in the bottom-right hero area showing `X-RAY · coords` + active target + live-measured values; replaces `"Move your cursor. See how it's built."` once the lens first moves
+- [x] Highlighted active headline / italic accent outline inside the lens with stronger Volt stroke
+- [x] Git commit
+
+#### Checkpoint B — Mobile & tablet first responsive pass
+- [ ] Create `RESPONSIVE_RULES.md` in project root
+- [ ] Apply responsive rules across site (`dvh/svh`, `env(safe-area-inset-*)`, `≥ 44px` tap targets with `≥ 8px` gap, `≥ 12px` labels & `≥ 16px` body copy, capability-based touch/mouse detection, orientation resilience, low-power device detection + mid-range Android smoothness, full accessible mobile drawer with focus trap + back-gesture/Esc close, `≥ 16px` inputs)
+- [ ] Test & inspect screenshots at 360×740, 390×844, 412×915, 768×1024, 820×1180, 1024×768, 1180×820, 1440×900
+- [ ] Fix every issue found & git commit
+
+#### Checkpoint C — Clean-up
+- [ ] Lint + production build clean, zero console errors/hydration warnings
+- [ ] Update `PROGRESS.md`, commit, provide local Wi-Fi phone preview instructions & final summary
+
 ## Notes / decisions
 - Next.js 16.4 with `cacheComponents` enabled (scaffold default). Page is fully static.
 - Grain is static (no animated noise) to avoid full-screen repaints.

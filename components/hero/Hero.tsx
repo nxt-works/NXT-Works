@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { hero } from "@/site.config";
 import HeroXRay from "@/components/hero/HeroXRay";
 import MagneticButton from "@/components/nav/MagneticButton";
@@ -24,9 +24,21 @@ export default function Hero({ object, ticker }: { object?: React.ReactNode; tic
   const root = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+
+  const dockCoordsRef = useRef<HTMLSpanElement>(null);
+  const dockKindRef = useRef<HTMLSpanElement>(null);
+  const dockValueRef = useRef<HTMLSpanElement>(null);
+
   const isTouch = useIsTouch();
   const reducedMotion = useReducedMotion();
   const [fullBlueprintOpen, setFullBlueprintOpen] = useState(false);
+  const [lensActive, setLensActive] = useState(false);
+
+  const dockRefs = useMemo(
+    () => ({ coords: dockCoordsRef, kind: dockKindRef, value: dockValueRef }),
+    [],
+  );
+  const handleLensActive = useCallback(() => setLensActive(true), []);
 
   const showBlueprintButton = reducedMotion || isTouch;
 
@@ -107,19 +119,50 @@ export default function Hero({ object, ticker }: { object?: React.ReactNode; tic
                 </div>
               </div>
 
+              {/* Bottom-right docked zone: status + either discovery hint or live X-Ray spec card */}
               <div
                 data-reveal="rise"
-                className="flex flex-col items-start gap-2 lg:col-span-6 lg:items-end lg:justify-end"
+                className="flex flex-col items-start gap-2.5 lg:col-span-6 lg:items-end lg:justify-end"
               >
                 <p className="label hidden items-center gap-3 text-smoke lg:flex">
                   <span aria-hidden="true" className="size-1.5 rounded-full bg-smoke" />
                   {hero.status}
                 </p>
 
-                {!showBlueprintButton && (
-                  <p className="font-mono text-[12px] tracking-[0.08em] text-bone/80 uppercase">
-                    Move your cursor. See how it&apos;s built.
-                  </p>
+                {/* Hint shows until the lens first moves (desktop only); then the docked spec card replaces it */}
+                {!reducedMotion && !fullBlueprintOpen && (
+                  <>
+                    {!isTouch && !lensActive && (
+                      <p className="font-mono text-[12px] tracking-[0.08em] text-bone/80 uppercase">
+                        Move your cursor. See how it&apos;s built.
+                      </p>
+                    )}
+
+                    <div
+                      aria-hidden="true"
+                      className={`w-full max-w-[400px] border-[1.5px] border-volt bg-ink px-3.5 py-2.5 font-mono text-[12px] leading-[1.35] font-medium tracking-[0.04em] transition-opacity duration-500 lg:w-auto lg:min-w-[320px] ${
+                        lensActive ? "opacity-100" : "hidden opacity-0"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-4 border-b border-volt/35 pb-1.5">
+                        <span className="inline-flex items-center gap-2 text-volt">
+                          <span>X-RAY</span>
+                          <span aria-hidden="true" className="text-volt/65">
+                            ·
+                          </span>
+                          <span ref={dockCoordsRef} className="text-bone tabular-nums">
+                            0000, 0000
+                          </span>
+                        </span>
+                        <span ref={dockKindRef} className="text-volt">
+                          HEADLINE
+                        </span>
+                      </div>
+                      <span ref={dockValueRef} className="mt-1.5 block text-bone">
+                        Bricolage Grotesque
+                      </span>
+                    </div>
+                  </>
                 )}
               </div>
             </div>
@@ -131,6 +174,8 @@ export default function Hero({ object, ticker }: { object?: React.ReactNode; tic
           heroRef={stageRef}
           contentRef={contentRef}
           fullBlueprintOpen={fullBlueprintOpen}
+          dockRefs={dockRefs}
+          onLensActive={handleLensActive}
         />
 
         {/* Manual full-hero blueprint toggle for touch screens and reduced motion (always above z-20 blueprint) */}
@@ -140,7 +185,7 @@ export default function Hero({ object, ticker }: { object?: React.ReactNode; tic
               type="button"
               aria-pressed={fullBlueprintOpen}
               onClick={() => setFullBlueprintOpen((v) => !v)}
-              className="label inline-flex items-center gap-2 rounded-full border-[1.5px] border-volt bg-ink px-4 py-2 text-[12px] text-volt transition-colors duration-300 hover:bg-volt hover:text-ink"
+              className="label inline-flex min-h-[44px] min-w-[44px] items-center gap-2 rounded-full border-[1.5px] border-volt bg-ink px-4 py-2 text-[12px] text-volt transition-colors duration-300 hover:bg-volt hover:text-ink"
             >
               <span aria-hidden="true" className="size-1.5 rounded-full bg-current" />
               {reducedMotion
