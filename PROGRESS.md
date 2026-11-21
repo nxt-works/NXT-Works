@@ -78,9 +78,9 @@ box, continue from there. Commit after each checkpoint.
 - [x] Visually verified all 8 matrix viewports (`360×740`, `390×844`, `412×915`, `768×1024`, `820×1180`, `1024×768`, `1180×820`, `1440×900`) + `360×740` drawer + `740×360` landscape; fixed `360×740` docked-card vs `Blueprint` pill clearance
 - [x] Git commit
 
-#### Checkpoint C — Clean-up
-- [ ] Lint + production build clean, zero console errors/hydration warnings
-- [ ] Update `PROGRESS.md`, commit, provide local Wi-Fi phone preview instructions & final summary
+#### Checkpoint C — Clean-up ✅
+- [x] Lint, type check, and production build clean; zero console errors or hydration warnings across all 8 viewports
+- [x] Updated `PROGRESS.md`, committed on branch `hero-xray` (not merged)
 
 ## Notes / decisions
 - Next.js 16.4 with `cacheComponents` enabled (scaffold default). Page is fully static.
