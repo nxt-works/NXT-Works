@@ -44,13 +44,13 @@ box, continue from there. Commit after each checkpoint.
 - [x] Raised placeholder Bone-surface label contrast to `text-ink/70` in `SectionPlaceholder.tsx`
 - [x] Git commit
 
-### Checkpoint B — X-ray blueprint lens
-- [ ] `components/hero/HeroXRay.tsx`: circular clip-path blueprint layer with Volt lines (≥ 1.5px, 70–100% opacity) & readable ≥ 12px mono notes
-- [ ] Accurate live-read specs: real font name, computed px size, real letter-spacing, CSS variable hex codes, easing curve name
-- [ ] Outlined headline line boxes, baseline/column guides, ruler ticks, crosshair, Volt ring + `X-RAY` label
-- [ ] 260px spring follow, 600px press-and-hold expand, 3s idle / touch auto-drift + `"Move your cursor. See how it's built."` hint
-- [ ] Reduced-motion `"Show blueprint"` toggle, off-screen pause, non-blocking pointer events, seamless intro handoff
-- [ ] Desktop & mobile screenshot legibility verification, lint & build, git commit
+### Checkpoint B — X-ray blueprint lens ✅
+- [x] `components/hero/HeroXRay.tsx`: circular clip-path blueprint layer with Volt lines (≥ 1.5px, 70–100% opacity) & readable ≥ 12px mono notes
+- [x] Accurate live-read specs: real font name, computed px size, real letter-spacing, CSS variable hex codes, easing curve name
+- [x] Outlined headline line boxes, baseline/column guides, ruler ticks, crosshair, Volt ring + `X-RAY` label
+- [x] 260px spring follow, 600px press-and-hold expand, 3s idle / touch auto-drift + `"Move your cursor. See how it's built."` hint
+- [x] Reduced-motion `"Show blueprint"` toggle, off-screen pause, non-blocking pointer events, seamless intro handoff
+- [x] Desktop, mobile & full-blueprint screenshot legibility verification, lint & build, git commit
 
 ## Notes / decisions
 - Next.js 16.4 with `cacheComponents` enabled (scaffold default). Page is fully static.

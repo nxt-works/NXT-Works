@@ -181,6 +181,13 @@ html.has-cursor * {
   cursor: none !important;
 }
 
+/* Hollow Volt outlined typography for the Hero X-Ray blueprint layer (no filled text). */
+.xray-stroke {
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 1.5px var(--color-volt);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
