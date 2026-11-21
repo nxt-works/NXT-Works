@@ -56,7 +56,7 @@ export default function Hero({ object, ticker }: { object?: React.ReactNode; tic
       {/* 3D object: behind the copy on desktop, its own band on mobile */}
       {object}
 
-      <div className="relative z-10 mx-auto flex w-full max-w-[1600px] flex-1 flex-col px-5 pt-28 pb-10 md:px-10 md:pt-32 lg:pb-12">
+      <div className="relative z-10 mx-auto flex w-full max-w-[1600px] flex-1 flex-col px-5 pt-28 pb-8 md:px-10 md:pt-32 lg:pt-36 lg:pb-10 [@media(max-height:800px)]:pt-30 [@media(max-height:800px)]:pb-7">
         <div data-reveal="rise">
           <Label index={1} className="text-[0.75rem] text-bone/85 md:text-[0.8125rem]">
             {hero.eyebrow}
@@ -66,14 +66,15 @@ export default function Hero({ object, ticker }: { object?: React.ReactNode; tic
         <h1
           id="hero-title"
           data-reveal="split"
-          className="headline mt-7 max-w-full text-display text-bone md:mt-9 lg:max-w-[62%]"
+          className="headline mt-6 max-w-full text-display text-bone md:mt-8 lg:max-w-[94%]"
         >
           {hero.headline.before}
           <span className="accent">{hero.headline.accent}</span>
+          <br className="hidden lg:inline" />
           {hero.headline.after}
         </h1>
 
-        <div className="mt-auto grid gap-8 pt-10 lg:grid-cols-12 lg:items-end lg:gap-10">
+        <div className="mt-auto grid gap-8 pt-8 lg:grid-cols-12 lg:items-end lg:gap-10">
           <div className="lg:col-span-5">
             <p data-reveal="rise" className="measure max-w-[38ch] text-lede text-bone/85">
               {hero.subline}

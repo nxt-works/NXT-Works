@@ -1,7 +1,6 @@
 import Intro from "@/components/intro/Intro";
 import Nav from "@/components/nav/Nav";
 import Hero from "@/components/hero/Hero";
-import HeroObject from "@/components/hero/HeroObject";
 import Ticker from "@/components/hero/Ticker";
 import SectionPlaceholder from "@/components/sections/SectionPlaceholder";
 import { sections } from "@/site.config";
@@ -12,7 +11,8 @@ export default function Home() {
       <Intro />
       <Nav />
       <main id="main">
-        <Hero object={<HeroObject />} ticker={<Ticker />} />
+        {/* HeroObject (3D slab) kept in components/hero/HeroObject.tsx for Stage 2 reuse */}
+        <Hero ticker={<Ticker />} />
 
         {sections.map((section, i) => (
           <SectionPlaceholder

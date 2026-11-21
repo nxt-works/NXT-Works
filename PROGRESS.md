@@ -36,6 +36,22 @@ box, continue from there. Commit after each checkpoint.
 - [x] QA: keyboard, reduced motion, console/hydration clean, desktop & mobile visual pass, mobile Lighthouse run (Performance 76, Accessibility 96, Best Practices 100, SEO 100)
 - [x] Git commits saved after every piece of work
 
+## Hero X-Ray branch (`hero-xray`)
+### Checkpoint A — Hero layout & small fixes ✅
+- [x] Unmounted `<HeroObject />` from hero (kept `HeroObject.tsx` & `HeroObjectCanvas.tsx` for Stage 2)
+- [x] Scaled hero headline to span ~90% desktop width in 2 lines (`"We build what's next"` / `"for your business."`), 3–4 overflow-free lines on mobile
+- [x] Added short-laptop (`max-height: 800px`) top clearance so hero label never sits under the floating pill nav
+- [x] Raised placeholder Bone-surface label contrast to `text-ink/70` in `SectionPlaceholder.tsx`
+- [x] Git commit
+
+### Checkpoint B — X-ray blueprint lens
+- [ ] `components/hero/HeroXRay.tsx`: circular clip-path blueprint layer with Volt lines (≥ 1.5px, 70–100% opacity) & readable ≥ 12px mono notes
+- [ ] Accurate live-read specs: real font name, computed px size, real letter-spacing, CSS variable hex codes, easing curve name
+- [ ] Outlined headline line boxes, baseline/column guides, ruler ticks, crosshair, Volt ring + `X-RAY` label
+- [ ] 260px spring follow, 600px press-and-hold expand, 3s idle / touch auto-drift + `"Move your cursor. See how it's built."` hint
+- [ ] Reduced-motion `"Show blueprint"` toggle, off-screen pause, non-blocking pointer events, seamless intro handoff
+- [ ] Desktop & mobile screenshot legibility verification, lint & build, git commit
+
 ## Notes / decisions
 - Next.js 16.4 with `cacheComponents` enabled (scaffold default). Page is fully static.
 - Grain is static (no animated noise) to avoid full-screen repaints.

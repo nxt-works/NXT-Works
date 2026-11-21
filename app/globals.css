@@ -28,8 +28,8 @@
   --default-transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   --default-transition-duration: 600ms;
 
-  /* Fluid type scale — mobile gets a genuinely smaller floor, not a shrink. */
-  --text-display: clamp(3.375rem, 10vw, 10.75rem);
+  /* Fluid type scale — spans ~90% width in 2 lines on desktop, 3–4 lines on mobile. */
+  --text-display: clamp(3.25rem, 10.4vw, 10.75rem);
   --text-display--line-height: 0.9;
   --text-display--letter-spacing: -0.03em;
   --text-section: clamp(2.5rem, 1.1rem + 5.2vw, 6.75rem);

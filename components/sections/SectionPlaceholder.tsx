@@ -43,10 +43,10 @@ export default function SectionPlaceholder({ id, index, label, title, surface }:
         <div className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col justify-between px-5 md:px-10">
           <div>
             <div className="flex items-center justify-between gap-4">
-              <Label index={index} className={isBone ? "text-ink/60" : "text-smoke"}>
+              <Label index={index} className={isBone ? "text-ink/70" : "text-smoke"}>
                 {label}
               </Label>
-              <span className={`label hidden sm:inline ${isBone ? "text-ink/45" : "text-smoke/70"}`}>
+              <span className={`label hidden sm:inline ${isBone ? "text-ink/70" : "text-smoke/80"}`}>
                 Stage 02
               </span>
             </div>
@@ -64,7 +64,7 @@ export default function SectionPlaceholder({ id, index, label, title, surface }:
 
           <div
             className={`mt-12 flex items-center justify-between border-t pt-5 ${
-              isBone ? "border-ink/12 text-ink/50" : "border-bone/12 text-smoke"
+              isBone ? "border-ink/15 text-ink/70" : "border-bone/12 text-smoke"
             }`}
           >
             <p className="label">Section placeholder — {label}</p>
