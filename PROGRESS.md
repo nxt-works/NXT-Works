@@ -32,7 +32,7 @@ box, continue from there. Commit after each checkpoint.
 - [ ] 3D browser slab (R3F, lazy, `progress` 0–1 input, cursor tilt, simpler on mobile, paused off-screen) — **waiting for Opus**
 - [x] Velocity-reactive ticker (`components/hero/Ticker.tsx`)
 - [x] Custom cursor (fine pointers only) (`components/ui/Cursor.tsx`) & scroll progress line (`components/ui/ScrollProgress.tsx`)
-- [ ] RevealText for headlines & 8 empty section placeholders (Ink/Bone alternation, angled cuts)
+- [x] RevealText for headlines (`components/ui/RevealText.tsx`) & 8 empty section placeholders (`components/sections/SectionPlaceholder.tsx`) with Ink/Bone alternation and angled cuts
 - [ ] QA: keyboard, reduced motion, console/hydration clean, Lighthouse mobile
 - [ ] Git commit + final summary
 
