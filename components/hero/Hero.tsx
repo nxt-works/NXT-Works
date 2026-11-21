@@ -58,7 +58,7 @@ export default function Hero({ object, ticker }: { object?: React.ReactNode; tic
 
       <div className="relative z-10 mx-auto flex w-full max-w-[1600px] flex-1 flex-col px-5 pt-28 pb-10 md:px-10 md:pt-32 lg:pb-12">
         <div data-reveal="rise">
-          <Label index={1} className="text-[0.75rem] text-bone/75 md:text-[0.8125rem]">
+          <Label index={1} className="text-[0.75rem] text-bone/85 md:text-[0.8125rem]">
             {hero.eyebrow}
           </Label>
         </div>

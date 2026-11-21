@@ -17,8 +17,8 @@ type LabelProps = {
 export default function Label({ index, children, className = "" }: LabelProps) {
   return (
     <p className={`label flex items-center gap-4 ${className}`}>
-      {index !== undefined && <span className="shrink-0 whitespace-nowrap tabular-nums opacity-60">{indexLabel(index)}</span>}
-      {index !== undefined && <span aria-hidden="true" className="h-px w-8 shrink-0 bg-current opacity-40" />}
+      {index !== undefined && <span className="shrink-0 whitespace-nowrap tabular-nums opacity-85">{indexLabel(index)}</span>}
+      {index !== undefined && <span aria-hidden="true" className="h-px w-8 shrink-0 bg-current opacity-55" />}
       <span>{children}</span>
     </p>
   );

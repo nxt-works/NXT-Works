@@ -58,7 +58,7 @@ export const sections: {
   { id: "proof", label: "Proof", title: ["Work that ", "earns", " its keep."], surface: "ink" },
   { id: "demos", label: "Demos", title: ["Click it. ", "Break", " it. Try it."], surface: "bone" },
   { id: "process", label: "Process", title: ["Four steps. ", "Zero", " mystery."], surface: "ink" },
-  { id: "team", label: "Team", title: ["Students with ", "senior", " habits."], surface: "bone" },
+  { id: "team", label: "Team", title: ["Five people. ", "One", " standard."], surface: "bone" },
   { id: "packages", label: "Packages", title: ["Pick a ", "starting", " point."], surface: "ink" },
   { id: "faq", label: "FAQ", title: ["Fair ", "questions", ", straight answers."], surface: "bone" },
   { id: "contact", label: "Contact", title: ["Let's build your ", "next", " thing."], surface: "ink" },

@@ -24,20 +24,20 @@ box, continue from there. Commit after each checkpoint.
 - [x] Skip button (+ Esc), scroll lock, once per session, reduced-motion fade
 - [x] Git commit
 
-## Checkpoint C — Navigation and hero
+## Checkpoint C — Navigation and hero ✅
 - [x] Lenis smooth scroll provider synced to GSAP ticker / ScrollTrigger (`components/providers/SmoothScroll.tsx`)
 - [x] Floating pill nav: X mark, links, Volt CTA, hide on scroll down / show on up, mobile menu (`components/nav/Nav.tsx`)
 - [x] Magnetic button with spring physics (`components/nav/MagneticButton.tsx`)
-- [x] Hero: eyebrow, headline (line reveal), subline, 2 CTAs (headline scaled to 10vw / 3 lines, raised contrast, magnetic primary CTA; ticker & 3D slots ready)
-- [ ] 3D browser slab (R3F, lazy, `progress` 0–1 input, cursor tilt, simpler on mobile, paused off-screen) — **waiting for Opus**
+- [x] Hero: eyebrow (raised contrast), headline (10vw / 3 lines, line reveal), subline, 2 CTAs (magnetic primary CTA)
+- [x] 3D browser slab (`components/hero/HeroObject.tsx` + lazy `HeroObjectCanvas.tsx`): Volt wireframe on Graphite, 3 dots, address bar + blinking cursor, hero block + 3 cards, 1.2s assembly, idle float/rotation, cursor tilt spring, `progress` 0–1 input, floating mono labels (`WEBSITE`, `DASHBOARD`, `AUTOMATION`), scroll parallax, simpler mobile variant, reduced-motion static pose, SVG WebGL fallback, paused off-screen
 - [x] Velocity-reactive ticker (`components/hero/Ticker.tsx`, copy updated to "Small team. Big output.")
 - [x] Custom cursor (fine pointers only, Ink ring over Volt buttons) (`components/ui/Cursor.tsx`) & scroll progress line (`components/ui/ScrollProgress.tsx`)
-- [x] RevealText for headlines (`components/ui/RevealText.tsx`) & 8 empty section placeholders (~50vh each, Ink/Bone alternation, angled cuts) (`components/sections/SectionPlaceholder.tsx`)
-- [x] QA: keyboard, reduced motion, console/hydration clean, mobile & desktop visual pass (Lighthouse mobile deferred until 3D hero object is added — **waiting for Opus**)
+- [x] RevealText for headlines (`components/ui/RevealText.tsx`) & 8 empty section placeholders (~50vh each, Ink/Bone alternation, angled cuts, Team heading updated to "Five people. One standard.") (`components/sections/SectionPlaceholder.tsx`)
+- [x] QA: keyboard, reduced motion, console/hydration clean, desktop & mobile visual pass, mobile Lighthouse run (Performance 76, Accessibility 96, Best Practices 100, SEO 100)
 - [x] Git commits saved after every piece of work
 
 ## Notes / decisions
 - Next.js 16.4 with `cacheComponents` enabled (scaffold default). Page is fully static.
 - Grain is static (no animated noise) to avoid full-screen repaints.
 - `components/intro/Intro.tsx` was left untouched as built in Checkpoint B.
-- `components/hero/HeroObject.tsx` (3D browser slab) is intentionally skipped and **waiting for Opus**; `Hero.tsx` already accepts it via the `object` prop.
+- `HeroObjectCanvas.tsx` is code-split via `next/dynamic` (`ssr: false`) and mounted only after `intro:done` + `requestIdleCallback`. Mobile Lighthouse TBT is 90 ms (99/100) and CLS is 0.001 (100/100); Performance (76) is primarily gated by LCP (6.1 s) from the fresh-session 2.6 s intro overlay.
