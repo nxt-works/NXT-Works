@@ -52,6 +52,19 @@ box, continue from there. Commit after each checkpoint.
 - [x] Reduced-motion `"Show blueprint"` toggle, off-screen pause, non-blocking pointer events, seamless intro handoff
 - [x] Desktop, mobile & full-blueprint screenshot legibility verification, lint & build, git commit
 
+### Refinement Checkpoint A — Hero balance ✅
+- [x] Grouped eyebrow, headline, subline, and both CTAs into one vertically centred block above the ticker (`mt-[clamp(1.85rem,4vh,3rem)]` gap)
+- [x] Kept bottom-pinned ticker and short-screen top clearance below the floating pill nav
+- [x] Git commit
+
+### Refinement Checkpoint B — X-ray lens refinement
+- [ ] Smaller default lens (`clamp(170px, 15vw, 210px)`) and 520px press-and-hold max (≤ 46% viewport width)
+- [ ] Move `X-RAY` badge + live coordinates outside the bottom of the ring so outlined text stays clear
+- [ ] Context-sensitive right-side readout tag with leader line (headline / italic accent / subline / buttons / empty space colour tokens)
+- [ ] Pixel-exact outlined headline alignment inside the lens
+- [ ] Touch screens: remove press-and-hold, add `"Blueprint"` toggle button reusing the full-hero blueprint toggle while lens keeps auto-drifting
+- [ ] Desktop & mobile screenshot check, lint, build, git commit
+
 ## Notes / decisions
 - Next.js 16.4 with `cacheComponents` enabled (scaffold default). Page is fully static.
 - Grain is static (no animated noise) to avoid full-screen repaints.

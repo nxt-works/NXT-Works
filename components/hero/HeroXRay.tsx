@@ -62,7 +62,7 @@ function normalizeHex(raw: string): string {
 }
 
 type HeroXRayProps = {
-  heroRef: React.RefObject<HTMLElement | null>;
+  heroRef: React.RefObject<HTMLDivElement | null>;
   contentRef: React.RefObject<HTMLDivElement | null>;
   /** Identical padding classes as Hero's real inner container so outlined copy aligns to the pixel. */
   containerClassName: string;
