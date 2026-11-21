@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import { hero } from "@/site.config";
+import MagneticButton from "@/components/nav/MagneticButton";
 import Button from "@/components/ui/Button";
 import Label from "@/components/ui/Label";
 import { gsap, SplitText, useGSAP } from "@/lib/gsap";
@@ -55,9 +56,9 @@ export default function Hero({ object, ticker }: { object?: React.ReactNode; tic
       {/* 3D object: behind the copy on desktop, its own band on mobile */}
       {object}
 
-      <div className="relative z-10 mx-auto flex w-full max-w-[1600px] flex-1 flex-col px-5 pt-28 pb-10 md:px-10 md:pt-36 lg:pb-14">
+      <div className="relative z-10 mx-auto flex w-full max-w-[1600px] flex-1 flex-col px-5 pt-28 pb-10 md:px-10 md:pt-32 lg:pb-12">
         <div data-reveal="rise">
-          <Label index={1} className="text-smoke">
+          <Label index={1} className="text-[0.75rem] text-bone/75 md:text-[0.8125rem]">
             {hero.eyebrow}
           </Label>
         </div>
@@ -65,20 +66,22 @@ export default function Hero({ object, ticker }: { object?: React.ReactNode; tic
         <h1
           id="hero-title"
           data-reveal="split"
-          className="headline mt-8 max-w-[11ch] text-display text-bone md:mt-10 lg:max-w-[12.5ch]"
+          className="headline mt-7 max-w-full text-display text-bone md:mt-9 lg:max-w-[62%]"
         >
           {hero.headline.before}
           <span className="accent">{hero.headline.accent}</span>
           {hero.headline.after}
         </h1>
 
-        <div className="mt-auto grid gap-8 pt-12 lg:grid-cols-12 lg:items-end lg:gap-10">
+        <div className="mt-auto grid gap-8 pt-10 lg:grid-cols-12 lg:items-end lg:gap-10">
           <div className="lg:col-span-5">
-            <p data-reveal="rise" className="measure max-w-[38ch] text-lede text-bone/75">
+            <p data-reveal="rise" className="measure max-w-[38ch] text-lede text-bone/85">
               {hero.subline}
             </p>
-            <div data-reveal="rise" className="mt-8 flex flex-wrap items-center gap-3">
-              <Button href={hero.primaryCta.href}>{hero.primaryCta.label}</Button>
+            <div data-reveal="rise" className="mt-7 flex flex-wrap items-center gap-3">
+              <MagneticButton>
+                <Button href={hero.primaryCta.href}>{hero.primaryCta.label}</Button>
+              </MagneticButton>
               <Button href={hero.secondaryCta.href} variant="outline">
                 {hero.secondaryCta.label}
               </Button>

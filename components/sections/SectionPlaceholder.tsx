@@ -36,7 +36,7 @@ export default function SectionPlaceholder({ id, index, label, title, surface }:
     >
       <div
         style={{ clipPath }}
-        className={`relative flex min-h-[58svh] flex-col justify-between pt-24 pb-20 md:min-h-[64svh] md:pt-32 md:pb-24 ${
+        className={`relative flex min-h-[48svh] flex-col justify-between pt-16 pb-12 md:min-h-[50svh] md:pt-20 md:pb-14 ${
           isBone ? "bg-bone text-ink" : "bg-ink text-bone"
         }`}
       >
@@ -54,7 +54,7 @@ export default function SectionPlaceholder({ id, index, label, title, surface }:
             <RevealText
               as="h2"
               id={`${id}-title`}
-              className="headline mt-10 max-w-[14ch] text-section md:mt-14"
+              className="headline mt-8 max-w-[14ch] text-section md:mt-10"
             >
               {before}
               <span className="accent">{accent}</span>
@@ -63,7 +63,7 @@ export default function SectionPlaceholder({ id, index, label, title, surface }:
           </div>
 
           <div
-            className={`mt-20 flex items-center justify-between border-t pt-6 ${
+            className={`mt-12 flex items-center justify-between border-t pt-5 ${
               isBone ? "border-ink/12 text-ink/50" : "border-bone/12 text-smoke"
             }`}
           >

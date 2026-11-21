@@ -30,6 +30,7 @@ export default function Cursor() {
     let rafId = 0;
     let visible = false;
     let hovered = false;
+    let onVolt = false;
     let pressed = false;
     let targetX = -100;
     let targetY = -100;
@@ -51,6 +52,12 @@ export default function Cursor() {
       dot.dataset.hover = active ? "true" : "false";
     };
 
+    const setVoltAttr = (active: boolean) => {
+      if (onVolt === active) return;
+      onVolt = active;
+      dot.dataset.surface = active ? "volt" : "default";
+    };
+
     const onPointerMove = (e: PointerEvent) => {
       if (e.pointerType !== "mouse") return;
       targetX = e.clientX;
@@ -62,6 +69,7 @@ export default function Cursor() {
       }
       const target = e.target as HTMLElement | null;
       setHoverAttr(Boolean(target?.closest(INTERACTIVE_SELECTOR)));
+      setVoltAttr(Boolean(target?.closest('[data-cursor-surface="volt"]')));
     };
 
     const onPointerDown = () => {
@@ -111,7 +119,8 @@ export default function Cursor() {
       ref={dotRef}
       aria-hidden="true"
       data-hover="false"
-      className="pointer-events-none fixed top-0 left-0 z-[180] size-2.5 rounded-full bg-volt opacity-0 ring-1 ring-ink/35 transition-[background-color,border-color,opacity] duration-300 will-change-transform data-[hover=true]:border data-[hover=true]:border-volt data-[hover=true]:bg-volt/15 data-[hover=true]:ring-ink/25"
+      data-surface="default"
+      className="pointer-events-none fixed top-0 left-0 z-[180] size-2.5 rounded-full bg-volt opacity-0 ring-1 ring-ink/35 transition-[background-color,border-color,opacity] duration-300 will-change-transform data-[hover=true]:border data-[hover=true]:border-volt data-[hover=true]:bg-volt/15 data-[hover=true]:ring-ink/25 data-[surface=volt]:border-ink data-[surface=volt]:bg-ink/12 data-[surface=volt]:ring-ink/35"
     />
   );
 }

@@ -93,7 +93,7 @@ export const hero = {
     "Dashboards your team actually opens",
     "Automations that hand back hours",
     "Shipped in weeks, not quarters",
-    "Student-run, senior-grade",
+    "Small team. Big output.",
     "CRM without the clutter",
     "Fast by default",
   ],

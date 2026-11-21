@@ -27,7 +27,13 @@ export default function Button({ href, children, variant = "volt", surface = "in
     variant === "volt" ? "bg-ink text-volt" : surface === "ink" ? "bg-bone text-ink" : "bg-ink text-bone";
 
   return (
-    <a href={href} onClick={onClick} className={`${base} ${styles} ${className}`} data-cursor="grow">
+    <a
+      href={href}
+      onClick={onClick}
+      className={`${base} ${styles} ${className}`}
+      data-cursor="grow"
+      data-cursor-surface={variant === "volt" ? "volt" : undefined}
+    >
       <span className="relative block overflow-hidden">
         <span className="block transition-transform duration-700 group-hover/btn:-translate-y-full">{children}</span>
         <span aria-hidden="true" className="absolute inset-0 block translate-y-full transition-transform duration-700 group-hover/btn:translate-y-0">

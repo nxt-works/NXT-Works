@@ -28,11 +28,11 @@ box, continue from there. Commit after each checkpoint.
 - [x] Lenis smooth scroll provider synced to GSAP ticker / ScrollTrigger (`components/providers/SmoothScroll.tsx`)
 - [x] Floating pill nav: X mark, links, Volt CTA, hide on scroll down / show on up, mobile menu (`components/nav/Nav.tsx`)
 - [x] Magnetic button with spring physics (`components/nav/MagneticButton.tsx`)
-- [x] Hero: eyebrow, headline (line reveal), subline, 2 CTAs (built in Checkpoint B; ticker & 3D slots ready)
+- [x] Hero: eyebrow, headline (line reveal), subline, 2 CTAs (headline scaled to 10vw / 3 lines, raised contrast, magnetic primary CTA; ticker & 3D slots ready)
 - [ ] 3D browser slab (R3F, lazy, `progress` 0–1 input, cursor tilt, simpler on mobile, paused off-screen) — **waiting for Opus**
-- [x] Velocity-reactive ticker (`components/hero/Ticker.tsx`)
-- [x] Custom cursor (fine pointers only) (`components/ui/Cursor.tsx`) & scroll progress line (`components/ui/ScrollProgress.tsx`)
-- [x] RevealText for headlines (`components/ui/RevealText.tsx`) & 8 empty section placeholders (`components/sections/SectionPlaceholder.tsx`) with Ink/Bone alternation and angled cuts
+- [x] Velocity-reactive ticker (`components/hero/Ticker.tsx`, copy updated to "Small team. Big output.")
+- [x] Custom cursor (fine pointers only, Ink ring over Volt buttons) (`components/ui/Cursor.tsx`) & scroll progress line (`components/ui/ScrollProgress.tsx`)
+- [x] RevealText for headlines (`components/ui/RevealText.tsx`) & 8 empty section placeholders (~50vh each, Ink/Bone alternation, angled cuts) (`components/sections/SectionPlaceholder.tsx`)
 - [x] QA: keyboard, reduced motion, console/hydration clean, mobile & desktop visual pass (Lighthouse mobile deferred until 3D hero object is added — **waiting for Opus**)
 - [x] Git commits saved after every piece of work
 

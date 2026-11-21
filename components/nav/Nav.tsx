@@ -169,6 +169,7 @@ export default function Nav() {
               onClick={() => setMenuOpen(false)}
               className="group/cta inline-flex h-9 items-center gap-2.5 rounded-full bg-volt pr-1.5 pl-4 text-[0.8125rem] font-medium tracking-[-0.01em] text-ink transition-colors duration-300 md:h-10 md:pl-5 md:text-[0.875rem]"
               data-cursor="grow"
+              data-cursor-surface="volt"
             >
               <span className="relative block overflow-hidden leading-none">
                 <span className="block py-0.5 transition-transform duration-500 group-hover/cta:-translate-y-full">
