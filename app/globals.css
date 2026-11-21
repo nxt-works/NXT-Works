@@ -1,0 +1,193 @@
+@import "tailwindcss";
+@import "lenis/dist/lenis.css";
+
+/* ──────────────────────────────────────────────────────────────────────────
+   DESIGN TOKENS
+   Palette mirrors site.config.ts → colors. Never pure white or pure black.
+   ────────────────────────────────────────────────────────────────────────── */
+@theme {
+  --color-*: initial; /* wipe Tailwind's default palette: only brand colours exist */
+  --color-ink: #0c0c0d;
+  --color-bone: #ede8df;
+  --color-volt: #c8ff3d;
+  --color-graphite: #1a1a1c;
+  --color-smoke: #8a867d;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-instrument), ui-serif, Georgia, serif;
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+
+  /* The single easing curve. Tailwind's `ease-*` utilities all resolve to it. */
+  --ease-nxt: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --default-transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  --default-transition-duration: 600ms;
+
+  /* Fluid type scale — mobile gets a genuinely smaller floor, not a shrink. */
+  --text-display: clamp(2.875rem, 1rem + 7.6vw, 9.25rem);
+  --text-display--line-height: 0.9;
+  --text-display--letter-spacing: -0.03em;
+  --text-section: clamp(2.5rem, 1.1rem + 5.2vw, 6.75rem);
+  --text-section--line-height: 0.9;
+  --text-section--letter-spacing: -0.03em;
+  --text-lede: clamp(1.0625rem, 0.95rem + 0.4vw, 1.3125rem);
+  --text-lede--line-height: 1.6;
+  --text-label: 0.6875rem;
+  --text-label--line-height: 1.2;
+  --text-label--letter-spacing: 0.16em;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   BASE
+   ────────────────────────────────────────────────────────────────────────── */
+@layer base {
+  html {
+    background: var(--color-ink);
+    color: var(--color-bone);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    font-family: var(--font-sans);
+    line-height: 1.6;
+  }
+  ::selection {
+    background: var(--color-volt);
+    color: var(--color-ink);
+  }
+
+  /* Visible, on-brand focus. Volt on Ink surfaces, Ink on Bone surfaces. */
+  :focus-visible {
+    outline: 2px solid var(--color-volt);
+    outline-offset: 4px;
+    border-radius: 2px;
+  }
+  [data-surface="bone"] :focus-visible {
+    outline-color: var(--color-ink);
+  }
+
+  /* Every transition uses the house curve. */
+  *,
+  *::before,
+  *::after {
+    transition-timing-function: var(--ease-nxt);
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   TYPE UTILITIES
+   ────────────────────────────────────────────────────────────────────────── */
+@utility headline {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 0.9;
+  font-variation-settings: "wdth" 85;
+}
+/* The one serif-italic accent word per headline. Instrument Serif has a
+   smaller x-height than Bricolage, so it is optically scaled up a touch. */
+@utility accent {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-variation-settings: normal;
+  letter-spacing: -0.015em;
+  font-size: 1.1em;
+  line-height: 0.8;
+  padding-right: 0.05em; /* italic overhang clearance inside line masks */
+}
+@utility label {
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  line-height: 1.2;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+@utility measure {
+  max-width: 60ch;
+  line-height: 1.6;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   FILM GRAIN — one tiny tiled PNG (≈10 KB) on a fixed, non-interactive layer.
+   Static on purpose: animated grain forces a full-screen repaint every step.
+   ────────────────────────────────────────────────────────────────────────── */
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  pointer-events: none;
+  background-image: url("/grain.png");
+  background-size: 128px 128px;
+  opacity: 0.075;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   INTRO STATE (set before first paint by the inline script in app/layout.tsx)
+     data-intro="play"    → first visit this session: overlay shown, scroll locked
+     data-intro="reduced" → reduced motion: simple fade
+     data-intro="seen"    → already played this session: overlay never painted
+     data-intro="done"    → finished during this page view
+   ────────────────────────────────────────────────────────────────────────── */
+html[data-intro="play"],
+html[data-intro="reduced"] {
+  overflow: hidden;
+}
+html[data-intro="seen"] .intro,
+html[data-intro="done"] .intro {
+  display: none;
+}
+
+/* The cursor blink runs in CSS from the very first paint (before hydration),
+   so the intro starts instantly. GSAP picks up from the same visual state. */
+@keyframes intro-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+.intro-cursor {
+  animation: intro-blink 0.8s steps(1) infinite;
+}
+html[data-intro="reduced"] .intro-cursor {
+  animation: none;
+  opacity: 0;
+}
+/* Logo parts start hidden in "play" mode; GSAP builds them up. */
+html[data-intro="play"] .intro-logo [data-logo-part] {
+  opacity: 0;
+}
+
+/* Headlines that JS will reveal start hidden only when JS is present
+   (html.js is set pre-paint) — no-JS visitors still see everything. */
+html.js [data-reveal] {
+  visibility: hidden;
+}
+
+/* Native cursor hidden only while the custom cursor is active. */
+html.has-cursor,
+html.has-cursor * {
+  cursor: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

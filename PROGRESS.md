@@ -1,0 +1,41 @@
+# PROGRESS — NXT Agency site, Stage 1
+
+Resume point for any interrupted session: read this file, find the first unchecked
+box, continue from there. Commit after each checkpoint.
+
+## Checkpoint A — Setup, design system, logo ✅
+- [x] Next.js 16 (App Router) + TypeScript + Tailwind v4 scaffold
+- [x] Deps: gsap, @gsap/react, lenis, three, @react-three/fiber, @react-three/drei
+- [x] `site.config.ts` — brand name, copy, colours, links, nav, sections, ticker (single source)
+- [x] Design tokens in `app/globals.css` (@theme): palette, house easing, fluid type scale
+- [x] Type utilities: `headline`, `accent` (Instrument Serif italic), `label` (mono), `measure` (60ch)
+- [x] Fonts via next/font: Bricolage Grotesque, Instrument Serif italic, Geist, JetBrains Mono
+- [x] Film grain: 10 KB tiled PNG (`public/grain.png`) on fixed layer
+- [x] `components/Logo.tsx` — light/dark variants, mark-only mode, `data-logo-part` hooks
+- [x] `app/icon.svg` favicon (only other place the logo is drawn)
+- [x] Pre-paint inline script (`app/layout.tsx`) deciding intro state from sessionStorage
+- [x] Git commit
+
+## Checkpoint B — Intro animation
+- [ ] `components/intro/Intro.tsx` GSAP timeline (blink → stroke → arrow → N/T → push-in portal)
+- [ ] Reads logo parts from `<Logo />` only; timing table independent of shapes
+- [ ] Portal = clip-path on the overlay, centred on measured X centre
+- [ ] Hero handoff event (`intro:reveal`), no flash
+- [ ] Skip button (+ Esc), scroll lock, once per session, reduced-motion fade
+- [ ] Git commit
+
+## Checkpoint C — Navigation and hero
+- [ ] Lenis smooth scroll provider synced to GSAP ticker / ScrollTrigger
+- [ ] Floating pill nav: X mark, links, Volt CTA, hide on scroll down / show on up, mobile menu
+- [ ] Magnetic button with spring physics
+- [ ] Hero: eyebrow, headline (line reveal), subline, 2 CTAs
+- [ ] 3D browser slab (R3F, lazy, `progress` 0–1 input, cursor tilt, simpler on mobile, paused off-screen)
+- [ ] Velocity-reactive ticker
+- [ ] Custom cursor (fine pointers only), scroll progress line, RevealText for headlines
+- [ ] 8 empty section placeholders (Ink/Bone alternation, angled cuts)
+- [ ] QA: keyboard, reduced motion, console/hydration clean, Lighthouse mobile
+- [ ] Git commit + final summary
+
+## Notes / decisions
+- Next.js 16.4 with `cacheComponents` enabled (scaffold default). Page is fully static.
+- Grain is static (no animated noise) to avoid full-screen repaints.
