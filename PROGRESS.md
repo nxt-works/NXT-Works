@@ -16,20 +16,20 @@ box, continue from there. Commit after each checkpoint.
 - [x] Pre-paint inline script (`app/layout.tsx`) deciding intro state from sessionStorage
 - [x] Git commit
 
-## Checkpoint B — Intro animation
-- [ ] `components/intro/Intro.tsx` GSAP timeline (blink → stroke → arrow → N/T → push-in portal)
-- [ ] Reads logo parts from `<Logo />` only; timing table independent of shapes
-- [ ] Portal = clip-path on the overlay, centred on measured X centre
-- [ ] Hero handoff event (`intro:reveal`), no flash
-- [ ] Skip button (+ Esc), scroll lock, once per session, reduced-motion fade
-- [ ] Git commit
+## Checkpoint B — Intro animation ✅
+- [x] `components/intro/Intro.tsx` GSAP timeline (blink → stroke → arrow → N/T → push-in portal)
+- [x] Reads logo parts from `<Logo />` only; timing table independent of shapes
+- [x] Portal = clip-path on the overlay, centred on measured X centre
+- [x] Hero handoff event (`intro:reveal`), no flash
+- [x] Skip button (+ Esc), scroll lock, once per session, reduced-motion fade
+- [x] Git commit
 
 ## Checkpoint C — Navigation and hero
 - [ ] Lenis smooth scroll provider synced to GSAP ticker / ScrollTrigger
 - [ ] Floating pill nav: X mark, links, Volt CTA, hide on scroll down / show on up, mobile menu
 - [ ] Magnetic button with spring physics
-- [ ] Hero: eyebrow, headline (line reveal), subline, 2 CTAs
-- [ ] 3D browser slab (R3F, lazy, `progress` 0–1 input, cursor tilt, simpler on mobile, paused off-screen)
+- [x] Hero: eyebrow, headline (line reveal), subline, 2 CTAs (built in Checkpoint B; ticker & 3D slots ready)
+- [ ] 3D browser slab (R3F, lazy, `progress` 0–1 input, cursor tilt, simpler on mobile, paused off-screen) — **waiting for Opus**
 - [ ] Velocity-reactive ticker
 - [ ] Custom cursor (fine pointers only), scroll progress line, RevealText for headlines
 - [ ] 8 empty section placeholders (Ink/Bone alternation, angled cuts)

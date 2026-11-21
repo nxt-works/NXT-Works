@@ -21,3 +21,37 @@ export function introAllowsReveal(): boolean {
   const s = getIntroState();
   return s === "seen" || s === "done";
 }
+
+/**
+ * Calls `fn` exactly once: immediately if the intro is not playing (already
+ * seen / finished), otherwise when the intro fires its reveal event as the
+ * portal opens. Waits for web fonts so line splitting measures final glyphs.
+ * Returns a cleanup function. Call inside an effect / useGSAP.
+ */
+export function onIntroReveal(fn: () => void): () => void {
+  let fired = false;
+  let cancelled = false;
+  const fire = () => {
+    if (fired) return;
+    fired = true;
+    document.fonts.ready.then(() => !cancelled && fn());
+  };
+  if (introAllowsReveal()) fire();
+  window.addEventListener(INTRO_REVEAL_EVENT, fire);
+  window.addEventListener(INTRO_DONE_EVENT, fire);
+  return () => {
+    cancelled = true;
+    window.removeEventListener(INTRO_REVEAL_EVENT, fire);
+    window.removeEventListener(INTRO_DONE_EVENT, fire);
+  };
+}
+
+/** Calls `fn` once scrolling is allowed (intro finished or never played). Returns cleanup. */
+export function onIntroDone(fn: () => void): () => void {
+  if (introAllowsReveal()) {
+    fn();
+    return () => {};
+  }
+  window.addEventListener(INTRO_DONE_EVENT, fn, { once: true });
+  return () => window.removeEventListener(INTRO_DONE_EVENT, fn);
+}
