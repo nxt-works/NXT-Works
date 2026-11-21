@@ -30,7 +30,7 @@ box, continue from there. Commit after each checkpoint.
 - [x] Magnetic button with spring physics (`components/nav/MagneticButton.tsx`)
 - [x] Hero: eyebrow, headline (line reveal), subline, 2 CTAs (built in Checkpoint B; ticker & 3D slots ready)
 - [ ] 3D browser slab (R3F, lazy, `progress` 0–1 input, cursor tilt, simpler on mobile, paused off-screen) — **waiting for Opus**
-- [ ] Velocity-reactive ticker
+- [x] Velocity-reactive ticker (`components/hero/Ticker.tsx`)
 - [x] Custom cursor (fine pointers only) (`components/ui/Cursor.tsx`) & scroll progress line (`components/ui/ScrollProgress.tsx`)
 - [ ] RevealText for headlines & 8 empty section placeholders (Ink/Bone alternation, angled cuts)
 - [ ] QA: keyboard, reduced motion, console/hydration clean, Lighthouse mobile
