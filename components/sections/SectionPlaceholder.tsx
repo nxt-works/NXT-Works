@@ -19,13 +19,8 @@ export default function SectionPlaceholder({ id, index, label, title, surface }:
   const isBone = surface === "bone";
   const [before, accent, after] = title;
 
-  // Alternate slant direction across sections; outer wrapper matches the
-  // preceding section's surface so the diagonal cut needs no negative margin.
-  const cut = "clamp(18px, 2.4vw, 40px)";
-  const clipPath =
-    index % 2 === 0
-      ? `polygon(0 ${cut}, 100% 0, 100% 100%, 0 100%)`
-      : `polygon(0 0, 100% ${cut}, 100% 100%, 0 100%)`;
+  // Alternate slant direction across sections using plain px polygons (no clamp() inside polygon()).
+  const cutClass = index % 2 === 0 ? "section-cut-left" : "section-cut-right";
 
   return (
     <section
@@ -35,13 +30,12 @@ export default function SectionPlaceholder({ id, index, label, title, surface }:
       className={`scroll-mt-4 ${isBone ? "bg-ink" : "bg-bone"}`}
     >
       <div
-        style={{ clipPath }}
-        className={`relative flex min-h-[48dvh] flex-col justify-between pt-16 pb-12 md:min-h-[50dvh] md:pt-20 md:pb-14 ${
+        className={`section-placeholder-inner ${cutClass} relative flex flex-col justify-between ${
           isBone ? "bg-bone text-ink" : "bg-ink text-bone"
         }`}
       >
         <div className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col justify-between px-5 md:px-10">
-          <div>
+          <div className="block">
             <div className="flex items-center justify-between gap-4">
               <Label index={index} className={isBone ? "text-ink/70" : "text-smoke"}>
                 {label}
@@ -54,7 +48,7 @@ export default function SectionPlaceholder({ id, index, label, title, surface }:
             <RevealText
               as="h2"
               id={`${id}-title`}
-              className="headline mt-8 max-w-[14ch] text-section md:mt-10"
+              className="headline mt-8 block max-w-[14ch] text-section md:mt-10"
             >
               {before}
               <span className="accent">{accent}</span>
@@ -68,7 +62,6 @@ export default function SectionPlaceholder({ id, index, label, title, surface }:
             }`}
           >
             <p className="label">Section placeholder — {label}</p>
-            <p className="label tabular-nums">#{id}</p>
           </div>
         </div>
       </div>

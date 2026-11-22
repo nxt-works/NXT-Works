@@ -315,9 +315,14 @@ export default function HeroXRay({
       if (tetherDotRef.current) tetherDotRef.current.style.opacity = "0";
     };
 
+    const setClip = (value: string) => {
+      blueprintEl.style.clipPath = value;
+      blueprintEl.style.setProperty("-webkit-clip-path", value);
+    };
+
     // Full-hero blueprint toggle (touch "Blueprint" button or reduced-motion "Show blueprint" button).
     if (fullBlueprintOpen) {
-      blueprintEl.style.clipPath = "inset(0% 0% 0% 0%)";
+      setClip("inset(0% 0% 0% 0%)");
       if (reticleEl) reticleEl.style.opacity = "0";
       if (headlineMirrorRef.current) headlineMirrorRef.current.dataset.active = "headline";
       hideTether();
@@ -326,7 +331,7 @@ export default function HeroXRay({
 
     // Reduced-motion closed state, or low-power touch device with drift disabled: hidden, zero RAF work.
     if (reducedMotion || (disableDrift && isTouch)) {
-      blueprintEl.style.clipPath = "circle(0px at 50% 50%)";
+      setClip("circle(0px at 50% 50%)");
       if (reticleEl) reticleEl.style.opacity = "0";
       hideTether();
       return;
@@ -336,7 +341,7 @@ export default function HeroXRay({
     if (!reticleEl || !ringEl) return;
 
     if (!introReady) {
-      blueprintEl.style.clipPath = "circle(0px at 50% 42%)";
+      setClip("circle(0px at 50% 42%)");
       reticleEl.style.opacity = "0";
       hideTether();
       return;
@@ -533,7 +538,7 @@ export default function HeroXRay({
           vr += ((targetR - r) * rStiff - vr * rDamp) * dt;
           r = Math.max(0, r + vr * dt);
 
-          blueprintEl.style.clipPath = `circle(${r.toFixed(1)}px at ${x.toFixed(1)}px ${y.toFixed(1)}px)`;
+          setClip(`circle(${r.toFixed(1)}px at ${x.toFixed(1)}px ${y.toFixed(1)}px)`);
           reticleEl.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
 
           const scale = r / RING_BASE_RADIUS;
@@ -556,7 +561,7 @@ export default function HeroXRay({
               }
             }
 
-            // Update desktop docked card text & straight Volt connecting line only while card is active.
+            // Update desktop docked card text & straight Volt connecting line only while card is visible & in bottom-right.
             if (cardShown && !isTouch) {
               const coordsEl = heroEl.querySelector<HTMLElement>("[data-xray-dock='coords']");
               const kindEl = heroEl.querySelector<HTMLElement>("[data-xray-dock='kind']");
@@ -570,38 +575,59 @@ export default function HeroXRay({
               const cardEl = heroEl.querySelector<HTMLElement>("[data-xray-dock='card']");
               const lineEl = tetherLineRef.current;
               const dotEl = tetherDotRef.current;
-              if (cardEl && lineEl && dotEl) {
+              if (cardEl && lineEl && dotEl && cardEl.dataset.visible === "true") {
                 const heroRect = heroEl.getBoundingClientRect();
                 const cardRect = cardEl.getBoundingClientRect();
-                if (cardRect.width > 0 && cardRect.height > 0) {
+                const cardLeft = cardRect.left - heroRect.left;
+                const cardTop = cardRect.top - heroRect.top;
+                const cardInBottomRight =
+                  cardRect.width >= 120 &&
+                  cardRect.height >= 24 &&
+                  cardLeft >= heroRect.width * 0.45 &&
+                  cardTop >= heroRect.height * 0.45 &&
+                  cardLeft + cardRect.width <= heroRect.width + 4 &&
+                  cardTop + cardRect.height <= heroRect.height + 4;
+
+                if (cardInBottomRight) {
                   // Anchor on the top edge if lens is above the card, or left edge if beside it.
-                  const cardLeft = cardRect.left - heroRect.left;
-                  const cardTop = cardRect.top - heroRect.top;
                   const ax = y < cardTop ? cardLeft + cardRect.width * 0.5 : cardLeft;
                   const ay = y < cardTop ? cardTop : cardTop + cardRect.height * 0.5;
                   const dx = ax - x;
                   const dy = ay - y;
                   const dist = Math.hypot(dx, dy);
 
-                  if (dist > r + 8) {
+                  if (dist > r + 12) {
                     const sx = x + (dx / dist) * r;
                     const sy = y + (dy / dist) * r;
-                    lineEl.setAttribute("x1", sx.toFixed(1));
-                    lineEl.setAttribute("y1", sy.toFixed(1));
-                    lineEl.setAttribute("x2", ax.toFixed(1));
-                    lineEl.setAttribute("y2", ay.toFixed(1));
-                    dotEl.setAttribute("cx", ax.toFixed(1));
-                    dotEl.setAttribute("cy", ay.toFixed(1));
+                    const crossesControls =
+                      segmentCrossesBox(sx, sy, ax, ay, m.sublineBox) || segmentCrossesBox(sx, sy, ax, ay, m.ctaBox);
 
-                    const crossesHeadline = segmentCrossesBox(sx, sy, ax, ay, m.h1Box);
-                    const op = crossesHeadline ? "0.35" : "0.78";
-                    lineEl.style.opacity = op;
-                    dotEl.style.opacity = op;
+                    if (crossesControls) {
+                      hideTether();
+                    } else {
+                      lineEl.setAttribute("x1", sx.toFixed(1));
+                      lineEl.setAttribute("y1", sy.toFixed(1));
+                      lineEl.setAttribute("x2", ax.toFixed(1));
+                      lineEl.setAttribute("y2", ay.toFixed(1));
+                      dotEl.setAttribute("cx", ax.toFixed(1));
+                      dotEl.setAttribute("cy", ay.toFixed(1));
+
+                      const crossesHeadline = segmentCrossesBox(sx, sy, ax, ay, m.h1Box);
+                      const op = crossesHeadline ? "0.35" : "0.78";
+                      lineEl.style.opacity = op;
+                      dotEl.style.opacity = op;
+                    }
                   } else {
                     hideTether();
                   }
+                } else {
+                  hideTether();
                 }
+              } else {
+                hideTether();
               }
+            } else {
+              hideTether();
             }
           }
         }
@@ -658,7 +684,7 @@ export default function HeroXRay({
         ref={blueprintRef}
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 z-20 select-none overflow-hidden bg-ink will-change-[clip-path]"
-        style={{ clipPath: "circle(0px at 50% 42%)" }}
+        style={{ clipPath: "circle(0px at 50% 42%)", WebkitClipPath: "circle(0px at 50% 42%)" }}
       >
         {/* 1. Vector architectural overlay: column guides, baselines, headline boxes, rulers */}
         {metrics && (
@@ -906,8 +932,13 @@ export default function HeroXRay({
           {/* Scalable Volt circular ring */}
           <div
             ref={ringRef}
-            style={{ width: RING_BASE_RADIUS * 2, height: RING_BASE_RADIUS * 2 }}
-            className="-translate-x-1/2 -translate-y-1/2 rounded-full border-[1.75px] border-volt will-change-transform"
+            style={{
+              width: RING_BASE_RADIUS * 2,
+              height: RING_BASE_RADIUS * 2,
+              marginLeft: -RING_BASE_RADIUS,
+              marginTop: -RING_BASE_RADIUS,
+            }}
+            className="rounded-full border-[1.75px] border-volt will-change-transform"
           />
 
           {/* Crisp 1.5px Volt crosshair at lens centre */}
@@ -915,7 +946,8 @@ export default function HeroXRay({
             width="24"
             height="24"
             viewBox="0 0 24 24"
-            className="absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2"
+            style={{ marginLeft: -12, marginTop: -12 }}
+            className="absolute top-0 left-0"
             fill="none"
           >
             <line x1="12" y1="0" x2="12" y2="8.5" stroke="var(--color-volt)" strokeWidth="1.5" />

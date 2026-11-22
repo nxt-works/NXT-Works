@@ -88,18 +88,26 @@ export default function Ticker() {
     >
       <div
         ref={railRef}
-        className={`flex will-change-transform ${
-          reducedMotion ? "mx-auto w-full flex-wrap justify-center gap-y-2 px-5" : "w-max"
-        }`}
+        style={reducedMotion ? undefined : { whiteSpace: "nowrap" }}
+        className={
+          reducedMotion
+            ? "mx-auto flex w-full flex-wrap justify-center gap-y-2 px-5 will-change-transform"
+            : "ticker-rail flex flex-nowrap items-center w-max whitespace-nowrap will-change-transform"
+        }
       >
         <ul
           ref={firstTrackRef}
-          className={`flex items-center ${reducedMotion ? "flex-wrap justify-center gap-y-2" : "shrink-0"}`}
+          style={reducedMotion ? undefined : { whiteSpace: "nowrap" }}
+          className={
+            reducedMotion
+              ? "flex flex-wrap items-center justify-center gap-y-2"
+              : "ticker-track flex shrink-0 flex-nowrap items-center whitespace-nowrap"
+          }
         >
           {items.map((phrase) => (
-            <li key={phrase} className="label flex shrink-0 items-center text-bone/70">
-              <span className="px-5 md:px-7">{phrase}</span>
-              <span aria-hidden="true" className="text-smoke/45">
+            <li key={phrase} className="label flex shrink-0 items-center whitespace-nowrap text-bone/70">
+              <span className="whitespace-nowrap px-5 md:px-7">{phrase}</span>
+              <span aria-hidden="true" className="shrink-0 text-smoke/45">
                 /
               </span>
             </li>
@@ -107,11 +115,15 @@ export default function Ticker() {
         </ul>
 
         {!reducedMotion && (
-          <ul aria-hidden="true" className="flex shrink-0 items-center">
+          <ul
+            aria-hidden="true"
+            style={{ whiteSpace: "nowrap" }}
+            className="ticker-track flex shrink-0 flex-nowrap items-center whitespace-nowrap"
+          >
             {items.map((phrase) => (
-              <li key={phrase} className="label flex shrink-0 items-center text-bone/70">
-                <span className="px-5 md:px-7">{phrase}</span>
-                <span className="text-smoke/45">/</span>
+              <li key={phrase} className="label flex shrink-0 items-center whitespace-nowrap text-bone/70">
+                <span className="whitespace-nowrap px-5 md:px-7">{phrase}</span>
+                <span className="shrink-0 text-smoke/45">/</span>
               </li>
             ))}
           </ul>

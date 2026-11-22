@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Logo from "@/components/Logo";
 import MagneticButton from "@/components/nav/MagneticButton";
+import { onIntroDone, onIntroReveal } from "@/lib/intro";
 import { brand, nav } from "@/site.config";
 
 const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -49,20 +50,38 @@ export default function Nav() {
     }
   }, []);
 
+  // Guarantee the bar is visible and freshly composited in Safari/WebKit as soon as the intro reveals/finishes.
+  useEffect(() => {
+    const wakeNav = () => {
+      setHidden(false);
+      const header = headerRef.current;
+      if (header) {
+        header.style.transform = "translate3d(0, 0, 0)";
+        void header.offsetHeight;
+      }
+    };
+    const offReveal = onIntroReveal(wakeNav);
+    const offDone = onIntroDone(wakeNav);
+    return () => {
+      offReveal();
+      offDone();
+    };
+  }, []);
+
   // Hide on scroll down, reveal on scroll up (always visible near the top or while menu/focus is active).
   useEffect(() => {
-    let lastY = window.scrollY;
+    let lastY = Math.max(0, window.scrollY);
     let ticking = false;
 
     const update = () => {
       ticking = false;
-      const y = window.scrollY;
+      const y = Math.max(0, window.scrollY);
       const delta = y - lastY;
 
-      if (menuOpen || focusWithinRef.current || y < 96) {
+      if (menuOpen || focusWithinRef.current || y < 120) {
         setHidden(false);
-        if (y < 96) setActiveHref("");
-      } else if (delta > 8 && y > 120) {
+        if (y < 120) setActiveHref("");
+      } else if (delta > 10 && y > 140) {
         setHidden(true);
       } else if (delta < -6) {
         setHidden(false);
@@ -195,9 +214,8 @@ export default function Nav() {
 
       <nav
         aria-label="Primary"
-        className={`relative z-[102] flex w-full max-w-[400px] items-center justify-between gap-2 rounded-full border border-bone/14 bg-ink/96 p-1.5 pl-2 shadow-[0_12px_36px_rgba(12,12,13,0.45)] transition-[transform,opacity] duration-500 md:w-auto md:max-w-none md:gap-4 md:bg-ink/86 md:pl-2.5 md:backdrop-blur-md ${
-          isHidden ? "pointer-events-none -translate-y-[180%] opacity-0" : "pointer-events-auto translate-y-0 opacity-100"
-        }`}
+        data-hidden={isHidden ? "true" : "false"}
+        className="nav-pill pointer-events-auto relative z-[102] flex w-full max-w-[400px] items-center justify-between gap-2 rounded-full border border-bone/14 bg-ink/96 p-1.5 pl-2 shadow-[0_12px_36px_rgba(12,12,13,0.45)] md:w-auto md:max-w-none md:gap-4 md:bg-ink/86 md:pl-2.5"
       >
         {/* Left: X mark (44×44px tap target) */}
         <a

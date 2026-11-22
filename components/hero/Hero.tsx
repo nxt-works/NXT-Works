@@ -14,7 +14,7 @@ import { useReducedMotion } from "@/lib/useReducedMotion";
 
 /** Shared container layout for the vertically centred hero block above the ticker. */
 const HERO_CONTAINER_CLASS =
-  "mx-auto flex w-full max-w-[1600px] flex-1 flex-col justify-center px-5 pt-28 pb-10 md:px-10 md:pt-32 md:pb-12 lg:pt-32 [@media(max-height:800px)]:pt-28 [@media(max-height:800px)]:pb-8 [@media(max-height:520px)]:pt-22 [@media(max-height:520px)]:pb-4";
+  "hero-content mx-auto flex w-full max-w-[1600px] flex-1 flex-col justify-center px-5 md:px-10";
 
 /**
  * HERO — what we do, readable in < 5 s:
@@ -84,7 +84,7 @@ export default function Hero({ object, ticker }: { object?: React.ReactNode; tic
       id="top"
       data-surface="ink"
       aria-labelledby="hero-title"
-      className="relative isolate flex min-h-dvh flex-col overflow-hidden bg-ink text-bone"
+      className="hero-shell relative isolate flex flex-col overflow-hidden bg-ink text-bone"
     >
       {/* Stage above the bottom-pinned ticker: holds the vertically centred hero block & X-ray layer */}
       <div ref={stageRef} className="relative flex flex-1 flex-col">
@@ -96,7 +96,7 @@ export default function Hero({ object, ticker }: { object?: React.ReactNode; tic
           style={showBlueprintButton ? { paddingBottom: "5.25rem" } : undefined}
           className={`relative z-10 ${HERO_CONTAINER_CLASS}`}
         >
-          <div>
+          <div className="w-full">
             <div data-reveal="rise" data-xray="eyebrow" className="w-fit">
               <Label index={1} className="text-[0.75rem] text-bone/85 md:text-[0.8125rem]">
                 {hero.eyebrow}
@@ -114,68 +114,18 @@ export default function Hero({ object, ticker }: { object?: React.ReactNode; tic
               {hero.headline.after}
             </h1>
 
-            <div className="mt-[clamp(1.85rem,4vh,3rem)] grid gap-7 lg:grid-cols-12 lg:items-end lg:gap-10">
-              <div className="lg:col-span-6">
-                <p data-reveal="rise" data-xray="subline" className="measure max-w-[40ch] text-lede text-bone/85">
-                  {hero.subline}
-                </p>
-                <div data-reveal="rise" data-xray="ctas" className="mt-6 flex w-fit flex-wrap items-center gap-3 md:mt-7">
-                  <MagneticButton>
-                    <Button href={hero.primaryCta.href}>{hero.primaryCta.label}</Button>
-                  </MagneticButton>
-                  <Button href={hero.secondaryCta.href} variant="outline">
-                    {hero.secondaryCta.label}
-                  </Button>
-                </div>
-              </div>
-
-              {/* Bottom-right docked zone (desktop mouse): crossfades between discovery hint & live spec card */}
-              <div
-                data-reveal="rise"
-                className={`${isDesktopPointer ? "flex" : "hidden"} flex-col items-start justify-end gap-2.5 lg:col-span-6 lg:items-end`}
-              >
-                <p className="label hidden items-center gap-3 text-smoke lg:flex">
-                  <span aria-hidden="true" className="size-1.5 rounded-full bg-smoke" />
-                  {hero.status}
-                </p>
-
-                {isDesktopPointer && (
-                  <div className="grid items-end justify-items-start lg:justify-items-end">
-                    <p
-                      className={`col-start-1 row-start-1 font-mono text-[12px] tracking-[0.08em] text-bone/80 uppercase transition-opacity duration-300 ${
-                        desktopCardVisible ? "pointer-events-none opacity-0" : "opacity-100"
-                      }`}
-                    >
-                      Move your cursor. See how it&apos;s built.
-                    </p>
-
-                    <div
-                      data-xray-dock="card"
-                      aria-hidden="true"
-                      className={`pointer-events-none col-start-1 row-start-1 min-w-[320px] max-w-[420px] border-[1.5px] border-volt bg-ink px-3.5 py-2.5 font-mono text-[12px] leading-[1.35] font-medium tracking-[0.04em] transition-[opacity,transform] duration-300 ${
-                        desktopCardVisible ? "translate-y-0 opacity-100" : "translate-y-1.5 opacity-0"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between gap-4 border-b border-volt/35 pb-1.5">
-                        <span className="inline-flex items-center gap-2 text-volt">
-                          <span>X-RAY</span>
-                          <span aria-hidden="true" className="text-volt/65">
-                            ·
-                          </span>
-                          <span data-xray-dock="coords" className="text-bone tabular-nums">
-                            0000, 0000
-                          </span>
-                        </span>
-                        <span data-xray-dock="kind" className="text-volt">
-                          HEADLINE
-                        </span>
-                      </div>
-                      <span data-xray-dock="value" className="mt-1.5 block text-bone">
-                        Bricolage Grotesque
-                      </span>
-                    </div>
-                  </div>
-                )}
+            {/* Independent subline + CTAs column (never shares a grid row with the bottom-right dock) */}
+            <div className="mt-[clamp(1.85rem,4vh,3rem)] w-full max-w-[36rem]">
+              <p data-reveal="rise" data-xray="subline" className="measure max-w-[40ch] text-lede text-bone/85">
+                {hero.subline}
+              </p>
+              <div data-reveal="rise" data-xray="ctas" className="mt-6 flex flex-wrap items-center gap-3 md:mt-7">
+                <MagneticButton>
+                  <Button href={hero.primaryCta.href}>{hero.primaryCta.label}</Button>
+                </MagneticButton>
+                <Button href={hero.secondaryCta.href} variant="outline">
+                  {hero.secondaryCta.label}
+                </Button>
               </div>
             </div>
           </div>
@@ -189,6 +139,53 @@ export default function Hero({ object, ticker }: { object?: React.ReactNode; tic
           onCardVisibleChange={handleCardVisibleChange}
           disableDrift={lowPower}
         />
+
+        {/* Separate bottom-right desktop dock (width: min(360px, 40vw)); only hint & spec card stack inside */}
+        {isDesktopPointer && (
+          <div data-reveal="rise" className="hero-dock pointer-events-none">
+            <p className="label flex items-center gap-3 whitespace-nowrap text-smoke">
+              <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-smoke" />
+              {hero.status}
+            </p>
+
+            <div className="hero-dock-slot">
+              <p
+                className={`hero-dock-hint font-mono text-[12px] tracking-[0.08em] text-bone/80 uppercase ${
+                  desktopCardVisible ? "opacity-0" : "opacity-100"
+                }`}
+              >
+                Move your cursor. See how it&apos;s built.
+              </p>
+
+              <div
+                data-xray-dock="card"
+                data-visible={desktopCardVisible ? "true" : "false"}
+                aria-hidden="true"
+                className={`hero-dock-card border-[1.5px] border-volt bg-ink px-3.5 py-2.5 font-mono text-[12px] leading-[1.35] font-medium tracking-[0.04em] ${
+                  desktopCardVisible ? "opacity-100" : "opacity-0"
+                }`}
+              >
+                <div className="flex items-center justify-between gap-4 border-b border-volt/35 pb-1.5">
+                  <span className="inline-flex items-center gap-2 whitespace-nowrap text-volt">
+                    <span>X-RAY</span>
+                    <span aria-hidden="true" className="text-volt/65">
+                      ·
+                    </span>
+                    <span data-xray-dock="coords" className="text-bone tabular-nums">
+                      0000, 0000
+                    </span>
+                  </span>
+                  <span data-xray-dock="kind" className="whitespace-nowrap text-volt">
+                    HEADLINE
+                  </span>
+                </div>
+                <span data-xray-dock="value" className="mt-1.5 block text-bone">
+                  Bricolage Grotesque
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Touch & reduced-motion docked zone: Blueprint toggle button + spec card ONLY while Blueprint is open */}
         {showBlueprintButton && (
