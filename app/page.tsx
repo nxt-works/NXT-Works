@@ -5,6 +5,7 @@ import Ticker from "@/components/hero/Ticker";
 import SectionPlaceholder from "@/components/sections/SectionPlaceholder";
 import ServicesJourney from "@/components/sections/ServicesJourney";
 import LiveDemos from "@/components/sections/LiveDemos";
+import ProcessSection from "@/components/sections/ProcessSection";
 import { sections } from "@/site.config";
 
 export default function Home() {
@@ -19,6 +20,7 @@ export default function Home() {
         {sections.map((section, i) => {
           if (section.id === "services") return <ServicesJourney key={section.id} />;
           if (section.id === "demos") return <LiveDemos key={section.id} />;
+          if (section.id === "process") return <ProcessSection key={section.id} />;
           return (
             <SectionPlaceholder
               key={section.id}

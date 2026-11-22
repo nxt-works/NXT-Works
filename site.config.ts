@@ -230,6 +230,38 @@ export const liveDemos = {
   },
 } as const;
 
+export const processSection = {
+  eyebrow: "Process",
+  headline: ["Four steps. ", "Zero", " mystery."] as [string, string, string],
+  subline: "No jargon, no surprises. Here is exactly how a project with us runs.",
+  steps: [
+    {
+      id: "talk",
+      number: "01",
+      title: "Talk",
+      body: "A short chat about what is slowing your business down. No pitch, just questions.",
+    },
+    {
+      id: "plan",
+      number: "02",
+      title: "Plan",
+      body: "We send a clear plan: what we will build, what it costs and how long it takes.",
+    },
+    {
+      id: "build",
+      number: "03",
+      title: "Build",
+      body: "You see progress every week and can change direction early, not at the end.",
+    },
+    {
+      id: "launch",
+      number: "04",
+      title: "Launch and care",
+      body: "We launch, show your team how it works, and stay close to fix and improve.",
+    },
+  ],
+} as const;
+
 export const social = [
   { label: "Instagram", href: "https://instagram.com/" },
   { label: "LinkedIn", href: "https://linkedin.com/" },

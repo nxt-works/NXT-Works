@@ -169,6 +169,19 @@ box, continue from there. Commit after each checkpoint.
 - [x] Full Chromium + WebKit verification across all 7 sizes (`360×740`, `390×844`, `412×915`, `768×1024`, `820×1180`, `1024×768`, `1440×900`) before/during/after both demos + keyboard focus test + lint + production build
 - [x] Update `PROGRESS.md` and commit on `live-demos` (do not merge)
 
+## Stage 2 — Section 05 (Process) & Section 08 (FAQ) (`process-faq`)
+### Checkpoint A — Section 05: Process ✅
+- [x] Added `processSection` copy (4 steps: Talk, Plan, Build, Launch and care) to `site.config.ts`
+- [x] Built `components/sections/ProcessSection.tsx` on Ink surface with Bone→Ink `section-cut-right`, `05 / 09 PROCESS`, `Four steps. Zero mystery.` reveal, scroll-drawn Volt line (`scale3d`, smoothed scrub; 1:1 on low-power; fully drawn + lit on reduced-motion; off-screen pause), plain non-pinned layout
+- [x] Mounted `ProcessSection` in `app/page.tsx` (leaving Section 03 Proof placeholder untouched)
+- [x] Git commit
+
+### Checkpoint B — Section 08: FAQ & final dual-engine verification
+- [ ] Add `faqSection` copy (6 draft Q&As marked DRAFT + closing CTA) to `site.config.ts`
+- [ ] Build `components/sections/FaqSection.tsx` on Bone surface with Ink→Bone `section-cut-left`, `08 / 09 FAQ`, `Fair questions, straight answers.`, accessible single-open accordion (`aria-expanded`, `aria-controls`, ≥56px rows, rotating two-line plus/minus, smooth height + fade, instant under reduced-motion, scroll-anchor guard so page never jumps under finger) and closing `Start a project` CTA
+- [ ] Full Chromium + WebKit verification across all 7 sizes (`360×740`, `390×844`, `412×915`, `768×1024`, `820×1180`, `1024×768`, `1440×900`): Process start/middle/end + FAQ closed/open + no-jump check + keyboard + reduced motion + lint + production build
+- [ ] Update `PROGRESS.md` and commit on `process-faq` (do not merge)
+
 ## Notes / decisions
 - Next.js 16.4 with `cacheComponents` enabled (scaffold default). Page is fully static.
 - Grain is static (no animated noise) to avoid full-screen repaints.

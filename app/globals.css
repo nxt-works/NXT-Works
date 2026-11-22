@@ -463,6 +463,43 @@
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
+   SECTION 05 — PROCESS (Scroll-drawn Volt line, GPU transform + opacity only)
+   ────────────────────────────────────────────────────────────────────────── */
+.process-line-fill {
+  transform-origin: top center;
+  transform: scale3d(1, 0, 1);
+  will-change: transform;
+}
+.process-step-content {
+  opacity: 0.55;
+  transition: opacity 320ms var(--ease-nxt);
+}
+.process-step[data-lit="true"] .process-step-content {
+  opacity: 1;
+}
+.process-step-num {
+  color: rgba(237, 232, 223, 0.55);
+  transition: color 320ms var(--ease-nxt);
+}
+.process-step[data-lit="true"] .process-step-num {
+  color: var(--color-volt);
+}
+.process-step-node {
+  border-color: rgba(237, 232, 223, 0.35);
+  background-color: var(--color-ink);
+  transform: scale3d(1, 1, 1);
+  transition:
+    background-color 320ms var(--ease-nxt),
+    border-color 320ms var(--ease-nxt),
+    transform 320ms var(--ease-nxt);
+}
+.process-step[data-lit="true"] .process-step-node {
+  border-color: var(--color-volt);
+  background-color: var(--color-volt);
+  transform: scale3d(1.18, 1.18, 1);
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
    INTRO STATE (set before first paint by the inline script in app/layout.tsx)
      data-intro="play"    → first visit this session: overlay shown, scroll locked
      data-intro="reduced" → reduced motion: simple fade
