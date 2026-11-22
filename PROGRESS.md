@@ -123,11 +123,11 @@ box, continue from there. Commit after each checkpoint.
 - [x] Verified lint, production build, and Chromium + WebKit across all 7 sizes (`360×740`, `390×844`, `412×915`, `768×1024`, `820×1180`, `1024×768`, `1440×900`) with zero overlap and zero console/hydration errors
 - [x] Git commit
 
-### Checkpoint B — Scene 2 (Dashboard) & Scene 1 → Scene 2 scroll morph
-- [ ] Morph shared shapes (`hero-panel` → left sidebar, `headline-1..3` → sidebar nav, `card-1..3` → KPI card + Bar Chart panel + 4-row Table, `volt-cta` → tallest Volt chart bar) via GSAP ScrollTrigger scrub (`transform` + `opacity` only)
-- [ ] 4 growing bars, 4 table rows, live count-up KPI number, `"SAMPLE DATA"` mono label (no real client names or fake claims), off-screen pause
-- [ ] Verify lint, build, and Chromium + WebKit across all 7 sizes for Scene 1 & Scene 2
-- [ ] Git commit
+### Checkpoint B — Scene 2 (Dashboard) & Scene 1 → Scene 2 scroll morph ✅
+- [x] Morph shared shapes (`hero-panel` → left sidebar, `headline-1..3` → sidebar nav, `card-1..3` → Bar Chart panel + KPI card + 4-row Table, `volt-cta` → tallest Volt chart bar) via GSAP ScrollTrigger scrub (`transform` + `opacity` only)
+- [x] 4 growing bars, 4 table rows, live count-up KPI number, `"SAMPLE DATA"` mono label (no real client names or fake claims), off-screen pause
+- [x] Verify lint, build, and Chromium + WebKit across all 7 sizes for Scene 1 & Scene 2
+- [x] Git commit
 
 ### Checkpoint C — Scene 3 (Automation), Scene 2 → 3 morph, closing CTA, reduced-motion & low-power
 - [ ] Morph shared shapes into 4 joined nodes with Volt pulse + sequential node highlight + `"Task done"` chip (no numbers)
