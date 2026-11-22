@@ -262,6 +262,61 @@ export const processSection = {
   ],
 } as const;
 
+// DRAFT — team to review all FAQ questions and answers before final launch.
+export const faqSection = {
+  eyebrow: "FAQ",
+  headline: ["Fair ", "questions", ", straight answers."] as [string, string, string],
+  closing: {
+    text: "Still have a question? Ask us.",
+    cta: { label: "Start a project", href: "#contact" },
+  },
+  // DRAFT copy
+  items: [
+    {
+      id: "who",
+      number: "01",
+      question: "Who is behind this?",
+      answer:
+        "A small team of five who build websites, dashboards and automations. We are new, and we say so. You will always talk directly to the people doing the work.",
+    },
+    {
+      id: "what",
+      number: "02",
+      question: "What can you build?",
+      answer:
+        "Business websites, dashboards and CRMs, and automations that connect your tools. If it is something else, tell us. We will say honestly if it is not for us.",
+    },
+    {
+      id: "cost",
+      number: "03",
+      question: "How much does it cost?",
+      answer:
+        "It depends on the project. After a short chat we send a clear quote before any work starts, so there are no surprises.",
+    },
+    {
+      id: "timeline",
+      number: "04",
+      question: "How long does it take?",
+      answer:
+        "A simple website can be ready in a couple of weeks. Bigger tools take longer. Your plan will show dates, and you will see progress every week.",
+    },
+    {
+      id: "tech",
+      number: "05",
+      question: "Do I need to understand technology?",
+      answer:
+        "No. We explain everything in plain words, and we show your team how to use what we build.",
+    },
+    {
+      id: "after-launch",
+      number: "06",
+      question: "What happens after launch?",
+      answer:
+        "We stay available to fix problems and make improvements. We agree what support you get in the plan, before we start.",
+    },
+  ],
+} as const;
+
 export const social = [
   { label: "Instagram", href: "https://instagram.com/" },
   { label: "LinkedIn", href: "https://linkedin.com/" },

@@ -176,11 +176,11 @@ box, continue from there. Commit after each checkpoint.
 - [x] Mounted `ProcessSection` in `app/page.tsx` (leaving Section 03 Proof placeholder untouched)
 - [x] Git commit
 
-### Checkpoint B — Section 08: FAQ & final dual-engine verification
-- [ ] Add `faqSection` copy (6 draft Q&As marked DRAFT + closing CTA) to `site.config.ts`
-- [ ] Build `components/sections/FaqSection.tsx` on Bone surface with Ink→Bone `section-cut-left`, `08 / 09 FAQ`, `Fair questions, straight answers.`, accessible single-open accordion (`aria-expanded`, `aria-controls`, ≥56px rows, rotating two-line plus/minus, smooth height + fade, instant under reduced-motion, scroll-anchor guard so page never jumps under finger) and closing `Start a project` CTA
-- [ ] Full Chromium + WebKit verification across all 7 sizes (`360×740`, `390×844`, `412×915`, `768×1024`, `820×1180`, `1024×768`, `1440×900`): Process start/middle/end + FAQ closed/open + no-jump check + keyboard + reduced motion + lint + production build
-- [ ] Update `PROGRESS.md` and commit on `process-faq` (do not merge)
+### Checkpoint B — Section 08: FAQ & final dual-engine verification ✅
+- [x] Add `faqSection` copy (6 draft Q&As marked DRAFT + closing CTA) to `site.config.ts`
+- [x] Build `components/sections/FaqSection.tsx` on Bone surface with Ink→Bone `section-cut-left`, `08 / 09 FAQ`, `Fair questions, straight answers.`, accessible single-open accordion (`aria-expanded`, `aria-controls`, ≥56px rows, rotating two-line plus/minus, smooth height + fade, instant under reduced-motion, scroll-anchor guard so page never jumps under finger) and closing `Start a project` CTA
+- [x] Full Chromium + WebKit verification across all 7 sizes (`360×740`, `390×844`, `412×915`, `768×1024`, `820×1180`, `1024×768`, `1440×900`): Process start/middle/end + FAQ closed/open + no-jump check + keyboard + reduced motion + lint + production build
+- [x] Update `PROGRESS.md` and commit on `process-faq` (do not merge)
 
 ## Notes / decisions
 - Next.js 16.4 with `cacheComponents` enabled (scaffold default). Page is fully static.

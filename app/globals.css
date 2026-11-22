@@ -500,6 +500,53 @@
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
+   SECTION 08 — FAQ ACCORDION (Smooth CSS grid-row height + opacity reveal)
+   ────────────────────────────────────────────────────────────────────────── */
+.faq-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    grid-template-rows 360ms var(--ease-nxt),
+    opacity 280ms var(--ease-nxt),
+    visibility 0ms linear 360ms;
+}
+.faq-panel[data-open="true"] {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    grid-template-rows 360ms var(--ease-nxt),
+    opacity 320ms var(--ease-nxt),
+    visibility 0ms linear 0ms;
+}
+.faq-panel[data-instant="true"] {
+  transition: none !important;
+}
+.faq-panel-inner {
+  overflow: hidden;
+}
+.faq-icon-bar-h {
+  transform: rotate(0deg);
+  transition: transform 320ms var(--ease-nxt);
+}
+.faq-icon-bar-v {
+  transform: rotate(0deg) scaleY(1);
+  opacity: 1;
+  transition:
+    transform 320ms var(--ease-nxt),
+    opacity 240ms var(--ease-nxt);
+}
+[aria-expanded="true"] .faq-icon-bar-h {
+  transform: rotate(180deg);
+}
+[aria-expanded="true"] .faq-icon-bar-v {
+  transform: rotate(90deg) scaleY(0.2);
+  opacity: 0;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
    INTRO STATE (set before first paint by the inline script in app/layout.tsx)
      data-intro="play"    → first visit this session: overlay shown, scroll locked
      data-intro="reduced" → reduced motion: simple fade

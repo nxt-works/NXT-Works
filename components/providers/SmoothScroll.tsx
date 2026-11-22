@@ -21,9 +21,9 @@ export const scrollState = {
 let activeLenis: Lenis | null = null;
 
 /** Programmatic scroll helper that uses Lenis when active and falls back to native scroll. */
-export function scrollToTarget(target: string | HTMLElement | number, offset = 0) {
+export function scrollToTarget(target: string | HTMLElement | number, offset = 0, immediate = false) {
   if (activeLenis) {
-    activeLenis.scrollTo(target, { offset });
+    activeLenis.scrollTo(target, { offset, immediate });
     return;
   }
   if (typeof target === "number") {
