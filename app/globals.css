@@ -78,6 +78,9 @@
   [data-surface="bone"] :focus-visible {
     outline-color: var(--color-ink);
   }
+  [data-surface="ink"] :focus-visible {
+    outline-color: var(--color-volt);
+  }
 
   /* Every transition uses the house curve. */
   *,
@@ -420,6 +423,43 @@
     scroll-margin-top: 10vh;
     scroll-margin-top: 10dvh;
   }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   SECTION 04 — LIVE DEMOS (GPU-only transform + opacity micro-animations)
+   ────────────────────────────────────────────────────────────────────────── */
+@keyframes demo-card-enter {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+.demo-card-enter {
+  animation: demo-card-enter 280ms var(--ease-nxt) both;
+}
+
+@keyframes demo-pulse-travel {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -10px, 0);
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+}
+.demo-pulse-travel {
+  animation: demo-pulse-travel 420ms linear both;
 }
 
 /* ──────────────────────────────────────────────────────────────────────────

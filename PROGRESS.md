@@ -149,6 +149,26 @@ box, continue from there. Commit after each checkpoint.
 - [x] Verified `0%, 25%, 50%, 75%, 100%` of both Scene 1→2 and Scene 2→3 morphs in Chromium & WebKit at `390×844`, `820×1180`, and `1440×900` (zero out-of-bounds shapes, zero scale transforms, all 4 bars flush on baseline `y=164` at `38%/62%/50%/86%`)
 - [x] Lint and production build clean with zero console errors or hydration warnings; updated `PROGRESS.md` and committed on `services-journey` (not merged)
 
+## Stage 2 — Section 04: Live Demos (`live-demos`)
+### Checkpoint A — Services chart outline timing & Section 04 shell ✅
+- [x] Shifted `s2Panels` fade-in earlier (`t = 0.08`, `0.16s`) in `ServicesJourney.tsx` so the chart card outline appears before the 3 bars land
+- [x] Added all Section 04 Live Demos copy (`Mini CRM` + `Automation` runner) to `site.config.ts`
+- [x] Built `components/sections/LiveDemos.tsx` on Bone surface with Ink→Bone top cut, `04 / 09 DEMOS`, `Click it. Break it. Try it.` reveal, subline, `SAMPLE DATA / SIMULATED` badge, mobile/tablet switcher (`Mini CRM` / `Automation`), and two rounded Ink card frames side by side on `lg+`
+- [x] Mounted `LiveDemos` in `app/page.tsx` and added nested `[data-surface="ink"] :focus-visible` Volt focus ring + GPU demo keyframes in `app/globals.css`
+- [x] Git commit
+
+### Checkpoint B — Demo 1: Mini CRM
+- [ ] Build `components/sections/MiniCrmDemo.tsx` with 3 columns (`New`, `Contacted`, `Won`) on wide screens and thumb-friendly stage tabs on phones
+- [ ] 5 fictional sample leads (first name + initial, service, ₹ amount), tap-to-open action panel (`Move to next stage`), animated move, smooth count-up `Sample revenue`
+- [ ] `A new lead arrives` (max 8 total), `Reset`, polite `aria-live` status announcements, zero persistence
+- [ ] Git commit
+
+### Checkpoint C — Demo 2: Automation Runner & final dual-engine verification
+- [ ] Build `components/sections/AutomationDemo.tsx` with 4 connected switchable steps, `Run it` / `Run again`, Volt highlight + checkmark + travelling dot, skipped-step consequence notes, `Done in 2 seconds (simulated)`
+- [ ] Reduced-motion instant state transitions (no travelling dot), low-power simplification, off-screen pause
+- [ ] Full Chromium + WebKit verification across all 7 sizes (`360×740`, `390×844`, `412×915`, `768×1024`, `820×1180`, `1024×768`, `1440×900`) before/during/after both demos + keyboard focus test + lint + production build
+- [ ] Update `PROGRESS.md` and commit on `live-demos` (do not merge)
+
 ## Notes / decisions
 - Next.js 16.4 with `cacheComponents` enabled (scaffold default). Page is fully static.
 - Grain is static (no animated noise) to avoid full-screen repaints.

@@ -176,8 +176,8 @@ export default function ServicesJourney() {
       tl.to(headline2, { attr: { x: 32, y: 112, width: 82, height: 8, rx: 3 }, opacity: 0.65, duration: 0.5, ease: "power2.inOut" }, 0.16);
       tl.to(headline3, { attr: { x: 32, y: 139, width: 68, height: 8, rx: 3 }, opacity: 0.48, duration: 0.5, ease: "power2.inOut" }, 0.18);
 
-      // Dashboard panels fade in cleanly behind the travelling bars.
-      tl.to(s2Panels, { opacity: 1, duration: 0.28, ease: "power1.out" }, 0.24);
+      // Dashboard chart & panel outlines appear cleanly BEFORE the bars land so bars never float in empty space.
+      tl.to(s2Panels, { opacity: 1, duration: 0.16, ease: "power1.out" }, 0.08);
 
       // Beat 1: Website cards 1–3 & Volt CTA shrink and travel cleanly onto the chart baseline (real x/y/width/height/rx).
       tl.to(

@@ -139,6 +139,95 @@ export const servicesJourney = {
   },
 } as const;
 
+export const liveDemos = {
+  eyebrow: "Demos",
+  headline: ["Click it. ", "Break", " it. Try it."] as [string, string, string],
+  subline: "Two small tools you can actually use. Nothing here is a screenshot.",
+  note: "SAMPLE DATA / SIMULATED",
+  tabs: [
+    { id: "crm" as const, label: "Mini CRM" },
+    { id: "automation" as const, label: "Automation" },
+  ],
+  miniCrm: {
+    title: "Mini CRM",
+    tag: "01 / PIPELINE",
+    revenueLabel: "Sample revenue",
+    columns: [
+      { id: "new" as const, label: "New" },
+      { id: "contacted" as const, label: "Contacted" },
+      { id: "won" as const, label: "Won" },
+    ],
+    initialLeads: [
+      { id: "lead-1", name: "Asha M.", service: "Website", amount: 45000, stage: "new" as const },
+      { id: "lead-2", name: "Rohan K.", service: "Dashboard", amount: 85000, stage: "new" as const },
+      { id: "lead-3", name: "Meera S.", service: "Automation", amount: 35000, stage: "contacted" as const },
+      { id: "lead-4", name: "Kabir D.", service: "Website", amount: 60000, stage: "contacted" as const },
+      { id: "lead-5", name: "Priya N.", service: "Dashboard", amount: 95000, stage: "won" as const },
+    ],
+    incomingLeads: [
+      { id: "lead-6", name: "Dev P.", service: "Automation", amount: 40000, stage: "new" as const },
+      { id: "lead-7", name: "Neha R.", service: "Website", amount: 55000, stage: "new" as const },
+      { id: "lead-8", name: "Arjun T.", service: "Dashboard", amount: 110000, stage: "new" as const },
+    ],
+    maxLeads: 8,
+    actions: {
+      moveNext: "Move to next stage",
+      alreadyWon: "Already in Won",
+      addLead: "A new lead arrives",
+      maxReached: "Board full (8 max)",
+      reset: "Reset",
+      close: "Close",
+      emptyColumn: "No leads here yet",
+      tapHint: "Tap any customer to move them forward.",
+      resetStatus: "Mini CRM reset to 5 sample customers.",
+      arrivedSuffix: "arrived in New.",
+      movedVerb: "moved to",
+    },
+  },
+  automationRunner: {
+    title: "Automation",
+    tag: "02 / WORKFLOW",
+    runLabel: "Run it",
+    runningLabel: "Running...",
+    runAgainLabel: "Run again",
+    doneLabel: "Done in 2 seconds (simulated)",
+    idleHint: "Switch any step off to see what goes missing, then hit Run it.",
+    runningStatus: "Running simulated automation...",
+    skippedBadge: "Skipped",
+    doneBadge: "Done",
+    steps: [
+      {
+        id: "form",
+        number: "01",
+        title: "Customer fills a form",
+        detail: "Website enquiry captured",
+        skippedNote: "No lead captured. The enquiry is lost.",
+      },
+      {
+        id: "whatsapp",
+        number: "02",
+        title: "WhatsApp reply goes out",
+        detail: "Instant greeting sent",
+        skippedNote: "No reply sent. The customer waits.",
+      },
+      {
+        id: "sheet",
+        number: "03",
+        title: "Added to your sheet",
+        detail: "Row logged automatically",
+        skippedNote: "Not logged. Your team has no record.",
+      },
+      {
+        id: "reminder",
+        number: "04",
+        title: "You get a reminder",
+        detail: "Follow-up alert scheduled",
+        skippedNote: "No alert fired. Follow-up slips.",
+      },
+    ],
+  },
+} as const;
+
 export const social = [
   { label: "Instagram", href: "https://instagram.com/" },
   { label: "LinkedIn", href: "https://linkedin.com/" },
