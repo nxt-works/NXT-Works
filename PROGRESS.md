@@ -189,11 +189,11 @@ box, continue from there. Commit after each checkpoint.
 - [x] Built `components/sections/ContactSection.tsx` on Ink surface (`09 / 09 CONTACT`, `Let's build your next thing.`) with 4-dot progress line, Back/Next, Q1 multi-select checkboxes, Q2/Q3 single-select radios with 400ms advance, Q4 gentle validation + ≥16px inputs + phone keyboard scroll-into-view, focus management without scroll jump
 - [x] Mounted `ContactSection` in `app/page.tsx` (leaving Proof, Team, Packages as placeholders) and committed
 
-### Checkpoint B — Summary, WhatsApp/email sending, CTA focus & interactive Footer
-- [ ] Complete Summary card (plain sentences, Edit per answer, conditional WhatsApp `wa.me` & email `mailto` links, `"Contact details coming soon."` fallback when both empty) and Thank-you + `"Start over"` state
-- [ ] Wire all `"Start a project"` buttons (`#contact` anchor clicks) to smooth-scroll to Section 09 and move keyboard focus to the first question
-- [ ] Build `components/sections/Footer.tsx` reusing `<Logo />` scaled nearly full-width with 4-part `data-logo-part` mouse spring parallax, touch gentle arrow drift + scroll nudge, static under reduced-motion & low-power, site links + conditional WhatsApp/email + Back to top + copyright line, safe-area padding
-- [ ] Git commit
+### Checkpoint B — Summary, WhatsApp/email sending, CTA focus & interactive Footer ✅
+- [x] Complete Summary card (plain sentences, Edit per answer, conditional WhatsApp `wa.me` & email `mailto` links, `"Contact details coming soon."` fallback when both empty) and Thank-you + `"Start over"` state
+- [x] Wire all `"Start a project"` buttons (`#contact` anchor clicks) to smooth-scroll to Section 09 and move keyboard focus to the first question
+- [x] Build `components/sections/Footer.tsx` reusing `<Logo />` scaled nearly full-width with 4-part `data-logo-part` mouse spring parallax, touch gentle arrow drift + scroll nudge, static under reduced-motion & low-power, site links + conditional WhatsApp/email + Back to top + copyright line, safe-area padding
+- [x] Git commit
 
 ### Checkpoint C — Dual-engine verification, TEST link proof & clean-up
 - [ ] Test WhatsApp & email link generation with TEST config values, capture exact links, restore empty config values

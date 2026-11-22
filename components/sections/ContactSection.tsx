@@ -1,8 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Label from "@/components/ui/Label";
 import RevealText from "@/components/ui/RevealText";
+import {
+  buildContactMessage,
+  buildMailtoUrl,
+  buildWhatsAppUrl,
+  getBudgetLabel,
+  getNeedLabels,
+  getTimelineLabel,
+} from "@/lib/contactMessage";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 import { contactSection } from "@/site.config";
 
@@ -55,7 +63,9 @@ function CheckMark() {
  * - Q2 single-select radios ("When do you need it?") — 400ms advance + Next button
  * - Q3 single-select radios ("Rough budget?") — 400ms advance + Next button
  * - Q4 name + single phone/email input with gentle validation
- * - Summary & send state (completed in Checkpoint B)
+ * - Summary card with plain sentences, Edit per answer, conditional WhatsApp/email links
+ * - Thank-you confirmation with "Start over" reset
+ * - Intercepts all `#contact` CTA clicks globally to focus Q1 after smooth scroll
  */
 export default function ContactSection() {
   const reducedMotion = useReducedMotion();
@@ -77,6 +87,7 @@ export default function ContactSection() {
   const headingRef = useRef<HTMLHeadingElement>(null);
   const formActionRowRef = useRef<HTMLDivElement>(null);
   const autoAdvanceTimerRef = useRef<number | null>(null);
+  const ctaFocusTimerRef = useRef<number | null>(null);
   const hasInteractedRef = useRef(false);
 
   const clearAutoAdvance = useCallback(() => {
@@ -86,7 +97,14 @@ export default function ContactSection() {
     }
   }, []);
 
-  useEffect(() => clearAutoAdvance, [clearAutoAdvance]);
+  useEffect(() => {
+    return () => {
+      clearAutoAdvance();
+      if (ctaFocusTimerRef.current !== null) {
+        window.clearTimeout(ctaFocusTimerRef.current);
+      }
+    };
+  }, [clearAutoAdvance]);
 
   const goToStep = useCallback(
     (nextStep: Step, dir: Direction = "forward") => {
@@ -109,6 +127,49 @@ export default function ContactSection() {
     });
     return () => window.cancelAnimationFrame(raf);
   }, [step]);
+
+  // Any "Start a project" link (`a[href="#contact"]`) moves focus to the first question
+  // once scrolling to #contact starts/finishes, without modifying Nav/Hero/Services.
+  useEffect(() => {
+    const focusFirstQuestion = () => {
+      clearAutoAdvance();
+      hasInteractedRef.current = true;
+      setDirection("forward");
+      setStepError(null);
+      setStep(0);
+      if (ctaFocusTimerRef.current !== null) {
+        window.clearTimeout(ctaFocusTimerRef.current);
+      }
+      ctaFocusTimerRef.current = window.setTimeout(
+        () => {
+          ctaFocusTimerRef.current = null;
+          headingRef.current?.focus({ preventScroll: true });
+        },
+        reducedMotion ? 40 : 480,
+      );
+    };
+
+    const onDocClick = (e: MouseEvent) => {
+      const anchor = (e.target as HTMLElement | null)?.closest<HTMLAnchorElement>(
+        'a[href="#contact"]',
+      );
+      if (!anchor) return;
+      focusFirstQuestion();
+    };
+
+    const onHashChange = () => {
+      if (window.location.hash === "#contact") {
+        focusFirstQuestion();
+      }
+    };
+
+    document.addEventListener("click", onDocClick);
+    window.addEventListener("hashchange", onHashChange);
+    return () => {
+      document.removeEventListener("click", onDocClick);
+      window.removeEventListener("hashchange", onHashChange);
+    };
+  }, [clearAutoAdvance, reducedMotion]);
 
   // Keep focused Q4 field and Next button visible when phone virtual keyboard opens.
   const handleInputFocus = useCallback(
@@ -232,6 +293,34 @@ export default function ContactSection() {
     handleNext();
   };
 
+  const handleSent = () => {
+    goToStep("thanks", "forward");
+  };
+
+  const handleStartOver = () => {
+    clearAutoAdvance();
+    setNeeds([]);
+    setTimeline(null);
+    setBudget(null);
+    setName("");
+    setReach("");
+    goToStep(0, "back");
+  };
+
+  const compiledMessage = useMemo(
+    () => buildContactMessage({ needs, timeline, budget, name, reach }),
+    [needs, timeline, budget, name, reach],
+  );
+  const whatsappUrl = useMemo(
+    () => buildWhatsAppUrl(cfg.whatsappNumber, compiledMessage),
+    [cfg.whatsappNumber, compiledMessage],
+  );
+  const mailtoUrl = useMemo(
+    () => buildMailtoUrl(cfg.contactEmail, name, compiledMessage),
+    [cfg.contactEmail, name, compiledMessage],
+  );
+  const hasAnySendChannel = Boolean(whatsappUrl || mailtoUrl);
+
   const numericStep = typeof step === "number" ? step : 3;
   const progressFraction =
     step === "summary" || step === "thanks" ? 1 : numericStep / 3;
@@ -241,6 +330,29 @@ export default function ContactSection() {
       ? "contact-step-enter-back"
       : "contact-step-enter";
   const showBack = step === 1 || step === 2 || step === 3 || step === "summary";
+
+  const summaryRows: { label: string; value: string; editStep: 0 | 1 | 2 | 3 }[] = [
+    {
+      label: cfg.summary.labels.needs,
+      value: getNeedLabels(needs).join(", "),
+      editStep: 0,
+    },
+    {
+      label: cfg.summary.labels.timeline,
+      value: getTimelineLabel(timeline),
+      editStep: 1,
+    },
+    {
+      label: cfg.summary.labels.budget,
+      value: getBudgetLabel(budget),
+      editStep: 2,
+    },
+    {
+      label: cfg.summary.labels.reach,
+      value: `${name.trim()} — ${reach.trim()}`,
+      editStep: 3,
+    },
+  ];
 
   return (
     <section
@@ -301,7 +413,7 @@ export default function ContactSection() {
                     </button>
                   ) : (
                     <span className="inline-flex min-h-[48px] items-center font-mono text-[12px] font-medium tracking-[0.12em] text-bone/60 uppercase">
-                      {step === "thanks" ? "Sent" : "Step 01 / 04"}
+                      {step === "thanks" ? "Done" : "Step 01 / 04"}
                     </span>
                   )}
                 </div>
@@ -671,24 +783,147 @@ export default function ContactSection() {
                         type="submit"
                         className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-volt px-7 py-2.5 text-[1rem] font-medium text-ink transition-opacity duration-200 hover:opacity-90"
                       >
-                        <span>{cfg.actions.next}</span>
+                        <span>{cfg.actions.review}</span>
                         <span aria-hidden="true">→</span>
                       </button>
                     </div>
                   </form>
                 )}
 
-                {/* Summary placeholder — completed with WhatsApp/email links & Thank-you in Checkpoint B */}
+                {/* Summary card: plain message preview + editable rows + WhatsApp/Email links */}
                 {step === "summary" && (
                   <div key="step-summary" className={animClass}>
+                    <p className="font-mono text-[12px] font-medium tracking-[0.12em] text-volt uppercase">
+                      Ready to send
+                    </p>
                     <h3
                       ref={headingRef}
+                      id="contact-summary-heading"
                       tabIndex={-1}
-                      className="font-display text-[1.5rem] leading-[1.12] font-bold tracking-[-0.02em] text-bone outline-none sm:text-[1.875rem]"
+                      className="mt-2 font-display text-[1.5rem] leading-[1.12] font-bold tracking-[-0.02em] text-bone outline-none sm:text-[1.875rem]"
                     >
                       {cfg.summary.heading}
                     </h3>
-                    <p className="mt-3 text-[1rem] text-bone/75">{cfg.summary.subline}</p>
+
+                    {/* Plain-sentence preview of the exact message */}
+                    <p
+                      data-testid="contact-message-preview"
+                      className="mt-4 rounded-2xl border border-bone/16 bg-ink/85 p-4 text-[1rem] leading-[1.6] text-bone/90"
+                    >
+                      {compiledMessage}
+                    </p>
+
+                    {/* Editable answer breakdown */}
+                    <dl className="mt-4 divide-y divide-bone/12 border-t border-b border-bone/12">
+                      {summaryRows.map((row) => (
+                        <div
+                          key={row.label}
+                          className="flex items-center justify-between gap-3 py-2.5"
+                        >
+                          <div className="min-w-0">
+                            <dt className="font-mono text-[12px] tracking-[0.08em] text-bone/60 uppercase">
+                              {row.label}
+                            </dt>
+                            <dd className="mt-0.5 text-[1rem] leading-snug text-bone">
+                              {row.value}
+                            </dd>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => goToStep(row.editStep, "back")}
+                            aria-label={`${cfg.actions.edit} ${row.label}`}
+                            className="inline-flex min-h-[48px] min-w-[48px] shrink-0 items-center justify-center rounded-full px-3 font-mono text-[12px] font-medium tracking-[0.08em] text-volt underline-offset-4 hover:underline uppercase"
+                          >
+                            {cfg.actions.edit}
+                          </button>
+                        </div>
+                      ))}
+                    </dl>
+
+                    {/* Send buttons (only rendered when configured in site.config.ts) */}
+                    <div className="mt-6">
+                      {hasAnySendChannel ? (
+                        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                          {whatsappUrl && (
+                            <a
+                              href={whatsappUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              data-testid="contact-send-whatsapp"
+                              onClick={handleSent}
+                              className="inline-flex min-h-[52px] flex-1 items-center justify-center gap-2 rounded-full bg-volt px-6 py-3 text-center text-[1rem] font-medium text-ink transition-opacity duration-200 hover:opacity-90"
+                            >
+                              <span>{cfg.actions.sendWhatsApp}</span>
+                              <span aria-hidden="true">↗</span>
+                            </a>
+                          )}
+
+                          {mailtoUrl && (
+                            <a
+                              href={mailtoUrl}
+                              data-testid="contact-send-email"
+                              onClick={handleSent}
+                              className={`inline-flex min-h-[52px] flex-1 items-center justify-center gap-2 rounded-full px-6 py-3 text-center text-[1rem] font-medium transition-colors duration-200 ${
+                                whatsappUrl
+                                  ? "border border-bone/30 bg-ink text-bone hover:border-bone"
+                                  : "bg-volt text-ink hover:opacity-90"
+                              }`}
+                            >
+                              <span>{cfg.actions.sendEmail}</span>
+                              <span aria-hidden="true">↗</span>
+                            </a>
+                          )}
+                        </div>
+                      ) : (
+                        <p
+                          data-testid="contact-coming-soon"
+                          className="rounded-xl border border-bone/18 bg-ink/70 px-4 py-3.5 text-center font-mono text-[12px] tracking-[0.06em] text-bone/75"
+                        >
+                          {cfg.comingSoonNote}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Thank-you confirmation + Start over */}
+                {step === "thanks" && (
+                  <div key="step-thanks" className={`flex flex-col items-start py-4 ${animClass}`}>
+                    <span
+                      aria-hidden="true"
+                      className="flex size-12 items-center justify-center rounded-full bg-volt text-ink"
+                    >
+                      <svg viewBox="0 0 20 20" fill="none" className="size-6">
+                        <path
+                          d="M4.5 10.5L8.2 14.2L15.5 6.2"
+                          stroke="currentColor"
+                          strokeWidth="2.4"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </span>
+
+                    <h3
+                      ref={headingRef}
+                      id="contact-thanks-heading"
+                      tabIndex={-1}
+                      className="mt-5 font-display text-[1.75rem] leading-[1.1] font-bold tracking-[-0.02em] text-bone outline-none sm:text-[2.125rem]"
+                    >
+                      {cfg.thanks.heading}
+                    </h3>
+
+                    <p className="measure mt-3 max-w-[44ch] text-[1rem] leading-[1.6] text-bone/80">
+                      {cfg.thanks.body}
+                    </p>
+
+                    <button
+                      type="button"
+                      onClick={handleStartOver}
+                      className="mt-7 inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full border border-bone/30 px-6 py-2.5 text-[1rem] font-medium text-bone transition-colors duration-200 hover:border-bone"
+                    >
+                      <span>{cfg.actions.startOver}</span>
+                    </button>
                   </div>
                 )}
               </div>

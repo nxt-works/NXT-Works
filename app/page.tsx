@@ -8,6 +8,7 @@ import LiveDemos from "@/components/sections/LiveDemos";
 import ProcessSection from "@/components/sections/ProcessSection";
 import FaqSection from "@/components/sections/FaqSection";
 import ContactSection from "@/components/sections/ContactSection";
+import Footer from "@/components/sections/Footer";
 import { sections } from "@/site.config";
 
 export default function Home() {
@@ -37,6 +38,7 @@ export default function Home() {
           );
         })}
       </main>
+      <Footer />
     </>
   );
 }
