@@ -110,6 +110,11 @@ box, continue from there. Commit after each checkpoint.
 - [x] Lint, type check, and production build clean with zero console errors or hydration warnings
 - [x] Updated `PROGRESS.md` and committed on `hero-xray` (not merged)
 
+#### Quiet Docked Spec Card & Tether Removal (`hero-xray`) ✅
+- [x] Removed Volt tether SVG line, anchor dot, and all tether computation code from `HeroXRay.tsx`
+- [x] Quieted docked spec card (`1px` Volt border at 45%, Ink background at 88%, tighter padding, `min(300px, 36vw)` width, `12px` readable mono text) with guaranteed `16px` (`≥ 14px`) clear gap below `"Booking projects for Q1 2027"`
+- [x] Verified in Chromium & WebKit at `390×844`, `820×1180`, and `1440×900` (clean initial/hover/2s-idle/touch-Blueprint states, zero console or hydration errors), committed on `hero-xray` (not merged)
+
 ## Notes / decisions
 - Next.js 16.4 with `cacheComponents` enabled (scaffold default). Page is fully static.
 - Grain is static (no animated noise) to avoid full-screen repaints.

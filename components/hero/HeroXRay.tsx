@@ -80,19 +80,6 @@ function pointInBox(px: number, py: number, box: RectBox | null, pad = 0): boole
   return px >= box.x - pad && px <= box.x + box.width + pad && py >= box.y - pad && py <= box.y + box.height + pad;
 }
 
-/** Checks whether a line segment crosses a substantial portion of a box (used to dim the tether over headline). */
-function segmentCrossesBox(x1: number, y1: number, x2: number, y2: number, box: RectBox | null): boolean {
-  if (!box) return false;
-  let hits = 0;
-  for (let i = 1; i <= 5; i++) {
-    const t = i / 6;
-    const px = x1 + (x2 - x1) * t;
-    const py = y1 + (y2 - y1) * t;
-    if (pointInBox(px, py, box, 4)) hits++;
-  }
-  return hits >= 2;
-}
-
 type HeroXRayProps = {
   heroRef: React.RefObject<HTMLDivElement | null>;
   contentRef: React.RefObject<HTMLDivElement | null>;
@@ -109,9 +96,7 @@ type HeroXRayProps = {
  *
  * - Strictly non-blocking (`pointer-events-none`) & `aria-hidden`
  * - Only the thin Volt ring, crosshair, and hollow outlined letters appear on the lens
- * - Feeds live-measured DOM/CSS values into one docked bottom-right spec card
- * - On desktop, draws a thin straight Volt tether from the lens rim to the active card
- *   (dims to 35% opacity when crossing the headline, hidden when the card fades out)
+ * - Feeds live-measured DOM/CSS values into one quiet docked bottom-right spec card
  * - Pure `clip-path` + `transform`, paused off-screen, zero WebGL
  */
 export default function HeroXRay({
@@ -128,8 +113,6 @@ export default function HeroXRay({
   const headlineMirrorRef = useRef<HTMLDivElement>(null);
   const reticleRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
-  const tetherLineRef = useRef<SVGLineElement>(null);
-  const tetherDotRef = useRef<SVGCircleElement>(null);
 
   const [metrics, setMetrics] = useState<BlueprintMetrics | null>(null);
   const metricsRef = useRef<BlueprintMetrics | null>(null);
@@ -303,17 +286,13 @@ export default function HeroXRay({
     if (valueEl) valueEl.textContent = `${metrics.displayFont} / ${metrics.displaySize} / ${metrics.displayTracking}`;
   }, [heroRef, fullBlueprintOpen, metrics]);
 
-  // Interactive spring lens controller (desktop mouse live readout + tether, touch auto-drift, full-blueprint toggle).
+  // Interactive spring lens controller (desktop mouse live readout, touch auto-drift, full-blueprint toggle).
   useEffect(() => {
     const heroEl = heroRef.current;
     const blueprintEl = blueprintRef.current;
     if (!heroEl || !blueprintEl) return;
 
     const reticleEl = reticleRef.current;
-    const hideTether = () => {
-      if (tetherLineRef.current) tetherLineRef.current.style.opacity = "0";
-      if (tetherDotRef.current) tetherDotRef.current.style.opacity = "0";
-    };
 
     const setClip = (value: string) => {
       blueprintEl.style.clipPath = value;
@@ -325,7 +304,6 @@ export default function HeroXRay({
       setClip("inset(0% 0% 0% 0%)");
       if (reticleEl) reticleEl.style.opacity = "0";
       if (headlineMirrorRef.current) headlineMirrorRef.current.dataset.active = "headline";
-      hideTether();
       return;
     }
 
@@ -333,7 +311,6 @@ export default function HeroXRay({
     if (reducedMotion || (disableDrift && isTouch)) {
       setClip("circle(0px at 50% 50%)");
       if (reticleEl) reticleEl.style.opacity = "0";
-      hideTether();
       return;
     }
 
@@ -343,7 +320,6 @@ export default function HeroXRay({
     if (!introReady) {
       setClip("circle(0px at 50% 42%)");
       reticleEl.style.opacity = "0";
-      hideTether();
       return;
     }
 
@@ -376,7 +352,6 @@ export default function HeroXRay({
       if (cardShown === next) return;
       cardShown = next;
       onCardVisibleRef.current(next);
-      if (!next) hideTether();
     };
 
     const showLens = () => {
@@ -561,7 +536,7 @@ export default function HeroXRay({
               }
             }
 
-            // Update desktop docked card text & straight Volt connecting line only while card is visible & in bottom-right.
+            // Update desktop docked card text while card is active.
             if (cardShown && !isTouch) {
               const coordsEl = heroEl.querySelector<HTMLElement>("[data-xray-dock='coords']");
               const kindEl = heroEl.querySelector<HTMLElement>("[data-xray-dock='kind']");
@@ -571,63 +546,6 @@ export default function HeroXRay({
               }
               if (kindEl) kindEl.textContent = readout.kind;
               if (valueEl) valueEl.textContent = readout.value;
-
-              const cardEl = heroEl.querySelector<HTMLElement>("[data-xray-dock='card']");
-              const lineEl = tetherLineRef.current;
-              const dotEl = tetherDotRef.current;
-              if (cardEl && lineEl && dotEl && cardEl.dataset.visible === "true") {
-                const heroRect = heroEl.getBoundingClientRect();
-                const cardRect = cardEl.getBoundingClientRect();
-                const cardLeft = cardRect.left - heroRect.left;
-                const cardTop = cardRect.top - heroRect.top;
-                const cardInBottomRight =
-                  cardRect.width >= 120 &&
-                  cardRect.height >= 24 &&
-                  cardLeft >= heroRect.width * 0.45 &&
-                  cardTop >= heroRect.height * 0.45 &&
-                  cardLeft + cardRect.width <= heroRect.width + 4 &&
-                  cardTop + cardRect.height <= heroRect.height + 4;
-
-                if (cardInBottomRight) {
-                  // Anchor on the top edge if lens is above the card, or left edge if beside it.
-                  const ax = y < cardTop ? cardLeft + cardRect.width * 0.5 : cardLeft;
-                  const ay = y < cardTop ? cardTop : cardTop + cardRect.height * 0.5;
-                  const dx = ax - x;
-                  const dy = ay - y;
-                  const dist = Math.hypot(dx, dy);
-
-                  if (dist > r + 12) {
-                    const sx = x + (dx / dist) * r;
-                    const sy = y + (dy / dist) * r;
-                    const crossesControls =
-                      segmentCrossesBox(sx, sy, ax, ay, m.sublineBox) || segmentCrossesBox(sx, sy, ax, ay, m.ctaBox);
-
-                    if (crossesControls) {
-                      hideTether();
-                    } else {
-                      lineEl.setAttribute("x1", sx.toFixed(1));
-                      lineEl.setAttribute("y1", sy.toFixed(1));
-                      lineEl.setAttribute("x2", ax.toFixed(1));
-                      lineEl.setAttribute("y2", ay.toFixed(1));
-                      dotEl.setAttribute("cx", ax.toFixed(1));
-                      dotEl.setAttribute("cy", ay.toFixed(1));
-
-                      const crossesHeadline = segmentCrossesBox(sx, sy, ax, ay, m.h1Box);
-                      const op = crossesHeadline ? "0.35" : "0.78";
-                      lineEl.style.opacity = op;
-                      dotEl.style.opacity = op;
-                    }
-                  } else {
-                    hideTether();
-                  }
-                } else {
-                  hideTether();
-                }
-              } else {
-                hideTether();
-              }
-            } else {
-              hideTether();
             }
           }
         }
@@ -647,7 +565,6 @@ export default function HeroXRay({
     return () => {
       cancelAnimationFrame(rafId);
       io.disconnect();
-      hideTether();
       window.removeEventListener("pointermove", onPointerMove);
       heroEl.removeEventListener("pointerleave", onPointerLeave);
       heroEl.removeEventListener("pointerdown", onPointerDown);
@@ -957,33 +874,6 @@ export default function HeroXRay({
             <circle cx="12" cy="12" r="2" stroke="var(--color-volt)" strokeWidth="1.5" />
           </svg>
         </div>
-      )}
-
-      {/* ── STRAIGHT VOLT TETHER LINE FROM LENS RING TO DOCKED CARD (desktop only, above all layers) ── */}
-      {!reducedMotion && !isTouch && metrics && (
-        <svg
-          aria-hidden="true"
-          width={metrics.heroWidth}
-          height={metrics.heroHeight}
-          viewBox={`0 0 ${metrics.heroWidth} ${metrics.heroHeight}`}
-          className="pointer-events-none absolute inset-0 z-30 h-full w-full"
-          fill="none"
-        >
-          <line
-            ref={tetherLineRef}
-            stroke="var(--color-volt)"
-            strokeWidth="1.25"
-            className="transition-opacity duration-300"
-            style={{ opacity: 0 }}
-          />
-          <circle
-            ref={tetherDotRef}
-            r="2.5"
-            fill="var(--color-volt)"
-            className="transition-opacity duration-300"
-            style={{ opacity: 0 }}
-          />
-        </svg>
       )}
     </>
   );

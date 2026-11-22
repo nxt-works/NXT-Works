@@ -140,7 +140,7 @@ export default function Hero({ object, ticker }: { object?: React.ReactNode; tic
           disableDrift={lowPower}
         />
 
-        {/* Separate bottom-right desktop dock (width: min(360px, 40vw)); only hint & spec card stack inside */}
+        {/* Separate bottom-right desktop dock (width: min(300px, 36vw)); only hint & spec card stack inside */}
         {isDesktopPointer && (
           <div className="hero-dock pointer-events-none">
             <p className="label flex items-center gap-3 whitespace-nowrap text-smoke">
@@ -161,14 +161,14 @@ export default function Hero({ object, ticker }: { object?: React.ReactNode; tic
                 data-xray-dock="card"
                 data-visible={desktopCardVisible ? "true" : "false"}
                 aria-hidden="true"
-                className={`hero-dock-card border-[1.5px] border-volt bg-ink px-3.5 py-2.5 font-mono text-[12px] leading-[1.35] font-medium tracking-[0.04em] ${
+                className={`hero-dock-card border border-volt/45 bg-ink/88 px-2.5 py-2 font-mono text-[12px] leading-[1.35] font-medium tracking-[0.04em] ${
                   desktopCardVisible ? "opacity-100" : "opacity-0"
                 }`}
               >
-                <div className="flex items-center justify-between gap-4 border-b border-volt/35 pb-1.5">
-                  <span className="inline-flex items-center gap-2 whitespace-nowrap text-volt">
+                <div className="flex items-center justify-between gap-3 border-b border-volt/25 pb-1">
+                  <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-volt">
                     <span>X-RAY</span>
-                    <span aria-hidden="true" className="text-volt/65">
+                    <span aria-hidden="true" className="text-volt/55">
                       ·
                     </span>
                     <span data-xray-dock="coords" className="text-bone tabular-nums">
@@ -179,7 +179,7 @@ export default function Hero({ object, ticker }: { object?: React.ReactNode; tic
                     HEADLINE
                   </span>
                 </div>
-                <span data-xray-dock="value" className="mt-1.5 block text-bone">
+                <span data-xray-dock="value" className="mt-1 block min-h-[2.7em] text-bone">
                   Bricolage Grotesque
                 </span>
               </div>
@@ -200,14 +200,14 @@ export default function Hero({ object, ticker }: { object?: React.ReactNode; tic
               <div
                 data-xray-dock="card"
                 aria-hidden="true"
-                className={`w-full max-w-[360px] border-[1.5px] border-volt bg-ink px-3.5 py-2.5 font-mono text-[12px] leading-[1.35] font-medium tracking-[0.04em] ${
+                className={`w-full max-w-[300px] border border-volt/45 bg-ink/88 px-2.5 py-2 font-mono text-[12px] leading-[1.35] font-medium tracking-[0.04em] ${
                   reducedMotion ? "transition-none" : ""
                 }`}
               >
-                <div className="flex items-center justify-between gap-4 border-b border-volt/35 pb-1.5">
-                  <span className="inline-flex items-center gap-2 text-volt">
+                <div className="flex items-center justify-between gap-3 border-b border-volt/25 pb-1">
+                  <span className="inline-flex items-center gap-1.5 text-volt">
                     <span>X-RAY</span>
-                    <span aria-hidden="true" className="text-volt/65">
+                    <span aria-hidden="true" className="text-volt/55">
                       ·
                     </span>
                     <span data-xray-dock="coords" className="text-bone tabular-nums">
@@ -218,7 +218,7 @@ export default function Hero({ object, ticker }: { object?: React.ReactNode; tic
                     HEADLINE
                   </span>
                 </div>
-                <span data-xray-dock="value" className="mt-1.5 block text-bone">
+                <span data-xray-dock="value" className="mt-1 block text-bone">
                   Bricolage Grotesque
                 </span>
               </div>
