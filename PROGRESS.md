@@ -105,10 +105,10 @@ box, continue from there. Commit after each checkpoint.
 - [x] Replace fragile/unusual CSS (escaped `[@media(...)]`, `dvh`-only heights, `clamp()` in `clip-path`) with widely supported equivalents
 - [x] Git commit
 
-#### Checkpoint C — Dual-engine verification
-- [ ] WebKit & Chromium screenshots at `390×844`, `820×1180`, `1440×900` + scrolled sections + active lens over headline
-- [ ] Lint, type check, and production build clean with zero console errors or hydration warnings
-- [ ] Update `PROGRESS.md` and commit on `hero-xray` (do not merge)
+#### Checkpoint C — Dual-engine verification ✅
+- [x] WebKit & Chromium screenshots verified at `390×844`, `820×1180`, `1440×900` (initial + active lens over headline + scrolled placeholder sections + fresh-intro nav visibility); fixed `.hero-dock` `data-reveal` hydration visibility and added clearance above the docked spec card
+- [x] Lint, type check, and production build clean with zero console errors or hydration warnings
+- [x] Updated `PROGRESS.md` and committed on `hero-xray` (not merged)
 
 ## Notes / decisions
 - Next.js 16.4 with `cacheComponents` enabled (scaffold default). Page is fully static.

@@ -142,7 +142,7 @@ export default function Hero({ object, ticker }: { object?: React.ReactNode; tic
 
         {/* Separate bottom-right desktop dock (width: min(360px, 40vw)); only hint & spec card stack inside */}
         {isDesktopPointer && (
-          <div data-reveal="rise" className="hero-dock pointer-events-none">
+          <div className="hero-dock pointer-events-none">
             <p className="label flex items-center gap-3 whitespace-nowrap text-smoke">
               <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-smoke" />
               {hero.status}
