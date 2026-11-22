@@ -136,6 +136,19 @@ box, continue from there. Commit after each checkpoint.
 - [x] Verified lint, production build, and Chromium + WebKit across all 7 sizes (`360×740`, `390×844`, `412×915`, `768×1024`, `820×1180`, `1024×768`, `1440×900`) × all 3 scenes + closing CTA + reduced-motion with zero overlap and zero console/hydration warnings
 - [x] Updated `PROGRESS.md` and committed on `services-journey` (not merged)
 
+### Morph & Chart Polish (`services-journey`)
+#### Checkpoint A — Chart bars & stage frame clip ✅
+- [x] Defined explicit `CHART_LAYOUT` plot area (`14px` padding, baseline at `y = 164`) with 4 equal-width bars (`39px`, `12px` gaps) at exact heights `38%`, `62%`, `50%`, `86%` of plot height
+- [x] Bars 1–3 styled in Ink with Bone top highlight lines; Bar 4 in Volt with `1.5px` Ink outline; all 4 grow strictly upward from baseline (`y + height === 164` at every frame)
+- [x] Website cards 1–3 and Volt CTA shrink and travel directly into bar slots 1–4 via real `x/y/width/height/rx` attributes without leaving the stage frame
+- [x] Added SVG `<clipPath>` + `overflow-hidden` safety net on the rounded stage frame
+- [x] Git commit
+
+#### Checkpoint B — Real-geometry morph quality & dual-engine progress sweep
+- [ ] Replace all remaining non-uniform scaling (`hero-panel`, `headline-1..3`) with real `x`, `y`, `width`, `height`, and `rx` attribute morphing so corners stay crisp & round at every progress step
+- [ ] Verify `0%, 25%, 50%, 75%, 100%` of both Scene 1→2 and Scene 2→3 morphs in Chromium & WebKit at `390×844`, `820×1180`, and `1440×900`
+- [ ] Lint and production build clean with zero console errors or hydration warnings; update `PROGRESS.md` and commit on `services-journey` (not merged)
+
 ## Notes / decisions
 - Next.js 16.4 with `cacheComponents` enabled (scaffold default). Page is fully static.
 - Grain is static (no animated noise) to avoid full-screen repaints.

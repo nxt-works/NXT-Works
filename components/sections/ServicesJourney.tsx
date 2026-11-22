@@ -5,7 +5,7 @@ import MagneticButton from "@/components/nav/MagneticButton";
 import Button from "@/components/ui/Button";
 import Label from "@/components/ui/Label";
 import RevealText from "@/components/ui/RevealText";
-import ServicesStage from "@/components/sections/ServicesStage";
+import ServicesStage, { CHART_LAYOUT } from "@/components/sections/ServicesStage";
 import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
 import { useLowPower } from "@/lib/useLowPower";
 import { useReducedMotion } from "@/lib/useReducedMotion";
@@ -86,14 +86,11 @@ export default function ServicesJourney() {
       const s1Cards = q("[data-scene1='card-details']");
       const s1Cta = q("[data-scene1='cta-inner']");
 
+      const s2Panels = q("[data-scene2='panels']");
       const s2Sidebar = q("[data-scene2='sidebar-details']");
-      const s2Chart = q("[data-scene2='chart-details']");
+      const s2BarHi = q("[data-scene2='bar-highlights']");
       const s2Kpi = q("[data-scene2='kpi-details']");
       const s2Table = q("[data-scene2='table-details']");
-      const bar1 = q("[data-chart-bar='1']");
-      const bar2 = q("[data-chart-bar='2']");
-      const bar3 = q("[data-chart-bar='3']");
-      const bar4 = q("[data-chart-bar='4']");
       const tableRows = Array.from(stageEl.querySelectorAll<SVGElement>("[data-table-row]"));
       const kpiCountEl = q<SVGTextElement>("[data-kpi='count']");
 
@@ -108,20 +105,23 @@ export default function ServicesJourney() {
 
       if (!heroPanel || !card1 || !card2 || !card3 || !voltCta) return;
 
-      // Clean Scene 1 starting transforms so scrubbing reverses cleanly.
+      const [b1, b2, b3, b4] = CHART_LAYOUT.bars;
+      const baseSeedH = 12;
+      const baseSeedY = CHART_LAYOUT.baselineY - baseSeedH;
+
+      // Clean Scene 1 starting states so scrubbing reverses cleanly.
       gsap.set(heroPanel, { x: 18, y: 14, scaleX: 1, scaleY: 1, opacity: 1, transformOrigin: "0px 0px" });
       gsap.set(headline1, { x: 42, y: 54, scaleX: 1, scaleY: 1, opacity: 1, transformOrigin: "0px 0px" });
       gsap.set(headline2, { x: 42, y: 86, scaleX: 1, scaleY: 1, opacity: 1, transformOrigin: "0px 0px" });
       gsap.set(headline3, { x: 42, y: 120, scaleX: 1, scaleY: 1, opacity: 1, transformOrigin: "0px 0px" });
-      gsap.set(voltCta, { x: 42, y: 144, scaleX: 1, scaleY: 1, opacity: 1, transformOrigin: "0px 0px" });
-      gsap.set(card1, { x: 18, y: 214, scaleX: 1, scaleY: 1, opacity: 1, transformOrigin: "0px 0px" });
-      gsap.set(card2, { x: 212, y: 214, scaleX: 1, scaleY: 1, opacity: 1, transformOrigin: "0px 0px" });
-      gsap.set(card3, { x: 406, y: 214, scaleX: 1, scaleY: 1, opacity: 1, transformOrigin: "0px 0px" });
+
+      gsap.set(card1, { attr: { x: 18, y: 214, width: 176, height: 138, rx: 10 }, fill: "#EDE8DF", opacity: 1 });
+      gsap.set(card2, { attr: { x: 212, y: 214, width: 176, height: 138, rx: 10 }, fill: "#EDE8DF", opacity: 1 });
+      gsap.set(card3, { attr: { x: 406, y: 214, width: 176, height: 138, rx: 10 }, fill: "#1A1A1C", opacity: 1 });
+      gsap.set(voltCta, { attr: { x: 42, y: 144, width: 138, height: 32, rx: 16 }, opacity: 1 });
 
       gsap.set([s1Hero, s1Cards, s1Cta], { opacity: 1 });
-      gsap.set([s2Sidebar, s2Chart, s2Kpi, s2Table], { opacity: 0 });
-      gsap.set([bar1, bar2, bar3], { scaleY: 0, transformOrigin: "0px 0px" });
-      gsap.set(bar4, { opacity: 0 });
+      gsap.set([s2Panels, s2Sidebar, s2BarHi, s2Kpi, s2Table], { opacity: 0 });
       gsap.set(tableRows, { opacity: 0, y: 6 });
 
       gsap.set([s3Connectors, s3Nodes], { opacity: 0 });
@@ -169,31 +169,70 @@ export default function ServicesJourney() {
       const tl = gsap.timeline({ paused: true, defaults: { ease: "none" } });
 
       // ── PHASE 1 (t = 0.08 → 0.90): Scene 1 Website → Scene 2 Dashboard ──
-      tl.to([s1Hero, s1Cards, s1Cta], { opacity: 0, duration: 0.22 }, 0.08);
+      tl.to([s1Hero, s1Cards, s1Cta], { opacity: 0, duration: 0.2 }, 0.08);
 
-      tl.to(heroPanel, { x: 18, y: 14, scaleX: 120 / 564, scaleY: 338 / 182, duration: 0.56, ease: "power2.inOut" }, 0.14);
-      tl.to(headline1, { x: 46, y: 83, scaleX: 74 / 292, scaleY: 8 / 22, duration: 0.52, ease: "power2.inOut" }, 0.16);
-      tl.to(headline2, { x: 32, y: 112, scaleX: 82 / 222, scaleY: 8 / 22, opacity: 0.65, duration: 0.52, ease: "power2.inOut" }, 0.18);
-      tl.to(headline3, { x: 32, y: 139, scaleX: 68 / 176, scaleY: 8 / 9, opacity: 0.48, duration: 0.52, ease: "power2.inOut" }, 0.2);
+      tl.to(heroPanel, { x: 18, y: 14, scaleX: 120 / 564, scaleY: 338 / 182, duration: 0.54, ease: "power2.inOut" }, 0.12);
+      tl.to(headline1, { x: 46, y: 83, scaleX: 74 / 292, scaleY: 8 / 22, duration: 0.5, ease: "power2.inOut" }, 0.14);
+      tl.to(headline2, { x: 32, y: 112, scaleX: 82 / 222, scaleY: 8 / 22, opacity: 0.65, duration: 0.5, ease: "power2.inOut" }, 0.16);
+      tl.to(headline3, { x: 32, y: 139, scaleX: 68 / 176, scaleY: 8 / 9, opacity: 0.48, duration: 0.5, ease: "power2.inOut" }, 0.18);
 
-      tl.to(card1, { x: 154, y: 14, scaleX: 240 / 176, scaleY: 164 / 138, duration: 0.56, ease: "power2.inOut" }, 0.16);
-      tl.to(card2, { x: 410, y: 14, scaleX: 172 / 176, scaleY: 164 / 138, duration: 0.56, ease: "power2.inOut" }, 0.18);
-      tl.to(card3, { x: 154, y: 194, scaleX: 428 / 176, scaleY: 158 / 138, duration: 0.56, ease: "power2.inOut" }, 0.2);
+      // Dashboard panels fade in cleanly behind the travelling bars.
+      tl.to(s2Panels, { opacity: 1, duration: 0.28, ease: "power1.out" }, 0.24);
 
-      // Volt CTA flies into Bar 4's slot, then hands off seamlessly to crisp-cornered bar4.
-      tl.to(voltCta, { x: 328, y: 62, scaleX: 34 / 138, scaleY: 98 / 32, duration: 0.56, ease: "power2.inOut" }, 0.22);
-      tl.to(bar4, { opacity: 1, duration: 0.1 }, 0.72);
-      tl.to(voltCta, { opacity: 0, duration: 0.1 }, 0.74);
+      // Beat 1: Website cards 1–3 & Volt CTA shrink and travel cleanly onto the chart baseline (real x/y/width/height/rx).
+      tl.to(
+        card1,
+        {
+          attr: { x: b1.x, y: baseSeedY, width: b1.width, height: baseSeedH, rx: CHART_LAYOUT.barRx },
+          fill: "#0C0C0D",
+          duration: 0.36,
+          ease: "power2.inOut",
+        },
+        0.14,
+      );
+      tl.to(
+        card2,
+        {
+          attr: { x: b2.x, y: baseSeedY, width: b2.width, height: baseSeedH, rx: CHART_LAYOUT.barRx },
+          fill: "#0C0C0D",
+          duration: 0.36,
+          ease: "power2.inOut",
+        },
+        0.16,
+      );
+      tl.to(
+        card3,
+        {
+          attr: { x: b3.x, y: baseSeedY, width: b3.width, height: baseSeedH, rx: CHART_LAYOUT.barRx },
+          fill: "#0C0C0D",
+          duration: 0.36,
+          ease: "power2.inOut",
+        },
+        0.18,
+      );
+      tl.to(
+        voltCta,
+        {
+          attr: { x: b4.x, y: baseSeedY, width: b4.width, height: baseSeedH, rx: CHART_LAYOUT.barRx },
+          duration: 0.36,
+          ease: "power2.inOut",
+        },
+        0.2,
+      );
 
-      tl.to([s2Sidebar, s2Chart, s2Kpi, s2Table], { opacity: 1, duration: 0.24 }, 0.58);
-      tl.to(bar1, { scaleY: 1, duration: 0.22, ease: "power2.out" }, 0.6);
-      tl.to(bar2, { scaleY: 1, duration: 0.22, ease: "power2.out" }, 0.65);
-      tl.to(bar3, { scaleY: 1, duration: 0.22, ease: "power2.out" }, 0.7);
+      // Beat 2: All 4 bars grow strictly UPWARD from baselineY=164 (bottom edge y + height === 164 at every frame).
+      tl.to(card1, { attr: { y: b1.y, height: b1.height }, duration: 0.28, ease: "power2.out" }, 0.52);
+      tl.to(card2, { attr: { y: b2.y, height: b2.height }, duration: 0.28, ease: "power2.out" }, 0.56);
+      tl.to(card3, { attr: { y: b3.y, height: b3.height }, duration: 0.28, ease: "power2.out" }, 0.6);
+      tl.to(voltCta, { attr: { y: b4.y, height: b4.height }, duration: 0.28, ease: "power2.out" }, 0.64);
+      tl.to(s2BarHi, { opacity: 1, duration: 0.16 }, 0.78);
+
+      tl.to([s2Sidebar, s2Kpi, s2Table], { opacity: 1, duration: 0.24 }, 0.56);
 
       if (lowPower) {
-        tl.to(tableRows, { opacity: 1, y: 0, duration: 0.2 }, 0.64);
+        tl.to(tableRows, { opacity: 1, y: 0, duration: 0.2 }, 0.62);
       } else {
-        tl.to(tableRows, { opacity: 1, y: 0, duration: 0.18, stagger: 0.045, ease: "power2.out" }, 0.62);
+        tl.to(tableRows, { opacity: 1, y: 0, duration: 0.18, stagger: 0.045, ease: "power2.out" }, 0.6);
       }
 
       tl.to(
@@ -204,23 +243,34 @@ export default function ServicesJourney() {
           ease: "power2.out",
           onUpdate: syncKpi,
         },
-        0.56,
+        0.54,
       );
 
       // ── PHASE 2 (t = 1.08 → 1.94): Scene 2 Dashboard → Scene 3 Automation ──
-      tl.to([s2Sidebar, s2Chart, s2Kpi, s2Table, headline1, headline2, headline3], { opacity: 0, duration: 0.2 }, 1.08);
-      tl.to([bar1, bar2, bar3], { scaleY: 0, duration: 0.18 }, 1.08);
-      tl.to(bar4, { opacity: 0, duration: 0.12 }, 1.1);
-      tl.to(voltCta, { opacity: 1, duration: 0.1 }, 1.12);
+      tl.to([s2Panels, s2Sidebar, s2BarHi, s2Kpi, s2Table, headline1, headline2, headline3], { opacity: 0, duration: 0.2 }, 1.08);
 
-      // The 4 dashboard panels contract smoothly into the 4 automation nodes!
+      // Sidebar + 3 Ink bars morph into the 4 automation nodes; Volt bar glides into the "Task done" chip slot.
       tl.to(heroPanel, { x: 28, y: 132, scaleX: 104 / 564, scaleY: 96 / 182, duration: 0.48, ease: "power2.inOut" }, 1.16);
-      tl.to(card1, { x: 176, y: 54, scaleX: 104 / 176, scaleY: 96 / 138, duration: 0.48, ease: "power2.inOut" }, 1.18);
-      tl.to(card2, { x: 324, y: 198, scaleX: 104 / 176, scaleY: 96 / 138, duration: 0.48, ease: "power2.inOut" }, 1.2);
-      tl.to(card3, { x: 470, y: 126, scaleX: 104 / 176, scaleY: 96 / 138, duration: 0.48, ease: "power2.inOut" }, 1.22);
-
-      // Volt bar glides down to the bottom-right "Task done" chip slot.
-      tl.to(voltCta, { x: 454, y: 314, scaleX: 0.92, scaleY: 0.92, duration: 0.5, ease: "power2.inOut" }, 1.22);
+      tl.to(
+        card1,
+        { attr: { x: 176, y: 54, width: 104, height: 96, rx: 14 }, fill: "#EDE8DF", duration: 0.48, ease: "power2.inOut" },
+        1.18,
+      );
+      tl.to(
+        card2,
+        { attr: { x: 324, y: 198, width: 104, height: 96, rx: 14 }, fill: "#EDE8DF", duration: 0.48, ease: "power2.inOut" },
+        1.2,
+      );
+      tl.to(
+        card3,
+        { attr: { x: 470, y: 126, width: 104, height: 96, rx: 14 }, fill: "#1A1A1C", duration: 0.48, ease: "power2.inOut" },
+        1.22,
+      );
+      tl.to(
+        voltCta,
+        { attr: { x: 460, y: 314, width: 122, height: 30, rx: 15 }, duration: 0.48, ease: "power2.inOut" },
+        1.22,
+      );
 
       // Crisp 4-node artwork & connector lines take over cleanly as blocks settle into place.
       tl.to(s3Nodes, { opacity: 1, duration: 0.16 }, 1.56);
@@ -233,7 +283,6 @@ export default function ServicesJourney() {
       tl.to(nodeLit3, { opacity: 1, scale: 1, duration: 0.12, ease: "power2.out" }, 1.8);
       tl.to(nodeLit4, { opacity: 1, scale: 1, duration: 0.12, ease: "power2.out" }, 1.88);
 
-      // Scrubbed Volt pulse arrives cleanly on Node 4's incoming line (on lowPower it rests crisply here).
       tl.fromTo(
         s3Pulse,
         { x: 132, y: 180, opacity: 0 },
@@ -241,11 +290,9 @@ export default function ServicesJourney() {
         1.64,
       );
 
-      // "Task done" Volt chip hands off cleanly from voltCta.
       tl.to(voltCta, { opacity: 0, duration: 0.12 }, 1.72);
       tl.to(s3Chip, { opacity: 1, y: 0, scale: 1, duration: 0.2, ease: "power2.out" }, 1.76);
 
-      // Hold settle pad to t = 2.0
       tl.to({}, { duration: 0.04 }, 1.96);
 
       let lastStep = 0;
