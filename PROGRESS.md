@@ -82,6 +82,13 @@ box, continue from there. Commit after each checkpoint.
 - [x] Lint, type check, and production build clean; zero console errors or hydration warnings across all 8 viewports
 - [x] Updated `PROGRESS.md`, committed on branch `hero-xray` (not merged)
 
+#### Live Readout Card & Tether (`hero-xray`) ✅
+- [x] Hidden docked spec card at load on desktop; crossfades smoothly with `"Move your cursor. See how it's built."` on mouse move and fades back out after 2 s stillness or hero leave
+- [x] Added straight 1.25 px Volt tether line + anchor dot from lens ring rim to docked card on desktop (above layers, `pointer-events-none`, `aria-hidden`, dims to 35% when crossing headline)
+- [x] Touch devices: card hidden except while full `"Blueprint"` view is open; auto-drifting lens unchanged
+- [x] Reduced motion: instant toggle with `"Show blueprint"` / `"Hide blueprint"`, no fade transition
+- [x] Verified at `390×844`, `820×1180`, and `1440×900` (zero overlap, zero console/hydration errors, lint & build clean), committed on `hero-xray`
+
 ## Notes / decisions
 - Next.js 16.4 with `cacheComponents` enabled (scaffold default). Page is fully static.
 - Grain is static (no animated noise) to avoid full-screen repaints.

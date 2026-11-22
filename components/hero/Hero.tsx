@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { hero } from "@/site.config";
 import HeroXRay from "@/components/hero/HeroXRay";
 import MagneticButton from "@/components/nav/MagneticButton";
@@ -26,23 +26,16 @@ export default function Hero({ object, ticker }: { object?: React.ReactNode; tic
   const stageRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  const dockCoordsRef = useRef<HTMLSpanElement>(null);
-  const dockKindRef = useRef<HTMLSpanElement>(null);
-  const dockValueRef = useRef<HTMLSpanElement>(null);
-
   const isTouch = useIsTouch();
   const lowPower = useLowPower();
   const reducedMotion = useReducedMotion();
   const [fullBlueprintOpen, setFullBlueprintOpen] = useState(false);
-  const [lensActive, setLensActive] = useState(false);
+  const [desktopCardVisible, setDesktopCardVisible] = useState(false);
 
-  const dockRefs = useMemo(
-    () => ({ coords: dockCoordsRef, kind: dockKindRef, value: dockValueRef }),
-    [],
-  );
-  const handleLensActive = useCallback(() => setLensActive(true), []);
+  const handleCardVisibleChange = useCallback((visible: boolean) => setDesktopCardVisible(visible), []);
 
   const showBlueprintButton = reducedMotion || isTouch;
+  const isDesktopPointer = !isTouch && !reducedMotion;
 
   useGSAP(
     (_ctx, contextSafe) => {
@@ -136,29 +129,31 @@ export default function Hero({ object, ticker }: { object?: React.ReactNode; tic
                 </div>
               </div>
 
-              {/* Bottom-right docked zone: status + either discovery hint or live X-Ray spec card */}
+              {/* Bottom-right docked zone (desktop mouse): crossfades between discovery hint & live spec card */}
               <div
                 data-reveal="rise"
-                className="flex flex-col items-start gap-2.5 lg:col-span-6 lg:items-end lg:justify-end"
+                className={`${isDesktopPointer ? "flex" : "hidden"} flex-col items-start justify-end gap-2.5 lg:col-span-6 lg:items-end`}
               >
                 <p className="label hidden items-center gap-3 text-smoke lg:flex">
                   <span aria-hidden="true" className="size-1.5 rounded-full bg-smoke" />
                   {hero.status}
                 </p>
 
-                {/* Hint shows until the lens first moves (desktop only); then the docked spec card replaces it */}
-                {!reducedMotion && !fullBlueprintOpen && (
-                  <>
-                    {!isTouch && !lensActive && (
-                      <p className="font-mono text-[12px] tracking-[0.08em] text-bone/80 uppercase">
-                        Move your cursor. See how it&apos;s built.
-                      </p>
-                    )}
+                {isDesktopPointer && (
+                  <div className="grid items-end justify-items-start lg:justify-items-end">
+                    <p
+                      className={`col-start-1 row-start-1 font-mono text-[12px] tracking-[0.08em] text-bone/80 uppercase transition-opacity duration-300 ${
+                        desktopCardVisible ? "pointer-events-none opacity-0" : "opacity-100"
+                      }`}
+                    >
+                      Move your cursor. See how it&apos;s built.
+                    </p>
 
                     <div
+                      data-xray-dock="card"
                       aria-hidden="true"
-                      className={`w-full max-w-[400px] border-[1.5px] border-volt bg-ink px-3.5 py-2.5 font-mono text-[12px] leading-[1.35] font-medium tracking-[0.04em] transition-opacity duration-500 lg:w-auto lg:min-w-[320px] ${
-                        lensActive ? "opacity-100" : "hidden opacity-0"
+                      className={`pointer-events-none col-start-1 row-start-1 min-w-[320px] max-w-[420px] border-[1.5px] border-volt bg-ink px-3.5 py-2.5 font-mono text-[12px] leading-[1.35] font-medium tracking-[0.04em] transition-[opacity,transform] duration-300 ${
+                        desktopCardVisible ? "translate-y-0 opacity-100" : "translate-y-1.5 opacity-0"
                       }`}
                     >
                       <div className="flex items-center justify-between gap-4 border-b border-volt/35 pb-1.5">
@@ -167,19 +162,19 @@ export default function Hero({ object, ticker }: { object?: React.ReactNode; tic
                           <span aria-hidden="true" className="text-volt/65">
                             ·
                           </span>
-                          <span ref={dockCoordsRef} className="text-bone tabular-nums">
+                          <span data-xray-dock="coords" className="text-bone tabular-nums">
                             0000, 0000
                           </span>
                         </span>
-                        <span ref={dockKindRef} className="text-volt">
+                        <span data-xray-dock="kind" className="text-volt">
                           HEADLINE
                         </span>
                       </div>
-                      <span ref={dockValueRef} className="mt-1.5 block text-bone">
+                      <span data-xray-dock="value" className="mt-1.5 block text-bone">
                         Bricolage Grotesque
                       </span>
                     </div>
-                  </>
+                  </div>
                 )}
               </div>
             </div>
@@ -191,25 +186,54 @@ export default function Hero({ object, ticker }: { object?: React.ReactNode; tic
           heroRef={stageRef}
           contentRef={contentRef}
           fullBlueprintOpen={fullBlueprintOpen}
-          dockRefs={dockRefs}
-          onLensActive={handleLensActive}
+          onCardVisibleChange={handleCardVisibleChange}
           disableDrift={lowPower}
         />
 
-        {/* Manual full-hero blueprint toggle for touch screens and reduced motion (always above z-20 blueprint) */}
+        {/* Touch & reduced-motion docked zone: Blueprint toggle button + spec card ONLY while Blueprint is open */}
         {showBlueprintButton && (
           <div
             style={{
               right: "max(1.25rem, env(safe-area-inset-right))",
               bottom: "max(1rem, env(safe-area-inset-bottom))",
             }}
-            className="absolute z-30 md:right-10 md:bottom-6"
+            className="pointer-events-none absolute z-30 flex max-w-[calc(100vw-2.5rem)] flex-col items-end gap-2.5 md:right-10 md:bottom-6"
           >
+            {fullBlueprintOpen && (
+              <div
+                data-xray-dock="card"
+                aria-hidden="true"
+                className={`w-full max-w-[360px] border-[1.5px] border-volt bg-ink px-3.5 py-2.5 font-mono text-[12px] leading-[1.35] font-medium tracking-[0.04em] ${
+                  reducedMotion ? "transition-none" : ""
+                }`}
+              >
+                <div className="flex items-center justify-between gap-4 border-b border-volt/35 pb-1.5">
+                  <span className="inline-flex items-center gap-2 text-volt">
+                    <span>X-RAY</span>
+                    <span aria-hidden="true" className="text-volt/65">
+                      ·
+                    </span>
+                    <span data-xray-dock="coords" className="text-bone tabular-nums">
+                      0000×0000
+                    </span>
+                  </span>
+                  <span data-xray-dock="kind" className="text-volt">
+                    HEADLINE
+                  </span>
+                </div>
+                <span data-xray-dock="value" className="mt-1.5 block text-bone">
+                  Bricolage Grotesque
+                </span>
+              </div>
+            )}
+
             <button
               type="button"
               aria-pressed={fullBlueprintOpen}
               onClick={() => setFullBlueprintOpen((v) => !v)}
-              className="label inline-flex min-h-[44px] min-w-[44px] items-center gap-2 rounded-full border-[1.5px] border-volt bg-ink px-4 py-2 text-[12px] text-volt transition-colors duration-300 hover:bg-volt hover:text-ink"
+              className={`label pointer-events-auto inline-flex min-h-[44px] min-w-[44px] items-center gap-2 rounded-full border-[1.5px] border-volt bg-ink px-4 py-2 text-[12px] text-volt hover:bg-volt hover:text-ink ${
+                reducedMotion ? "transition-none" : "transition-colors duration-300"
+              }`}
             >
               <span aria-hidden="true" className="size-1.5 rounded-full bg-current" />
               {reducedMotion

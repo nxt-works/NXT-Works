@@ -42,15 +42,10 @@ type BlueprintMetrics = {
   easeCurve: string;
 };
 
-export type XRayDockRefs = {
-  coords: React.RefObject<HTMLSpanElement | null>;
-  kind: React.RefObject<HTMLSpanElement | null>;
-  value: React.RefObject<HTMLSpanElement | null>;
-};
-
 const RING_BASE_RADIUS = 100; // 200px base DOM ring, GPU-scaled to live radius `r`
 const EXPANDED_MAX_RADIUS = 260; // 520px desktop press-and-hold diameter
-const IDLE_DELAY_MS = 3000;
+const CARD_IDLE_HIDE_MS = 2000; // hide docked card & bring back hint after 2s cursor pause
+const DRIFT_IDLE_MS = 3000; // start gentle idle drift after 3s
 
 /** Default lens radius: clamp(170px, 15vw, 210px) / 2. */
 function getBaseRadius(viewportWidth: number): number {
@@ -85,15 +80,26 @@ function pointInBox(px: number, py: number, box: RectBox | null, pad = 0): boole
   return px >= box.x - pad && px <= box.x + box.width + pad && py >= box.y - pad && py <= box.y + box.height + pad;
 }
 
+/** Checks whether a line segment crosses a substantial portion of a box (used to dim the tether over headline). */
+function segmentCrossesBox(x1: number, y1: number, x2: number, y2: number, box: RectBox | null): boolean {
+  if (!box) return false;
+  let hits = 0;
+  for (let i = 1; i <= 5; i++) {
+    const t = i / 6;
+    const px = x1 + (x2 - x1) * t;
+    const py = y1 + (y2 - y1) * t;
+    if (pointInBox(px, py, box, 4)) hits++;
+  }
+  return hits >= 2;
+}
+
 type HeroXRayProps = {
   heroRef: React.RefObject<HTMLDivElement | null>;
   contentRef: React.RefObject<HTMLDivElement | null>;
   /** Full-hero blueprint toggle shared by touch screens and prefers-reduced-motion. */
   fullBlueprintOpen: boolean;
-  /** Refs for the single docked spec card in the bottom-right of the hero (updated without React re-renders). */
-  dockRefs: XRayDockRefs;
-  /** Called once when the lens begins moving (user pointer or idle/touch drift) to swap hint → docked spec card. */
-  onLensActive: () => void;
+  /** Notifies Hero when the desktop mouse-driven readout card should be shown or hidden. */
+  onCardVisibleChange: (visible: boolean) => void;
   /** Disables idle/touch lens drift on low-power mobile devices. */
   disableDrift?: boolean;
 };
@@ -103,17 +109,16 @@ type HeroXRayProps = {
  *
  * - Strictly non-blocking (`pointer-events-none`) & `aria-hidden`
  * - Only the thin Volt ring, crosshair, and hollow outlined letters appear on the lens
- *   (no floating tags ever cover headline or page copy)
- * - Highlights the active headline segment inside the lens with a brighter Volt stroke
- * - Feeds live-measured DOM/CSS values into one docked spec card in the bottom-right of the hero
+ * - Feeds live-measured DOM/CSS values into one docked bottom-right spec card
+ * - On desktop, draws a thin straight Volt tether from the lens rim to the active card
+ *   (dims to 35% opacity when crossing the headline, hidden when the card fades out)
  * - Pure `clip-path` + `transform`, paused off-screen, zero WebGL
  */
 export default function HeroXRay({
   heroRef,
   contentRef,
   fullBlueprintOpen,
-  dockRefs,
-  onLensActive,
+  onCardVisibleChange,
   disableDrift = false,
 }: HeroXRayProps) {
   const isTouch = useIsTouch();
@@ -123,14 +128,16 @@ export default function HeroXRay({
   const headlineMirrorRef = useRef<HTMLDivElement>(null);
   const reticleRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
+  const tetherLineRef = useRef<SVGLineElement>(null);
+  const tetherDotRef = useRef<SVGCircleElement>(null);
 
   const [metrics, setMetrics] = useState<BlueprintMetrics | null>(null);
   const metricsRef = useRef<BlueprintMetrics | null>(null);
   const [introReady, setIntroReady] = useState(false);
 
-  const onLensActiveRef = useRef(onLensActive);
+  const onCardVisibleRef = useRef(onCardVisibleChange);
   useEffect(() => {
-    onLensActiveRef.current = onLensActive;
+    onCardVisibleRef.current = onCardVisibleChange;
   });
 
   // Measure real hero typography, bounding boxes, and CSS variables after fonts load, on resize, and orientation change.
@@ -284,19 +291,36 @@ export default function HeroXRay({
     };
   }, [heroRef, contentRef]);
 
-  // Interactive spring lens controller (desktop cursor, touch drift, and full-blueprint toggle).
+  // Populate docked card with real headline specs whenever full blueprint view is toggled open (touch / reduced-motion).
+  useEffect(() => {
+    const heroEl = heroRef.current;
+    if (!heroEl || !fullBlueprintOpen || !metrics) return;
+    const coordsEl = heroEl.querySelector<HTMLElement>("[data-xray-dock='coords']");
+    const kindEl = heroEl.querySelector<HTMLElement>("[data-xray-dock='kind']");
+    const valueEl = heroEl.querySelector<HTMLElement>("[data-xray-dock='value']");
+    if (coordsEl) coordsEl.textContent = `${metrics.heroWidth}×${metrics.heroHeight}`;
+    if (kindEl) kindEl.textContent = "HEADLINE";
+    if (valueEl) valueEl.textContent = `${metrics.displayFont} / ${metrics.displaySize} / ${metrics.displayTracking}`;
+  }, [heroRef, fullBlueprintOpen, metrics]);
+
+  // Interactive spring lens controller (desktop mouse live readout + tether, touch auto-drift, full-blueprint toggle).
   useEffect(() => {
     const heroEl = heroRef.current;
     const blueprintEl = blueprintRef.current;
     if (!heroEl || !blueprintEl) return;
 
     const reticleEl = reticleRef.current;
+    const hideTether = () => {
+      if (tetherLineRef.current) tetherLineRef.current.style.opacity = "0";
+      if (tetherDotRef.current) tetherDotRef.current.style.opacity = "0";
+    };
 
     // Full-hero blueprint toggle (touch "Blueprint" button or reduced-motion "Show blueprint" button).
     if (fullBlueprintOpen) {
       blueprintEl.style.clipPath = "inset(0% 0% 0% 0%)";
       if (reticleEl) reticleEl.style.opacity = "0";
       if (headlineMirrorRef.current) headlineMirrorRef.current.dataset.active = "headline";
+      hideTether();
       return;
     }
 
@@ -304,6 +328,7 @@ export default function HeroXRay({
     if (reducedMotion || (disableDrift && isTouch)) {
       blueprintEl.style.clipPath = "circle(0px at 50% 50%)";
       if (reticleEl) reticleEl.style.opacity = "0";
+      hideTether();
       return;
     }
 
@@ -313,14 +338,17 @@ export default function HeroXRay({
     if (!introReady) {
       blueprintEl.style.clipPath = "circle(0px at 50% 42%)";
       reticleEl.style.opacity = "0";
+      hideTether();
       return;
     }
 
     let rafId = 0;
     let visible = true;
     let pressing = false;
-    let activated = false;
-    let lastMoveTime = 0;
+    let lensVisible = false;
+    let cardShown = false;
+    let mouseInside = false;
+    let lastMouseMoveTime = 0;
     const readyAt = performance.now();
     let driftPhase = 0.55;
     let lastReadoutKey = "";
@@ -339,16 +367,22 @@ export default function HeroXRay({
     let vr = 0;
     let lastTime = performance.now();
 
-    const activateLens = () => {
-      if (activated) return;
-      activated = true;
-      reticleEl.style.opacity = "1";
-      onLensActiveRef.current();
+    const setCardShown = (next: boolean) => {
+      if (cardShown === next) return;
+      cardShown = next;
+      onCardVisibleRef.current(next);
+      if (!next) hideTether();
     };
 
-    // On touch devices (non-low-power), auto-drift begins immediately.
+    const showLens = () => {
+      if (lensVisible) return;
+      lensVisible = true;
+      reticleEl.style.opacity = "1";
+    };
+
+    // On touch devices (non-low-power), auto-drift begins immediately (card stays hidden until Blueprint toggle).
     if (isTouch && !disableDrift) {
-      activateLens();
+      showLens();
     }
 
     const updateTargetFromEvent = (e: PointerEvent) => {
@@ -358,23 +392,40 @@ export default function HeroXRay({
     };
 
     const onPointerMove = (e: PointerEvent) => {
-      if (e.pointerType !== "mouse") return;
+      if (isTouch || e.pointerType !== "mouse") return;
       const rect = heroEl.getBoundingClientRect();
       const inside =
         e.clientX >= rect.left &&
         e.clientX <= rect.right &&
         e.clientY >= rect.top &&
         e.clientY <= rect.bottom;
-      if (!inside) return;
-      if (!activated) {
+
+      if (!inside) {
+        if (mouseInside) {
+          mouseInside = false;
+          setCardShown(false);
+        }
+        return;
+      }
+
+      mouseInside = true;
+      if (!lensVisible) {
         updateTargetFromEvent(e);
         x = targetX;
         y = targetY;
-        activateLens();
+        showLens();
       } else {
         updateTargetFromEvent(e);
       }
-      lastMoveTime = performance.now();
+      lastMouseMoveTime = performance.now();
+      setCardShown(true);
+    };
+
+    const onPointerLeave = () => {
+      if (isTouch) return;
+      mouseInside = false;
+      pressing = false;
+      setCardShown(false);
     };
 
     // Press-and-hold expansion: desktop mouse only (disabled on touch screens).
@@ -384,9 +435,11 @@ export default function HeroXRay({
       if (el?.closest("a, button")) return;
       const rect = heroEl.getBoundingClientRect();
       if (e.clientY < rect.top || e.clientY > rect.bottom) return;
+      mouseInside = true;
       updateTargetFromEvent(e);
-      activateLens();
-      lastMoveTime = performance.now();
+      showLens();
+      lastMouseMoveTime = performance.now();
+      setCardShown(true);
       pressing = true;
     };
 
@@ -397,6 +450,7 @@ export default function HeroXRay({
     const io = new IntersectionObserver(
       (entries) => {
         visible = entries[0]?.isIntersecting ?? true;
+        if (!visible) setCardShown(false);
       },
       { threshold: 0.01 },
     );
@@ -434,18 +488,24 @@ export default function HeroXRay({
       lastTime = now;
 
       if (visible && document.visibilityState === "visible") {
-        // After 3 seconds of idle on desktop (when drift isn't disabled), wake the discovery drift.
-        if (!activated && !disableDrift && now - readyAt >= IDLE_DELAY_MS) {
-          activateLens();
+        // Hide desktop spec card & restore hint after 2s of cursor stillness (unless pressing).
+        if (!isTouch && cardShown && !pressing && (!mouseInside || now - lastMouseMoveTime >= CARD_IDLE_HIDE_MS)) {
+          setCardShown(false);
         }
 
-        if (activated) {
+        // After 3 seconds of idle on desktop (when drift isn't disabled), wake the discovery drift.
+        if (!lensVisible && !disableDrift && now - readyAt >= DRIFT_IDLE_MS) {
+          showLens();
+        }
+
+        if (lensVisible) {
           const w = heroEl.clientWidth;
           const h = heroEl.clientHeight;
           const baseR = getBaseRadius(w);
           const isIdle =
             !disableDrift &&
-            (isTouch || (lastMoveTime === 0 ? now - readyAt >= IDLE_DELAY_MS : now - lastMoveTime > IDLE_DELAY_MS));
+            (isTouch ||
+              (lastMouseMoveTime === 0 ? now - readyAt >= DRIFT_IDLE_MS : now - lastMouseMoveTime > DRIFT_IDLE_MS));
 
           if (isIdle && !pressing) {
             driftPhase += dt * 0.42;
@@ -479,22 +539,68 @@ export default function HeroXRay({
           const scale = r / RING_BASE_RADIUS;
           ringEl.style.transform = `scale(${scale.toFixed(4)})`;
 
-          // Update docked bottom-right spec card (never floats over headline/copy).
-          if (dockRefs.coords.current) {
-            dockRefs.coords.current.textContent = `${String(Math.round(x)).padStart(4, "0")}, ${String(Math.round(y)).padStart(4, "0")}`;
-          }
-
           const m = metricsRef.current;
           if (m) {
             const readout = resolveReadout(x, y, m);
             if (readout.key !== lastReadoutKey) {
               lastReadoutKey = readout.key;
-              if (dockRefs.kind.current) dockRefs.kind.current.textContent = readout.kind;
-              if (dockRefs.value.current) dockRefs.value.current.textContent = readout.value;
-              // Highlight the matching part of the headline inside the lens with a brighter outline.
               if (headlineMirrorRef.current) {
                 headlineMirrorRef.current.dataset.active =
                   readout.key === "accent" || readout.key === "headline" ? readout.key : "";
+              }
+              if (cardShown && !isTouch) {
+                const kindEl = heroEl.querySelector<HTMLElement>("[data-xray-dock='kind']");
+                const valueEl = heroEl.querySelector<HTMLElement>("[data-xray-dock='value']");
+                if (kindEl) kindEl.textContent = readout.kind;
+                if (valueEl) valueEl.textContent = readout.value;
+              }
+            }
+
+            // Update desktop docked card text & straight Volt connecting line only while card is active.
+            if (cardShown && !isTouch) {
+              const coordsEl = heroEl.querySelector<HTMLElement>("[data-xray-dock='coords']");
+              const kindEl = heroEl.querySelector<HTMLElement>("[data-xray-dock='kind']");
+              const valueEl = heroEl.querySelector<HTMLElement>("[data-xray-dock='value']");
+              if (coordsEl) {
+                coordsEl.textContent = `${String(Math.round(x)).padStart(4, "0")}, ${String(Math.round(y)).padStart(4, "0")}`;
+              }
+              if (kindEl) kindEl.textContent = readout.kind;
+              if (valueEl) valueEl.textContent = readout.value;
+
+              const cardEl = heroEl.querySelector<HTMLElement>("[data-xray-dock='card']");
+              const lineEl = tetherLineRef.current;
+              const dotEl = tetherDotRef.current;
+              if (cardEl && lineEl && dotEl) {
+                const heroRect = heroEl.getBoundingClientRect();
+                const cardRect = cardEl.getBoundingClientRect();
+                if (cardRect.width > 0 && cardRect.height > 0) {
+                  // Anchor on the top edge if lens is above the card, or left edge if beside it.
+                  const cardLeft = cardRect.left - heroRect.left;
+                  const cardTop = cardRect.top - heroRect.top;
+                  const ax = y < cardTop ? cardLeft + cardRect.width * 0.5 : cardLeft;
+                  const ay = y < cardTop ? cardTop : cardTop + cardRect.height * 0.5;
+                  const dx = ax - x;
+                  const dy = ay - y;
+                  const dist = Math.hypot(dx, dy);
+
+                  if (dist > r + 8) {
+                    const sx = x + (dx / dist) * r;
+                    const sy = y + (dy / dist) * r;
+                    lineEl.setAttribute("x1", sx.toFixed(1));
+                    lineEl.setAttribute("y1", sy.toFixed(1));
+                    lineEl.setAttribute("x2", ax.toFixed(1));
+                    lineEl.setAttribute("y2", ay.toFixed(1));
+                    dotEl.setAttribute("cx", ax.toFixed(1));
+                    dotEl.setAttribute("cy", ay.toFixed(1));
+
+                    const crossesHeadline = segmentCrossesBox(sx, sy, ax, ay, m.h1Box);
+                    const op = crossesHeadline ? "0.35" : "0.78";
+                    lineEl.style.opacity = op;
+                    dotEl.style.opacity = op;
+                  } else {
+                    hideTether();
+                  }
+                }
               }
             }
           }
@@ -506,21 +612,24 @@ export default function HeroXRay({
 
     rafId = requestAnimationFrame(tick);
     window.addEventListener("pointermove", onPointerMove, { passive: true });
+    heroEl.addEventListener("pointerleave", onPointerLeave, { passive: true });
     heroEl.addEventListener("pointerdown", onPointerDown, { passive: true });
     window.addEventListener("pointerup", onRelease, { passive: true });
     window.addEventListener("pointercancel", onRelease, { passive: true });
-    window.addEventListener("blur", onRelease);
+    window.addEventListener("blur", onPointerLeave);
 
     return () => {
       cancelAnimationFrame(rafId);
       io.disconnect();
+      hideTether();
       window.removeEventListener("pointermove", onPointerMove);
+      heroEl.removeEventListener("pointerleave", onPointerLeave);
       heroEl.removeEventListener("pointerdown", onPointerDown);
       window.removeEventListener("pointerup", onRelease);
       window.removeEventListener("pointercancel", onRelease);
-      window.removeEventListener("blur", onRelease);
+      window.removeEventListener("blur", onPointerLeave);
     };
-  }, [heroRef, isTouch, reducedMotion, introReady, fullBlueprintOpen, dockRefs, disableDrift]);
+  }, [heroRef, isTouch, reducedMotion, introReady, fullBlueprintOpen, disableDrift]);
 
   // Generate ruler tick positions along edges (every 40px, major every 160px).
   const topTicks: number[] = [];
@@ -729,7 +838,7 @@ export default function HeroXRay({
           </div>
         )}
 
-        {/* 3. Full-hero blueprint annotations (only rendered when full blueprint is toggled open or lens expands) */}
+        {/* 3. Full-hero blueprint annotations (only rendered when full blueprint is toggled open) */}
         {metrics && fullBlueprintOpen && (
           <div className="absolute inset-0 font-mono text-[12px] leading-[1.35] font-medium tracking-[0.05em]">
             {firstLine && (
@@ -751,7 +860,7 @@ export default function HeroXRay({
               <div
                 style={{
                   left: Math.max(16, Math.min(lastLine.x, metrics.heroWidth - 420)),
-                  top: Math.min(lastLine.y + lastLine.height + 12, metrics.heroHeight - 160),
+                  top: Math.min(lastLine.y + lastLine.height + 12, metrics.heroHeight - 210),
                 }}
                 className="absolute inline-flex max-w-[calc(100%-32px)] flex-wrap items-center gap-x-3 gap-y-1 border-[1.5px] border-volt bg-ink px-3 py-1.5 text-volt"
               >
@@ -767,9 +876,9 @@ export default function HeroXRay({
             <div
               style={{
                 left: Math.max(16, metrics.containerLeft),
-                bottom: 72,
+                bottom: 76,
               }}
-              className="absolute flex max-w-[calc(100%-32px)] flex-col gap-1.5 border-[1.5px] border-volt bg-ink px-3.5 py-2.5 text-volt"
+              className="absolute hidden max-w-[460px] flex-col gap-1.5 border-[1.5px] border-volt bg-ink px-3.5 py-2.5 text-volt lg:flex"
             >
               <span className="text-bone">TOKENS · LIVE CSS VARS</span>
               <div className="flex flex-wrap gap-x-3.5 gap-y-1">
@@ -816,6 +925,33 @@ export default function HeroXRay({
             <circle cx="12" cy="12" r="2" stroke="var(--color-volt)" strokeWidth="1.5" />
           </svg>
         </div>
+      )}
+
+      {/* ── STRAIGHT VOLT TETHER LINE FROM LENS RING TO DOCKED CARD (desktop only, above all layers) ── */}
+      {!reducedMotion && !isTouch && metrics && (
+        <svg
+          aria-hidden="true"
+          width={metrics.heroWidth}
+          height={metrics.heroHeight}
+          viewBox={`0 0 ${metrics.heroWidth} ${metrics.heroHeight}`}
+          className="pointer-events-none absolute inset-0 z-30 h-full w-full"
+          fill="none"
+        >
+          <line
+            ref={tetherLineRef}
+            stroke="var(--color-volt)"
+            strokeWidth="1.25"
+            className="transition-opacity duration-300"
+            style={{ opacity: 0 }}
+          />
+          <circle
+            ref={tetherDotRef}
+            r="2.5"
+            fill="var(--color-volt)"
+            className="transition-opacity duration-300"
+            style={{ opacity: 0 }}
+          />
+        </svg>
       )}
     </>
   );
