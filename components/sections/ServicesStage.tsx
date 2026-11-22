@@ -33,14 +33,14 @@ export const CHART_LAYOUT = {
 
 type RectSpec = { x: number; y: number; width: number; height: number; rx: number; fill?: string };
 
-/** Precomputed settled states for static reduced-motion rendering. */
+/** Precomputed settled states (real x/y/width/height/rx — zero non-uniform scaling). */
 const STATIC_SHAPES: Record<
   0 | 1 | 2,
   {
-    heroPanel: string;
-    headline1: string;
-    headline2: string;
-    headline3: string;
+    heroPanel: RectSpec;
+    headline1: RectSpec;
+    headline2: RectSpec;
+    headline3: RectSpec;
     card1: RectSpec;
     card2: RectSpec;
     card3: RectSpec;
@@ -57,10 +57,10 @@ const STATIC_SHAPES: Record<
   }
 > = {
   0: {
-    heroPanel: "translate(18px, 14px) scale(1, 1)",
-    headline1: "translate(42px, 54px) scale(1, 1)",
-    headline2: "translate(42px, 86px) scale(1, 1)",
-    headline3: "translate(42px, 120px) scale(1, 1)",
+    heroPanel: { x: 18, y: 14, width: 564, height: 182, rx: 10 },
+    headline1: { x: 42, y: 54, width: 292, height: 22, rx: 4 },
+    headline2: { x: 42, y: 86, width: 222, height: 22, rx: 4 },
+    headline3: { x: 42, y: 120, width: 176, height: 9, rx: 3 },
     card1: { x: 18, y: 214, width: 176, height: 138, rx: 10, fill: "#EDE8DF" },
     card2: { x: 212, y: 214, width: 176, height: 138, rx: 10, fill: "#EDE8DF" },
     card3: { x: 406, y: 214, width: 176, height: 138, rx: 10, fill: "#1A1A1C" },
@@ -76,10 +76,10 @@ const STATIC_SHAPES: Record<
     kpi: "0",
   },
   1: {
-    heroPanel: "translate(18px, 14px) scale(0.212766, 1.857143)",
-    headline1: "translate(46px, 83px) scale(0.253425, 0.363636)",
-    headline2: "translate(32px, 112px) scale(0.369369, 0.363636)",
-    headline3: "translate(32px, 139px) scale(0.386364, 0.888889)",
+    heroPanel: { x: 18, y: 14, width: 120, height: 338, rx: 10 },
+    headline1: { x: 46, y: 83, width: 74, height: 8, rx: 3 },
+    headline2: { x: 32, y: 112, width: 82, height: 8, rx: 3 },
+    headline3: { x: 32, y: 139, width: 68, height: 8, rx: 3 },
     card1: { ...CHART_LAYOUT.bars[0], rx: CHART_LAYOUT.barRx, fill: "#0C0C0D" },
     card2: { ...CHART_LAYOUT.bars[1], rx: CHART_LAYOUT.barRx, fill: "#0C0C0D" },
     card3: { ...CHART_LAYOUT.bars[2], rx: CHART_LAYOUT.barRx, fill: "#0C0C0D" },
@@ -95,10 +95,10 @@ const STATIC_SHAPES: Record<
     kpi: "148",
   },
   2: {
-    heroPanel: "translate(28px, 132px) scale(0.184397, 0.527473)",
-    headline1: "translate(46px, 83px) scale(0.253425, 0.363636)",
-    headline2: "translate(32px, 112px) scale(0.369369, 0.363636)",
-    headline3: "translate(32px, 139px) scale(0.386364, 0.888889)",
+    heroPanel: { x: 28, y: 132, width: 104, height: 96, rx: 14 },
+    headline1: { x: 46, y: 83, width: 74, height: 8, rx: 3 },
+    headline2: { x: 32, y: 112, width: 82, height: 8, rx: 3 },
+    headline3: { x: 32, y: 139, width: 68, height: 8, rx: 3 },
     card1: { x: 176, y: 54, width: 104, height: 96, rx: 14, fill: "#EDE8DF" },
     card2: { x: 324, y: 198, width: 104, height: 96, rx: 14, fill: "#EDE8DF" },
     card3: { x: 470, y: 126, width: 104, height: 96, rx: 14, fill: "#1A1A1C" },
@@ -257,20 +257,15 @@ const ServicesStage = forwardRef<HTMLDivElement, ServicesStageProps>(function Se
               {/* ── BLOCK A: Hero banner (Scene 1) → Left Side Menu (Scene 2) → Node 1 (Scene 3) ── */}
               <rect
                 data-morph="hero-panel"
-                x="0"
-                y="0"
-                width="564"
-                height="182"
-                rx="10"
+                x={preset.heroPanel.x}
+                y={preset.heroPanel.y}
+                width={preset.heroPanel.width}
+                height={preset.heroPanel.height}
+                rx={preset.heroPanel.rx}
                 fill="#1A1A1C"
                 stroke="#0C0C0D"
                 strokeWidth="1.5"
-                vectorEffect="non-scaling-stroke"
-                style={{
-                  transformOrigin: "0px 0px",
-                  transform: preset.heroPanel,
-                  opacity: preset.heroOp,
-                }}
+                style={{ opacity: preset.heroOp }}
               />
 
               {/* Scene 1 Hero decorative details */}
@@ -338,34 +333,34 @@ const ServicesStage = forwardRef<HTMLDivElement, ServicesStageProps>(function Se
               {/* ── BLOCKS B, C, D: Headline bars (Scene 1) → Sidebar nav items (Scene 2) ── */}
               <rect
                 data-morph="headline-1"
-                x="0"
-                y="0"
-                width="292"
-                height="22"
-                rx="4"
+                x={preset.headline1.x}
+                y={preset.headline1.y}
+                width={preset.headline1.width}
+                height={preset.headline1.height}
+                rx={preset.headline1.rx}
                 fill="#EDE8DF"
-                style={{ transformOrigin: "0px 0px", transform: preset.headline1, opacity: preset.headlinesOp }}
+                style={{ opacity: preset.headlinesOp }}
               />
               <rect
                 data-morph="headline-2"
-                x="0"
-                y="0"
-                width="222"
-                height="22"
-                rx="4"
+                x={preset.headline2.x}
+                y={preset.headline2.y}
+                width={preset.headline2.width}
+                height={preset.headline2.height}
+                rx={preset.headline2.rx}
                 fill="#EDE8DF"
-                style={{ transformOrigin: "0px 0px", transform: preset.headline2, opacity: preset.headlinesOp }}
+                style={{ opacity: preset.headlinesOp }}
               />
               <rect
                 data-morph="headline-3"
-                x="0"
-                y="0"
-                width="176"
-                height="9"
-                rx="3"
+                x={preset.headline3.x}
+                y={preset.headline3.y}
+                width={preset.headline3.width}
+                height={preset.headline3.height}
+                rx={preset.headline3.rx}
                 fill="#EDE8DF"
                 fillOpacity="0.65"
-                style={{ transformOrigin: "0px 0px", transform: preset.headline3, opacity: preset.headlinesOp }}
+                style={{ opacity: preset.headlinesOp }}
               />
 
               {/* ── BLOCK F: Website Card 1 → Chart Bar 1 (38%, Ink) → Automation Node 2 (real x/y/width/height/rx) ── */}

@@ -109,11 +109,11 @@ export default function ServicesJourney() {
       const baseSeedH = 12;
       const baseSeedY = CHART_LAYOUT.baselineY - baseSeedH;
 
-      // Clean Scene 1 starting states so scrubbing reverses cleanly.
-      gsap.set(heroPanel, { x: 18, y: 14, scaleX: 1, scaleY: 1, opacity: 1, transformOrigin: "0px 0px" });
-      gsap.set(headline1, { x: 42, y: 54, scaleX: 1, scaleY: 1, opacity: 1, transformOrigin: "0px 0px" });
-      gsap.set(headline2, { x: 42, y: 86, scaleX: 1, scaleY: 1, opacity: 1, transformOrigin: "0px 0px" });
-      gsap.set(headline3, { x: 42, y: 120, scaleX: 1, scaleY: 1, opacity: 1, transformOrigin: "0px 0px" });
+      // Clean Scene 1 starting states using real SVG geometry (zero non-uniform scaling).
+      gsap.set(heroPanel, { attr: { x: 18, y: 14, width: 564, height: 182, rx: 10 }, opacity: 1 });
+      gsap.set(headline1, { attr: { x: 42, y: 54, width: 292, height: 22, rx: 4 }, opacity: 1 });
+      gsap.set(headline2, { attr: { x: 42, y: 86, width: 222, height: 22, rx: 4 }, opacity: 1 });
+      gsap.set(headline3, { attr: { x: 42, y: 120, width: 176, height: 9, rx: 3 }, opacity: 1 });
 
       gsap.set(card1, { attr: { x: 18, y: 214, width: 176, height: 138, rx: 10 }, fill: "#EDE8DF", opacity: 1 });
       gsap.set(card2, { attr: { x: 212, y: 214, width: 176, height: 138, rx: 10 }, fill: "#EDE8DF", opacity: 1 });
@@ -171,10 +171,10 @@ export default function ServicesJourney() {
       // ── PHASE 1 (t = 0.08 → 0.90): Scene 1 Website → Scene 2 Dashboard ──
       tl.to([s1Hero, s1Cards, s1Cta], { opacity: 0, duration: 0.2 }, 0.08);
 
-      tl.to(heroPanel, { x: 18, y: 14, scaleX: 120 / 564, scaleY: 338 / 182, duration: 0.54, ease: "power2.inOut" }, 0.12);
-      tl.to(headline1, { x: 46, y: 83, scaleX: 74 / 292, scaleY: 8 / 22, duration: 0.5, ease: "power2.inOut" }, 0.14);
-      tl.to(headline2, { x: 32, y: 112, scaleX: 82 / 222, scaleY: 8 / 22, opacity: 0.65, duration: 0.5, ease: "power2.inOut" }, 0.16);
-      tl.to(headline3, { x: 32, y: 139, scaleX: 68 / 176, scaleY: 8 / 9, opacity: 0.48, duration: 0.5, ease: "power2.inOut" }, 0.18);
+      tl.to(heroPanel, { attr: { x: 18, y: 14, width: 120, height: 338, rx: 10 }, duration: 0.54, ease: "power2.inOut" }, 0.12);
+      tl.to(headline1, { attr: { x: 46, y: 83, width: 74, height: 8, rx: 3 }, duration: 0.5, ease: "power2.inOut" }, 0.14);
+      tl.to(headline2, { attr: { x: 32, y: 112, width: 82, height: 8, rx: 3 }, opacity: 0.65, duration: 0.5, ease: "power2.inOut" }, 0.16);
+      tl.to(headline3, { attr: { x: 32, y: 139, width: 68, height: 8, rx: 3 }, opacity: 0.48, duration: 0.5, ease: "power2.inOut" }, 0.18);
 
       // Dashboard panels fade in cleanly behind the travelling bars.
       tl.to(s2Panels, { opacity: 1, duration: 0.28, ease: "power1.out" }, 0.24);
@@ -249,8 +249,8 @@ export default function ServicesJourney() {
       // ── PHASE 2 (t = 1.08 → 1.94): Scene 2 Dashboard → Scene 3 Automation ──
       tl.to([s2Panels, s2Sidebar, s2BarHi, s2Kpi, s2Table, headline1, headline2, headline3], { opacity: 0, duration: 0.2 }, 1.08);
 
-      // Sidebar + 3 Ink bars morph into the 4 automation nodes; Volt bar glides into the "Task done" chip slot.
-      tl.to(heroPanel, { x: 28, y: 132, scaleX: 104 / 564, scaleY: 96 / 182, duration: 0.48, ease: "power2.inOut" }, 1.16);
+      // Sidebar + 3 Ink bars morph into the 4 automation nodes with crisp round corners; Volt bar glides to "Task done".
+      tl.to(heroPanel, { attr: { x: 28, y: 132, width: 104, height: 96, rx: 14 }, duration: 0.48, ease: "power2.inOut" }, 1.16);
       tl.to(
         card1,
         { attr: { x: 176, y: 54, width: 104, height: 96, rx: 14 }, fill: "#EDE8DF", duration: 0.48, ease: "power2.inOut" },

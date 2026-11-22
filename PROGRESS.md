@@ -144,10 +144,10 @@ box, continue from there. Commit after each checkpoint.
 - [x] Added SVG `<clipPath>` + `overflow-hidden` safety net on the rounded stage frame
 - [x] Git commit
 
-#### Checkpoint B — Real-geometry morph quality & dual-engine progress sweep
-- [ ] Replace all remaining non-uniform scaling (`hero-panel`, `headline-1..3`) with real `x`, `y`, `width`, `height`, and `rx` attribute morphing so corners stay crisp & round at every progress step
-- [ ] Verify `0%, 25%, 50%, 75%, 100%` of both Scene 1→2 and Scene 2→3 morphs in Chromium & WebKit at `390×844`, `820×1180`, and `1440×900`
-- [ ] Lint and production build clean with zero console errors or hydration warnings; update `PROGRESS.md` and commit on `services-journey` (not merged)
+#### Checkpoint B — Real-geometry morph quality & dual-engine progress sweep ✅
+- [x] Replaced all remaining non-uniform scaling (`hero-panel`, `headline-1..3`) with real `x`, `y`, `width`, `height`, and `rx` attribute morphing so corners stay crisp & round at every progress step
+- [x] Verified `0%, 25%, 50%, 75%, 100%` of both Scene 1→2 and Scene 2→3 morphs in Chromium & WebKit at `390×844`, `820×1180`, and `1440×900` (zero out-of-bounds shapes, zero scale transforms, all 4 bars flush on baseline `y=164` at `38%/62%/50%/86%`)
+- [x] Lint and production build clean with zero console errors or hydration warnings; updated `PROGRESS.md` and committed on `services-journey` (not merged)
 
 ## Notes / decisions
 - Next.js 16.4 with `cacheComponents` enabled (scaffold default). Page is fully static.
