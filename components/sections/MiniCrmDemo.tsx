@@ -323,15 +323,15 @@ export default function MiniCrmDemo() {
             reducedMotion ? "" : "demo-card-enter"
           }`}
         >
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <p className="text-[1rem] font-semibold text-bone">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <p className="text-[1rem] leading-snug font-semibold text-bone">
                 {selectedLead.name}{" "}
                 <span className="font-mono text-[12px] font-normal text-bone/70">
                   · {selectedLead.service} · {formatInr(selectedLead.amount)}
                 </span>
               </p>
-              <p className="mt-0.5 font-mono text-[12px] text-volt">
+              <p className="mt-1 font-mono text-[12px] text-volt">
                 Stage: {STAGE_LABELS[selectedLead.stage]}
                 {nextStageLabel ? ` → ${nextStageLabel}` : ""}
               </p>
@@ -341,7 +341,7 @@ export default function MiniCrmDemo() {
               type="button"
               onClick={() => setSelectedId(null)}
               aria-label={cfg.actions.close}
-              className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-bone/20 px-3 font-mono text-[12px] text-bone/80 transition-colors hover:border-bone hover:text-bone"
+              className="inline-flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full border border-bone/20 px-3 font-mono text-[12px] text-bone/80 transition-colors hover:border-bone hover:text-bone"
             >
               {cfg.actions.close}
             </button>

@@ -195,6 +195,8 @@ export const liveDemos = {
     runningStatus: "Running simulated automation...",
     skippedBadge: "Skipped",
     doneBadge: "Done",
+    switchedOn: "switched on.",
+    switchedOff: "switched off.",
     steps: [
       {
         id: "form",

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import AutomationDemo from "@/components/sections/AutomationDemo";
 import MiniCrmDemo from "@/components/sections/MiniCrmDemo";
 import Label from "@/components/ui/Label";
 import RevealText from "@/components/ui/RevealText";
@@ -49,7 +50,7 @@ export default function LiveDemos() {
           <RevealText
             as="h2"
             id="demos-title"
-            className="headline max-w-[15ch] text-section text-ink"
+            className="headline text-balance text-section text-ink"
           >
             {before}
             <span className="accent">{accent}</span>
@@ -141,9 +142,7 @@ export default function LiveDemos() {
               </span>
             </div>
 
-            <div className="flex flex-1 flex-col p-4 sm:p-5">
-              <p className="text-[1rem] text-bone/70">Automation runner — loading in Checkpoint C.</p>
-            </div>
+            <AutomationDemo />
           </div>
         </div>
       </div>

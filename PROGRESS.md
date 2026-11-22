@@ -163,11 +163,11 @@ box, continue from there. Commit after each checkpoint.
 - [x] `A new lead arrives` (max 8 total), `Reset`, polite `aria-live` status announcements, zero persistence
 - [x] Git commit
 
-### Checkpoint C — Demo 2: Automation Runner & final dual-engine verification
-- [ ] Build `components/sections/AutomationDemo.tsx` with 4 connected switchable steps, `Run it` / `Run again`, Volt highlight + checkmark + travelling dot, skipped-step consequence notes, `Done in 2 seconds (simulated)`
-- [ ] Reduced-motion instant state transitions (no travelling dot), low-power simplification, off-screen pause
-- [ ] Full Chromium + WebKit verification across all 7 sizes (`360×740`, `390×844`, `412×915`, `768×1024`, `820×1180`, `1024×768`, `1440×900`) before/during/after both demos + keyboard focus test + lint + production build
-- [ ] Update `PROGRESS.md` and commit on `live-demos` (do not merge)
+### Checkpoint C — Demo 2: Automation Runner & final dual-engine verification ✅
+- [x] Build `components/sections/AutomationDemo.tsx` with 4 connected switchable steps, `Run it` / `Run again`, Volt highlight + checkmark + travelling dot, skipped-step consequence notes, `Done in 2 seconds (simulated)`
+- [x] Reduced-motion instant state transitions (no travelling dot), low-power simplification, off-screen pause
+- [x] Full Chromium + WebKit verification across all 7 sizes (`360×740`, `390×844`, `412×915`, `768×1024`, `820×1180`, `1024×768`, `1440×900`) before/during/after both demos + keyboard focus test + lint + production build
+- [x] Update `PROGRESS.md` and commit on `live-demos` (do not merge)
 
 ## Notes / decisions
 - Next.js 16.4 with `cacheComponents` enabled (scaffold default). Page is fully static.
