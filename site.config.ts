@@ -99,6 +99,46 @@ export const hero = {
   ],
 } as const;
 
+export const servicesJourney = {
+  eyebrow: "Services Journey",
+  stage: {
+    sceneLabels: ["01 / WEBSITE", "02 / DASHBOARD", "03 / AUTOMATION"] as const,
+    sampleData: "SAMPLE DATA",
+    taskDone: "Task done",
+    automationNodes: ["Trigger", "Route", "Sync", "Notify"] as const,
+  },
+  steps: [
+    {
+      id: "websites",
+      number: "01",
+      kicker: "Websites",
+      headline: ["Pages that make people ", "act", "."] as [string, string, string],
+      body: "Fast, clear websites built around one job: turning visitors into enquiries.",
+      points: ["Design and build", "Phone-first", "Live in weeks"] as const,
+    },
+    {
+      id: "dashboards",
+      number: "02",
+      kicker: "Dashboards and CRM",
+      headline: ["See your whole business on ", "one", " screen."] as [string, string, string],
+      body: "Track leads, orders and payments in one place your team will actually open.",
+      points: ["Lead and customer tracking", "Reports that update themselves", "Roles and access"] as const,
+    },
+    {
+      id: "automations",
+      number: "03",
+      kicker: "Automations",
+      headline: ["Let the boring work run ", "itself", "."] as [string, string, string],
+      body: "Connect your tools so follow-ups, invoices and reminders happen without anyone clicking.",
+      points: ["WhatsApp and email flows", "Forms into sheets into CRM", "Alerts when something needs you"] as const,
+    },
+  ],
+  closing: {
+    text: "Something else in mind? Tell us. We build custom too.",
+    cta: { label: "Start a project", href: "#contact" },
+  },
+} as const;
+
 export const social = [
   { label: "Instagram", href: "https://instagram.com/" },
   { label: "LinkedIn", href: "https://linkedin.com/" },

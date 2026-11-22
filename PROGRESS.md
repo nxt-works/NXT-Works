@@ -115,6 +115,27 @@ box, continue from there. Commit after each checkpoint.
 - [x] Quieted docked spec card (`1px` Volt border at 45%, Ink background at 88%, tighter padding, `min(300px, 36vw)` width, `12px` readable mono text) with guaranteed `16px` (`≥ 14px`) clear gap below `"Booking projects for Q1 2027"`
 - [x] Verified in Chromium & WebKit at `390×844`, `820×1180`, and `1440×900` (clean initial/hover/2s-idle/touch-Blueprint states, zero console or hydration errors), committed on `hero-xray` (not merged)
 
+## Stage 2 — Section 02: Services Journey (`services-journey`)
+### Checkpoint A — Structure, steps, progress rail, mobile layout & Scene 1 (static) ✅
+- [x] Added all Services Journey copy & stage labels to `site.config.ts`
+- [x] Built `components/sections/ServicesJourney.tsx` (Bone surface with Ink→Bone top angled cut outside sticky ancestors, `02 / 09 SERVICES JOURNEY` label, 3 steps with `RevealText` + serif-italic accents, interactive 3-dot progress rail with `≥ 44px` tap targets & Ink/Volt active dot, plain CSS `position: sticky` mobile top `~42dvh` and wide/desktop 2-column `~70dvh` stage)
+- [x] Built `components/sections/ServicesStage.tsx` (floating rounded screen frame with soft Ink shadow, shared-shape SVG Scene 1 Website artwork) and mounted in `app/page.tsx`
+- [x] Verified lint, production build, and Chromium + WebKit across all 7 sizes (`360×740`, `390×844`, `412×915`, `768×1024`, `820×1180`, `1024×768`, `1440×900`) with zero overlap and zero console/hydration errors
+- [x] Git commit
+
+### Checkpoint B — Scene 2 (Dashboard) & Scene 1 → Scene 2 scroll morph
+- [ ] Morph shared shapes (`hero-panel` → left sidebar, `headline-1..3` → sidebar nav, `card-1..3` → KPI card + Bar Chart panel + 4-row Table, `volt-cta` → tallest Volt chart bar) via GSAP ScrollTrigger scrub (`transform` + `opacity` only)
+- [ ] 4 growing bars, 4 table rows, live count-up KPI number, `"SAMPLE DATA"` mono label (no real client names or fake claims), off-screen pause
+- [ ] Verify lint, build, and Chromium + WebKit across all 7 sizes for Scene 1 & Scene 2
+- [ ] Git commit
+
+### Checkpoint C — Scene 3 (Automation), Scene 2 → 3 morph, closing CTA, reduced-motion & low-power
+- [ ] Morph shared shapes into 4 joined nodes with Volt pulse + sequential node highlight + `"Task done"` chip (no numbers)
+- [ ] Add closing line (`"Something else in mind? Tell us. We build custom too."`) and `"Start a project"` button
+- [ ] Reduced-motion mode (3 static scene cards under each step, zero scrubbing) & low-power simplification
+- [ ] Full Chromium + WebKit verification across all 7 sizes × 3 scenes + reduced motion + lint + build
+- [ ] Update `PROGRESS.md` and commit on `services-journey` (do not merge)
+
 ## Notes / decisions
 - Next.js 16.4 with `cacheComponents` enabled (scaffold default). Page is fully static.
 - Grain is static (no animated noise) to avoid full-screen repaints.

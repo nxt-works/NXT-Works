@@ -298,6 +298,131 @@
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
+   SECTION 02 — SERVICES JOURNEY (Plain CSS sticky, mobile-first, Safari-safe)
+   No overflow:hidden or clip-path on sticky ancestors so native sticky never
+   breaks or jumps when mobile browser bars collapse.
+   ────────────────────────────────────────────────────────────────────────── */
+.services-layout {
+  display: flex;
+  flex-direction: column;
+}
+.services-stage-col {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--color-bone);
+  border-bottom: 1px solid rgba(12, 12, 13, 0.12);
+  padding: 1rem 1.25rem 0.875rem;
+  height: 42vh;
+  height: 42dvh;
+  min-height: 256px;
+  max-height: 360px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.services-steps-wrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1.75rem 1.25rem 3.5rem;
+}
+.services-rail {
+  position: sticky;
+  top: calc(min(42vh, 360px) + 1.5rem);
+  top: calc(min(42dvh, 360px) + 1.5rem);
+  z-index: 10;
+  display: flex;
+  flex-shrink: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+.services-step {
+  min-height: 58vh;
+  min-height: 58dvh;
+  padding-top: 1rem;
+  padding-bottom: 3rem;
+  scroll-margin-top: calc(min(42vh, 360px) + 1.25rem);
+  scroll-margin-top: calc(min(42dvh, 360px) + 1.25rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.services-stage-frame {
+  width: 100%;
+  height: 100%;
+  max-width: 560px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (min-width: 768px) {
+  .services-stage-col {
+    padding: 1.25rem 2.5rem 1rem;
+    max-height: 400px;
+  }
+  .services-steps-wrap {
+    gap: 1.5rem;
+    padding: 2.25rem 2.5rem 4rem;
+  }
+  .services-rail {
+    top: calc(min(42vh, 400px) + 1.75rem);
+    top: calc(min(42dvh, 400px) + 1.75rem);
+  }
+  .services-step {
+    scroll-margin-top: calc(min(42vh, 400px) + 1.5rem);
+    scroll-margin-top: calc(min(42dvh, 400px) + 1.5rem);
+  }
+}
+
+/* Wide tablets & desktops (1024px+): two columns — left steps (~90dvh), right sticky stage (~70dvh). */
+@media (min-width: 1024px) {
+  .services-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+    gap: 3rem;
+    align-items: start;
+    max-width: 1600px;
+    margin-inline: auto;
+    padding-inline: 2.5rem;
+  }
+  .services-stage-col {
+    order: 2;
+    top: 15vh;
+    top: 15dvh;
+    height: 70vh;
+    height: 70dvh;
+    min-height: 440px;
+    max-height: 680px;
+    border-bottom: 0;
+    background: transparent;
+    padding: 0;
+  }
+  .services-stage-frame {
+    max-width: 640px;
+  }
+  .services-steps-wrap {
+    order: 1;
+    gap: 1.75rem;
+    padding: 0;
+  }
+  .services-rail {
+    top: 42vh;
+    top: 42dvh;
+  }
+  .services-step {
+    min-height: 88vh;
+    min-height: 88dvh;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    scroll-margin-top: 10vh;
+    scroll-margin-top: 10dvh;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
    INTRO STATE (set before first paint by the inline script in app/layout.tsx)
      data-intro="play"    → first visit this session: overlay shown, scroll locked
      data-intro="reduced" → reduced motion: simple fade
