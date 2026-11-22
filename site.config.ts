@@ -317,6 +317,99 @@ export const faqSection = {
   ],
 } as const;
 
+export const contactSection = {
+  eyebrow: "Contact",
+  headline: ["Let's build your ", "next", " thing."] as [string, string, string],
+  subline: "Four quick questions. No forms to dread.",
+
+  // IMPORTANT — team must fill these in before publishing!
+  // whatsappNumber: digits only with country code (e.g. "919876543210"). Leave empty to hide the WhatsApp button.
+  whatsappNumber: "",
+  // contactEmail: studio inbox address (e.g. "hello@nxt.agency"). Leave empty to hide the Email button.
+  contactEmail: "",
+
+  comingSoonNote: "Contact details coming soon.",
+  privacyNote: "We only use this to reply to you.",
+  actions: {
+    back: "Back",
+    next: "Next",
+    review: "Review answers",
+    edit: "Edit",
+    sendWhatsApp: "Send on WhatsApp",
+    sendEmail: "Send by email",
+    startOver: "Start over",
+  },
+  errors: {
+    needRequired: "Pick at least one option so we know what to focus on.",
+    timelineRequired: "Pick a rough timeline to continue.",
+    budgetRequired: "Pick a rough budget range to continue.",
+    nameRequired: "Please tell us your name so we know who we are replying to.",
+    reachInvalid: "Please enter a valid email address or a phone number with at least 8 digits.",
+  },
+  questions: {
+    needs: {
+      heading: "What do you need?",
+      hint: "Choose one or more.",
+      options: [
+        { id: "website", label: "Website", phrase: "a website" },
+        { id: "dashboard", label: "Dashboard or CRM", phrase: "a dashboard or CRM" },
+        { id: "automation", label: "Automation", phrase: "an automation" },
+        { id: "unsure", label: "Not sure yet", phrase: "help figuring out what to build" },
+      ],
+    },
+    timeline: {
+      heading: "When do you need it?",
+      hint: "Choose one.",
+      options: [
+        { id: "asap", label: "As soon as possible", phrase: "as soon as possible" },
+        { id: "1-2-months", label: "In 1 to 2 months", phrase: "in 1 to 2 months" },
+        { id: "exploring", label: "Just exploring", phrase: "no fixed date yet (just exploring)" },
+      ],
+    },
+    // PLACEHOLDER — team must confirm these rupee budget ranges before publishing.
+    budget: {
+      heading: "Rough budget?",
+      hint: "Choose one.",
+      options: [
+        { id: "under-25k", label: "Under 25,000 rupees", phrase: "under 25,000 rupees" },
+        { id: "25k-75k", label: "25,000 to 75,000", phrase: "25,000 to 75,000 rupees" },
+        { id: "75k-plus", label: "75,000 and above", phrase: "75,000 rupees and above" },
+        { id: "unsure", label: "Not sure yet", phrase: "not decided yet" },
+      ],
+    },
+    reach: {
+      heading: "How should we reach you?",
+      nameLabel: "Your name",
+      namePlaceholder: "e.g. Asha",
+      contactLabel: "Phone number or email",
+      contactPlaceholder: "e.g. 98765 43210 or asha@company.com",
+    },
+  },
+  summary: {
+    heading: "Here is what we will send.",
+    subline: "Check it over, edit anything you like, then send it straight from your phone or inbox.",
+    labels: {
+      needs: "What you need",
+      timeline: "Timeline",
+      budget: "Rough budget",
+      reach: "How to reach you",
+    },
+    emailSubjectPrefix: "New project enquiry from",
+  },
+  thanks: {
+    heading: "Message ready to send.",
+    body: "Thanks for reaching out. We read every message ourselves and reply within one working day.",
+  },
+} as const;
+
+export const footerSection = {
+  year: 2026,
+  tagline: "Built by a team of five.",
+  backToTop: "Back to top",
+  whatsappLabel: "WhatsApp",
+  emailLabel: "Email",
+} as const;
+
 export const social = [
   { label: "Instagram", href: "https://instagram.com/" },
   { label: "LinkedIn", href: "https://linkedin.com/" },

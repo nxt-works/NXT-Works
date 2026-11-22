@@ -161,26 +161,28 @@ export default function ProcessSection() {
           </Label>
         </div>
 
-        {/* Section headline & subline */}
-        <div className="mt-8 md:mt-10">
-          <RevealText
-            as="h2"
-            id="process-title"
-            className="headline max-w-[14ch] text-section text-bone"
-          >
-            {before}
-            <span className="accent">{accent}</span>
-            {after}
-          </RevealText>
+        {/* Two columns on wide screens (lg+): sticky heading left, timeline right. Stacked on phones/portrait tablets. */}
+        <div className="mt-8 md:mt-10 lg:mt-14 lg:grid lg:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)] lg:items-start lg:gap-14 xl:gap-20">
+          {/* Left column: sticky heading & subline on lg+ */}
+          <div className="lg:sticky lg:top-28">
+            <RevealText
+              as="h2"
+              id="process-title"
+              className="headline max-w-[14ch] text-section text-bone"
+            >
+              {before}
+              <span className="accent">{accent}</span>
+              {after}
+            </RevealText>
 
-          <p className="measure mt-5 max-w-[46ch] text-[1rem] leading-[1.6] text-bone/75 md:mt-6 md:text-[1.1875rem]">
-            {processSection.subline}
-          </p>
-        </div>
+            <p className="measure mt-5 max-w-[44ch] text-[1rem] leading-[1.6] text-bone/75 md:mt-6 md:text-[1.1875rem]">
+              {processSection.subline}
+            </p>
+          </div>
 
-        {/* Timeline: left rail on phones/tablets; centred under headline column on wide screens */}
-        <div className="mt-12 md:mt-16 lg:mt-20 lg:pl-[clamp(5.5rem,18vw,16.5rem)]">
-          <div ref={trackRef} className="relative max-w-[740px]">
+          {/* Right column: vertical Volt line + 4 steps */}
+          <div className="mt-12 md:mt-16 lg:mt-2">
+            <div ref={trackRef} className="relative max-w-[740px]">
             {/* Vertical base track + scroll-drawn Volt line */}
             <div
               ref={lineTrackRef}
@@ -231,6 +233,7 @@ export default function ProcessSection() {
                 </li>
               ))}
             </ol>
+            </div>
           </div>
         </div>
       </div>

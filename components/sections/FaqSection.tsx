@@ -95,21 +95,38 @@ export default function FaqSection() {
           </Label>
         </div>
 
-        {/* Section headline */}
-        <div className="mt-8 md:mt-10">
-          <RevealText
-            as="h2"
-            id="faq-title"
-            className="headline max-w-[15ch] text-section text-ink"
-          >
-            {before}
-            <span className="accent">{accent}</span>
-            {after}
-          </RevealText>
-        </div>
+        {/* Two columns on wide screens (lg+): sticky heading + CTA left, 6 questions right. Stacked on phones/portrait tablets. */}
+        <div className="mt-8 md:mt-10 lg:mt-14 lg:grid lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] lg:items-start lg:gap-14 xl:gap-20">
+          {/* Left column: sticky heading + desktop closing CTA */}
+          <div className="lg:sticky lg:top-28">
+            <RevealText
+              as="h2"
+              id="faq-title"
+              className="headline max-w-[14ch] text-section text-ink"
+            >
+              {before}
+              <span className="accent">{accent}</span>
+              {after}
+            </RevealText>
 
-        {/* Six-item accessible accordion */}
-        <div className="mt-10 max-w-[960px] border-t border-ink/20 md:mt-14">
+            <div className="hidden lg:mt-12 lg:flex lg:flex-col lg:items-start lg:gap-5 lg:border-t lg:border-ink/15 lg:pt-8">
+              <p className="max-w-[26ch] font-display text-[1.375rem] leading-[1.2] font-bold tracking-[-0.02em] text-ink xl:text-[1.625rem]">
+                {faqSection.closing.text}
+              </p>
+              <MagneticButton>
+                <Button
+                  href={faqSection.closing.cta.href}
+                  surface="bone"
+                  className="border-[1.5px] border-ink"
+                >
+                  {faqSection.closing.cta.label}
+                </Button>
+              </MagneticButton>
+            </div>
+          </div>
+
+          {/* Right column: six-item accessible accordion */}
+          <div className="mt-10 border-t border-ink/20 md:mt-14 lg:mt-0">
           {faqSection.items.map((item, idx) => {
             const isOpen = openIndex === idx;
             const isInstant = reducedMotion || instantCloseIndex === idx;
@@ -179,10 +196,11 @@ export default function FaqSection() {
               </div>
             );
           })}
+          </div>
         </div>
 
-        {/* Closing line + Start a project CTA (matches Services Journey button style) */}
-        <div className="mt-12 flex flex-col items-start justify-between gap-6 border-t border-ink/15 pt-10 md:mt-16 md:flex-row md:items-center md:pt-12">
+        {/* Mobile & portrait tablet closing CTA (below accordion on <1024px) */}
+        <div className="mt-12 flex flex-col items-start justify-between gap-6 border-t border-ink/15 pt-10 md:mt-16 md:flex-row md:items-center md:pt-12 lg:hidden">
           <p className="max-w-[34ch] font-display text-[1.375rem] leading-[1.2] font-bold tracking-[-0.02em] text-ink md:text-[1.75rem]">
             {faqSection.closing.text}
           </p>

@@ -547,6 +547,36 @@
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
+   SECTION 09 — CONTACT CONVERSATION (GPU-only transform + opacity step fade)
+   ────────────────────────────────────────────────────────────────────────── */
+@keyframes contact-step-in {
+  0% {
+    opacity: 0;
+    transform: translate3d(14px, 0, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+@keyframes contact-step-in-back {
+  0% {
+    opacity: 0;
+    transform: translate3d(-14px, 0, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+.contact-step-enter {
+  animation: contact-step-in 320ms var(--ease-nxt) both;
+}
+.contact-step-enter-back {
+  animation: contact-step-in-back 320ms var(--ease-nxt) both;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
    INTRO STATE (set before first paint by the inline script in app/layout.tsx)
      data-intro="play"    → first visit this session: overlay shown, scroll locked
      data-intro="reduced" → reduced motion: simple fade

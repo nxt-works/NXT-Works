@@ -182,6 +182,24 @@ box, continue from there. Commit after each checkpoint.
 - [x] Full Chromium + WebKit verification across all 7 sizes (`360×740`, `390×844`, `412×915`, `768×1024`, `820×1180`, `1024×768`, `1440×900`): Process start/middle/end + FAQ closed/open + no-jump check + keyboard + reduced motion + lint + production build
 - [x] Update `PROGRESS.md` and commit on `process-faq` (do not merge)
 
+## Stage 2 — Section 09 (Contact) & Footer + Sticky Polish (`contact-footer`)
+### Checkpoint A — Sticky 2-col Process/FAQ polish & Section 09 Contact Q1–Q4 ✅
+- [x] Updated `ProcessSection.tsx` and `FaqSection.tsx` to sticky 2-column layouts on wide screens (`1024px+`), leaving phones and portrait tablets untouched
+- [x] Added `contactSection` (with PLACEHOLDER budget ranges and empty `whatsappNumber`/`contactEmail` team comments) and `footerSection` copy to `site.config.ts`
+- [x] Built `components/sections/ContactSection.tsx` on Ink surface (`09 / 09 CONTACT`, `Let's build your next thing.`) with 4-dot progress line, Back/Next, Q1 multi-select checkboxes, Q2/Q3 single-select radios with 400ms advance, Q4 gentle validation + ≥16px inputs + phone keyboard scroll-into-view, focus management without scroll jump
+- [x] Mounted `ContactSection` in `app/page.tsx` (leaving Proof, Team, Packages as placeholders) and committed
+
+### Checkpoint B — Summary, WhatsApp/email sending, CTA focus & interactive Footer
+- [ ] Complete Summary card (plain sentences, Edit per answer, conditional WhatsApp `wa.me` & email `mailto` links, `"Contact details coming soon."` fallback when both empty) and Thank-you + `"Start over"` state
+- [ ] Wire all `"Start a project"` buttons (`#contact` anchor clicks) to smooth-scroll to Section 09 and move keyboard focus to the first question
+- [ ] Build `components/sections/Footer.tsx` reusing `<Logo />` scaled nearly full-width with 4-part `data-logo-part` mouse spring parallax, touch gentle arrow drift + scroll nudge, static under reduced-motion & low-power, site links + conditional WhatsApp/email + Back to top + copyright line, safe-area padding
+- [ ] Git commit
+
+### Checkpoint C — Dual-engine verification, TEST link proof & clean-up
+- [ ] Test WhatsApp & email link generation with TEST config values, capture exact links, restore empty config values
+- [ ] Verify Chromium + WebKit across all 7 sizes (`360×740`–`1440×900`): Q1–Q4, summary, thank-you, footer, wide-screen Process & FAQ, phone keyboard focus/no-zoom, keyboard-only flow, reduced motion
+- [ ] Confirm `tsc --noEmit`, `eslint`, and `npm run build` pass with zero console errors or hydration warnings; stop all servers, update `PROGRESS.md`, commit on `contact-footer` (do not merge)
+
 ## Notes / decisions
 - Next.js 16.4 with `cacheComponents` enabled (scaffold default). Page is fully static.
 - Grain is static (no animated noise) to avoid full-screen repaints.
