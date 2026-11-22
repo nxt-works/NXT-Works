@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import MiniCrmDemo from "@/components/sections/MiniCrmDemo";
 import Label from "@/components/ui/Label";
 import RevealText from "@/components/ui/RevealText";
 import { liveDemos } from "@/site.config";
@@ -113,9 +114,7 @@ export default function LiveDemos() {
               </span>
             </div>
 
-            <div className="flex flex-1 flex-col p-4 sm:p-5">
-              <p className="text-[1rem] text-bone/70">Mini CRM interactive board — loading in Checkpoint B.</p>
-            </div>
+            <MiniCrmDemo />
           </div>
 
           {/* Demo 2: Automation Runner card frame */}

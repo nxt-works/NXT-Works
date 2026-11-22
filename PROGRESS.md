@@ -157,11 +157,11 @@ box, continue from there. Commit after each checkpoint.
 - [x] Mounted `LiveDemos` in `app/page.tsx` and added nested `[data-surface="ink"] :focus-visible` Volt focus ring + GPU demo keyframes in `app/globals.css`
 - [x] Git commit
 
-### Checkpoint B — Demo 1: Mini CRM
-- [ ] Build `components/sections/MiniCrmDemo.tsx` with 3 columns (`New`, `Contacted`, `Won`) on wide screens and thumb-friendly stage tabs on phones
-- [ ] 5 fictional sample leads (first name + initial, service, ₹ amount), tap-to-open action panel (`Move to next stage`), animated move, smooth count-up `Sample revenue`
-- [ ] `A new lead arrives` (max 8 total), `Reset`, polite `aria-live` status announcements, zero persistence
-- [ ] Git commit
+### Checkpoint B — Demo 1: Mini CRM ✅
+- [x] Build `components/sections/MiniCrmDemo.tsx` with 3 columns (`New`, `Contacted`, `Won`) on wide screens and thumb-friendly stage tabs on phones
+- [x] 5 fictional sample leads (first name + initial, service, ₹ amount), tap-to-open action panel (`Move to next stage`), animated move, smooth count-up `Sample revenue`
+- [x] `A new lead arrives` (max 8 total), `Reset`, polite `aria-live` status announcements, zero persistence
+- [x] Git commit
 
 ### Checkpoint C — Demo 2: Automation Runner & final dual-engine verification
 - [ ] Build `components/sections/AutomationDemo.tsx` with 4 connected switchable steps, `Run it` / `Run again`, Volt highlight + checkmark + travelling dot, skipped-step consequence notes, `Done in 2 seconds (simulated)`
