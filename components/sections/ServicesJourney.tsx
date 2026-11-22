@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import MagneticButton from "@/components/nav/MagneticButton";
+import Button from "@/components/ui/Button";
 import Label from "@/components/ui/Label";
 import RevealText from "@/components/ui/RevealText";
 import ServicesStage from "@/components/sections/ServicesStage";
@@ -17,9 +19,17 @@ const KPI_TARGET = 148;
  * Bone surface with angled Ink-to-Bone top cut (kept on a separate top strip
  * so native CSS `position: sticky` works reliably without clip-path/overflow bugs).
  *
- * Checkpoint B: GSAP ScrollTrigger scrubbed morph from Scene 1 (Website) →
- * Scene 2 (Dashboard) built from the exact same shared SVG shapes using only
- * transforms and opacity, paused off-screen.
+ * - Wide tablets & desktop (1024px+): 2 columns (left scrolling steps ~90dvh,
+ *   right sticky vertically-centred stage ~70dvh).
+ * - Phones & portrait tablets (<1024px): sticky stage at top (~42dvh) on solid
+ *   Bone with step text scrolling cleanly underneath (zero overlap).
+ * - Thin 3-dot progress rail (01, 02, 03) beside the text; active dot has an
+ *   Ink outline and Volt fill.
+ * - Single-object GSAP ScrollTrigger scrub morph across Website → Dashboard →
+ *   Automation (strictly transform + opacity, paused off-screen).
+ * - Reduced motion: no scrubbing; renders all three scenes as static cards,
+ *   one directly under each step.
+ * - Low power / small phones: shorter scrub smoothing and simpler animation detail.
  */
 export default function ServicesJourney() {
   const [activeStep, setActiveStep] = useState(0);
@@ -29,7 +39,7 @@ export default function ServicesJourney() {
   const reducedMotion = useReducedMotion();
   const lowPower = useLowPower();
 
-  // Track active step via IntersectionObserver (fallback + reduced-motion sync).
+  // Keep progress rail in sync under reduced-motion static layout.
   useEffect(() => {
     if (!reducedMotion) return;
     const nodes = stepRefs.current.filter((el): el is HTMLElement => el !== null);
@@ -44,14 +54,14 @@ export default function ServicesJourney() {
           }
         }
       },
-      { rootMargin: "-42% 0px -42% 0px", threshold: 0 },
+      { rootMargin: "-35% 0px -45% 0px", threshold: 0 },
     );
 
     nodes.forEach((n) => io.observe(n));
     return () => io.disconnect();
   }, [reducedMotion]);
 
-  // Master scrubbed scroll timeline: Scene 1 (Website) → Scene 2 (Dashboard).
+  // Master scrubbed scroll timeline: Scene 1 (Website) → Scene 2 (Dashboard) → Scene 3 (Automation).
   // Strictly GPU transform + opacity, paused when section is off-screen.
   useGSAP(
     () => {
@@ -62,7 +72,7 @@ export default function ServicesJourney() {
       const step2 = stepRefs.current[2];
       if (!sectionEl || !stageEl || !step0 || !step2) return;
 
-      const q = (sel: string) => stageEl.querySelector<SVGElement>(sel);
+      const q = <T extends Element = SVGElement>(sel: string) => stageEl.querySelector<T>(sel);
       const heroPanel = q("[data-morph='hero-panel']");
       const headline1 = q("[data-morph='headline-1']");
       const headline2 = q("[data-morph='headline-2']");
@@ -85,24 +95,39 @@ export default function ServicesJourney() {
       const bar3 = q("[data-chart-bar='3']");
       const bar4 = q("[data-chart-bar='4']");
       const tableRows = Array.from(stageEl.querySelectorAll<SVGElement>("[data-table-row]"));
-      const kpiCountEl = stageEl.querySelector<SVGTextElement>("[data-kpi='count']");
+      const kpiCountEl = q<SVGTextElement>("[data-kpi='count']");
+
+      const s3Connectors = q("[data-scene3='connectors']");
+      const s3Nodes = q("[data-scene3='nodes']");
+      const s3Pulse = q("[data-scene3='pulse']");
+      const s3Chip = q<HTMLDivElement>("[data-scene3='chip']");
+      const nodeLit1 = q("[data-node-lit='1']");
+      const nodeLit2 = q("[data-node-lit='2']");
+      const nodeLit3 = q("[data-node-lit='3']");
+      const nodeLit4 = q("[data-node-lit='4']");
 
       if (!heroPanel || !card1 || !card2 || !card3 || !voltCta) return;
 
-      // Enforce clean Scene 1 initial transforms via GSAP so scrub reverses cleanly.
-      gsap.set(heroPanel, { x: 18, y: 14, scaleX: 1, scaleY: 1, transformOrigin: "0px 0px" });
+      // Clean Scene 1 starting transforms so scrubbing reverses cleanly.
+      gsap.set(heroPanel, { x: 18, y: 14, scaleX: 1, scaleY: 1, opacity: 1, transformOrigin: "0px 0px" });
       gsap.set(headline1, { x: 42, y: 54, scaleX: 1, scaleY: 1, opacity: 1, transformOrigin: "0px 0px" });
       gsap.set(headline2, { x: 42, y: 86, scaleX: 1, scaleY: 1, opacity: 1, transformOrigin: "0px 0px" });
       gsap.set(headline3, { x: 42, y: 120, scaleX: 1, scaleY: 1, opacity: 1, transformOrigin: "0px 0px" });
       gsap.set(voltCta, { x: 42, y: 144, scaleX: 1, scaleY: 1, opacity: 1, transformOrigin: "0px 0px" });
-      gsap.set(card1, { x: 18, y: 214, scaleX: 1, scaleY: 1, transformOrigin: "0px 0px" });
-      gsap.set(card2, { x: 212, y: 214, scaleX: 1, scaleY: 1, transformOrigin: "0px 0px" });
-      gsap.set(card3, { x: 406, y: 214, scaleX: 1, scaleY: 1, transformOrigin: "0px 0px" });
+      gsap.set(card1, { x: 18, y: 214, scaleX: 1, scaleY: 1, opacity: 1, transformOrigin: "0px 0px" });
+      gsap.set(card2, { x: 212, y: 214, scaleX: 1, scaleY: 1, opacity: 1, transformOrigin: "0px 0px" });
+      gsap.set(card3, { x: 406, y: 214, scaleX: 1, scaleY: 1, opacity: 1, transformOrigin: "0px 0px" });
+
       gsap.set([s1Hero, s1Cards, s1Cta], { opacity: 1 });
       gsap.set([s2Sidebar, s2Chart, s2Kpi, s2Table], { opacity: 0 });
       gsap.set([bar1, bar2, bar3], { scaleY: 0, transformOrigin: "0px 0px" });
       gsap.set(bar4, { opacity: 0 });
       gsap.set(tableRows, { opacity: 0, y: 6 });
+
+      gsap.set([s3Connectors, s3Nodes], { opacity: 0 });
+      gsap.set([nodeLit1, nodeLit2, nodeLit3, nodeLit4], { opacity: 0, scale: 0.5, transformOrigin: "50% 50%" });
+      gsap.set(s3Pulse, { x: 132, y: 180, opacity: 0 });
+      gsap.set(s3Chip, { opacity: 0, y: 8, scale: 0.94 });
 
       const kpiProxy = { value: 0 };
       let lastKpi = -1;
@@ -114,13 +139,38 @@ export default function ServicesJourney() {
         }
       };
 
-      // Master 2-unit timeline: 0.0 -> 1.0 = Scene 1 -> Scene 2, 1.0 -> 2.0 reserved for Scene 2 -> Scene 3 (Checkpoint C).
+      // Continuous subtle Volt pulse loop while Scene 3 is settled & visible (disabled on lowPower).
+      let pulseLoop: gsap.core.Timeline | null = null;
+      if (!lowPower && s3Pulse) {
+        pulseLoop = gsap.timeline({ paused: true, repeat: -1, repeatDelay: 0.9 });
+        pulseLoop
+          .set(s3Pulse, { x: 132, y: 180, opacity: 1 })
+          .to(s3Pulse, { x: 154, y: 180, duration: 0.16, ease: "none" })
+          .to(s3Pulse, { x: 154, y: 102, duration: 0.34, ease: "none" })
+          .to(s3Pulse, { x: 176, y: 102, duration: 0.16, ease: "none" })
+          .to(s3Pulse, { opacity: 0, duration: 0.12 })
+          .set(s3Pulse, { x: 280, y: 102 })
+          .to(s3Pulse, { opacity: 1, duration: 0.12 })
+          .to(s3Pulse, { x: 302, y: 102, duration: 0.16, ease: "none" })
+          .to(s3Pulse, { x: 302, y: 246, duration: 0.48, ease: "none" })
+          .to(s3Pulse, { x: 324, y: 246, duration: 0.16, ease: "none" })
+          .to(s3Pulse, { opacity: 0, duration: 0.12 })
+          .set(s3Pulse, { x: 428, y: 246 })
+          .to(s3Pulse, { opacity: 1, duration: 0.12 })
+          .to(s3Pulse, { x: 449, y: 246, duration: 0.16, ease: "none" })
+          .to(s3Pulse, { x: 449, y: 174, duration: 0.3, ease: "none" })
+          .to(s3Pulse, { x: 470, y: 174, duration: 0.16, ease: "none" })
+          .to(s3Pulse, { opacity: 0, duration: 0.18 });
+      }
+
+      // Master 2-unit timeline:
+      //   t = 0.00..1.00 → Scene 1 (Website) morphs into Scene 2 (Dashboard)
+      //   t = 1.00..2.00 → Scene 2 (Dashboard) morphs into Scene 3 (Automation)
       const tl = gsap.timeline({ paused: true, defaults: { ease: "none" } });
 
-      // Phase 1 (t = 0.08 → 0.88): Scene 1 Website morphs into Scene 2 Dashboard.
+      // ── PHASE 1 (t = 0.08 → 0.90): Scene 1 Website → Scene 2 Dashboard ──
       tl.to([s1Hero, s1Cards, s1Cta], { opacity: 0, duration: 0.22 }, 0.08);
 
-      // Shared blocks smoothly travel & resize into dashboard layout.
       tl.to(heroPanel, { x: 18, y: 14, scaleX: 120 / 564, scaleY: 338 / 182, duration: 0.56, ease: "power2.inOut" }, 0.14);
       tl.to(headline1, { x: 46, y: 83, scaleX: 74 / 292, scaleY: 8 / 22, duration: 0.52, ease: "power2.inOut" }, 0.16);
       tl.to(headline2, { x: 32, y: 112, scaleX: 82 / 222, scaleY: 8 / 22, opacity: 0.65, duration: 0.52, ease: "power2.inOut" }, 0.18);
@@ -130,12 +180,11 @@ export default function ServicesJourney() {
       tl.to(card2, { x: 410, y: 14, scaleX: 172 / 176, scaleY: 164 / 138, duration: 0.56, ease: "power2.inOut" }, 0.18);
       tl.to(card3, { x: 154, y: 194, scaleX: 428 / 176, scaleY: 158 / 138, duration: 0.56, ease: "power2.inOut" }, 0.2);
 
-      // Volt CTA button flies into Bar 4's exact slot, then hands off seamlessly to crisp-cornered bar4.
+      // Volt CTA flies into Bar 4's slot, then hands off seamlessly to crisp-cornered bar4.
       tl.to(voltCta, { x: 328, y: 62, scaleX: 34 / 138, scaleY: 98 / 32, duration: 0.56, ease: "power2.inOut" }, 0.22);
       tl.to(bar4, { opacity: 1, duration: 0.1 }, 0.72);
       tl.to(voltCta, { opacity: 0, duration: 0.1 }, 0.74);
 
-      // Dashboard inner content fades in & grows once containers settle.
       tl.to([s2Sidebar, s2Chart, s2Kpi, s2Table], { opacity: 1, duration: 0.24 }, 0.58);
       tl.to(bar1, { scaleY: 1, duration: 0.22, ease: "power2.out" }, 0.6);
       tl.to(bar2, { scaleY: 1, duration: 0.22, ease: "power2.out" }, 0.65);
@@ -158,10 +207,60 @@ export default function ServicesJourney() {
         0.56,
       );
 
-      // Hold pad through t = 2.0 so Step 02 lands squarely at progress = 0.5 (t = 1.0).
-      tl.to({}, { duration: 1.0 }, 1.0);
+      // ── PHASE 2 (t = 1.08 → 1.94): Scene 2 Dashboard → Scene 3 Automation ──
+      tl.to([s2Sidebar, s2Chart, s2Kpi, s2Table, headline1, headline2, headline3], { opacity: 0, duration: 0.2 }, 1.08);
+      tl.to([bar1, bar2, bar3], { scaleY: 0, duration: 0.18 }, 1.08);
+      tl.to(bar4, { opacity: 0, duration: 0.12 }, 1.1);
+      tl.to(voltCta, { opacity: 1, duration: 0.1 }, 1.12);
+
+      // The 4 dashboard panels contract smoothly into the 4 automation nodes!
+      tl.to(heroPanel, { x: 28, y: 132, scaleX: 104 / 564, scaleY: 96 / 182, duration: 0.48, ease: "power2.inOut" }, 1.16);
+      tl.to(card1, { x: 176, y: 54, scaleX: 104 / 176, scaleY: 96 / 138, duration: 0.48, ease: "power2.inOut" }, 1.18);
+      tl.to(card2, { x: 324, y: 198, scaleX: 104 / 176, scaleY: 96 / 138, duration: 0.48, ease: "power2.inOut" }, 1.2);
+      tl.to(card3, { x: 470, y: 126, scaleX: 104 / 176, scaleY: 96 / 138, duration: 0.48, ease: "power2.inOut" }, 1.22);
+
+      // Volt bar glides down to the bottom-right "Task done" chip slot.
+      tl.to(voltCta, { x: 454, y: 314, scaleX: 0.92, scaleY: 0.92, duration: 0.5, ease: "power2.inOut" }, 1.22);
+
+      // Crisp 4-node artwork & connector lines take over cleanly as blocks settle into place.
+      tl.to(s3Nodes, { opacity: 1, duration: 0.16 }, 1.56);
+      tl.to([heroPanel, card1, card2, card3], { opacity: 0, duration: 0.14 }, 1.62);
+      tl.to(s3Connectors, { opacity: 1, duration: 0.2 }, 1.58);
+
+      // Nodes light up in sequence (1 → 2 → 3 → 4) while the scrubbed Volt pulse sweeps across.
+      tl.to(nodeLit1, { opacity: 1, scale: 1, duration: 0.12, ease: "power2.out" }, 1.64);
+      tl.to(nodeLit2, { opacity: 1, scale: 1, duration: 0.12, ease: "power2.out" }, 1.72);
+      tl.to(nodeLit3, { opacity: 1, scale: 1, duration: 0.12, ease: "power2.out" }, 1.8);
+      tl.to(nodeLit4, { opacity: 1, scale: 1, duration: 0.12, ease: "power2.out" }, 1.88);
+
+      // Scrubbed Volt pulse arrives cleanly on Node 4's incoming line (on lowPower it rests crisply here).
+      tl.fromTo(
+        s3Pulse,
+        { x: 132, y: 180, opacity: 0 },
+        { x: 449, y: 174, opacity: 1, duration: 0.28, ease: "power2.inOut" },
+        1.64,
+      );
+
+      // "Task done" Volt chip hands off cleanly from voltCta.
+      tl.to(voltCta, { opacity: 0, duration: 0.12 }, 1.72);
+      tl.to(s3Chip, { opacity: 1, y: 0, scale: 1, duration: 0.2, ease: "power2.out" }, 1.76);
+
+      // Hold settle pad to t = 2.0
+      tl.to({}, { duration: 0.04 }, 1.96);
 
       let lastStep = 0;
+      let isInView = true;
+      let inScene3 = false;
+
+      const syncPulseLoop = () => {
+        if (!pulseLoop) return;
+        if (isInView && inScene3) {
+          if (pulseLoop.paused()) pulseLoop.play();
+        } else {
+          if (!pulseLoop.paused()) pulseLoop.pause(0);
+        }
+      };
+
       const mm = gsap.matchMedia();
 
       const bindTrigger = (anchor: string) => {
@@ -170,7 +269,7 @@ export default function ServicesJourney() {
           start: `top ${anchor}`,
           endTrigger: step2,
           end: `top ${anchor}`,
-          scrub: lowPower ? 0.25 : 0.55,
+          scrub: lowPower ? 0.2 : 0.5,
           animation: tl,
           invalidateOnRefresh: true,
           onUpdate: (self) => {
@@ -180,19 +279,25 @@ export default function ServicesJourney() {
               lastStep = nextStep;
               setActiveStep(nextStep);
             }
+            const nextInScene3 = p >= 0.94;
+            if (nextInScene3 !== inScene3) {
+              inScene3 = nextInScene3;
+              syncPulseLoop();
+            }
           },
         });
 
-        // Pause ScrollTrigger work when section is completely off-screen.
+        // Pause ScrollTrigger & pulse loop when section is off-screen.
         const io = new IntersectionObserver(
           (entries) => {
-            const visible = entries[0]?.isIntersecting ?? true;
-            if (visible) {
+            isInView = entries[0]?.isIntersecting ?? true;
+            if (isInView) {
               st.enable(false);
               ScrollTrigger.update();
             } else {
               st.disable(false);
             }
+            syncPulseLoop();
           },
           { rootMargin: "200px 0px" },
         );
@@ -209,6 +314,7 @@ export default function ServicesJourney() {
 
       return () => {
         mm.revert();
+        pulseLoop?.kill();
         tl.kill();
       };
     },
@@ -254,58 +360,13 @@ export default function ServicesJourney() {
         </h2>
       </div>
 
-      {/* Main sticky-stage + scrolling-steps story */}
-      <div className="services-layout">
-        {/* Sticky artwork stage: top ~42dvh on phones/portrait tablets, right ~70dvh on lg+ */}
-        <div className="services-stage-col">
-          <ServicesStage ref={stageRef} activeStep={activeStep} />
-        </div>
-
-        {/* Scrolling steps + thin 3-dot progress rail beside the text */}
-        <div className="services-steps-wrap">
-          <nav aria-label="Services steps" className="services-rail">
-            <div className="relative flex flex-col items-center gap-2">
-              {/* Thin vertical rail line behind the 3 dots */}
-              <span
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-x-0 top-5 bottom-5 mx-auto w-px bg-ink/20"
-              />
-              {servicesJourney.steps.map((step, idx) => {
-                const isActive = activeStep === idx;
-                return (
-                  <button
-                    key={step.id}
-                    type="button"
-                    onClick={() => scrollToStep(idx)}
-                    aria-current={isActive ? "step" : undefined}
-                    aria-label={`Jump to ${step.number} ${step.kicker}`}
-                    className="group relative z-10 flex min-h-[44px] min-w-[44px] flex-col items-center justify-center gap-1 rounded-full focus-visible:outline-ink"
-                  >
-                    <span
-                      aria-hidden="true"
-                      className={`size-3.5 rounded-full border-[1.5px] transition-[transform,background-color,border-color] duration-300 ${
-                        isActive
-                          ? "scale-110 border-ink bg-volt"
-                          : "border-ink/45 bg-bone group-hover:border-ink"
-                      }`}
-                    />
-                    <span
-                      className={`bg-bone px-1 font-mono text-[12px] leading-none font-medium tabular-nums transition-colors duration-300 ${
-                        isActive ? "text-ink" : "text-ink/55 group-hover:text-ink"
-                      }`}
-                    >
-                      {step.number}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </nav>
-
-          {/* The three narrative steps */}
-          <div className="min-w-0 flex-1">
+      {reducedMotion ? (
+        /* Reduced-motion layout: zero scrubbing — three clean static scene cards, one under each step */
+        <div className="mx-auto w-full max-w-[1600px] px-5 py-6 md:px-10 md:py-10">
+          <div className="space-y-14 md:space-y-20">
             {servicesJourney.steps.map((step, idx) => {
               const [before, accent, after] = step.headline;
+              const staticIdx = idx as 0 | 1 | 2;
               return (
                 <article
                   key={step.id}
@@ -314,43 +375,166 @@ export default function ServicesJourney() {
                   ref={(el) => {
                     stepRefs.current[idx] = el;
                   }}
-                  className="services-step border-t border-ink/12 first:border-t-0"
+                  className="flex flex-col gap-8 border-t border-ink/15 pt-10 first:border-t-0 first:pt-2 lg:flex-row lg:items-center lg:gap-12"
                 >
-                  <p className="label text-ink/70">
-                    <span className="tabular-nums">{step.number}</span>
-                    <span aria-hidden="true" className="mx-2 text-ink/40">
-                      /
-                    </span>
-                    {step.kicker}
-                  </p>
+                  <div className="w-full lg:w-[44%]">
+                    <p className="label text-ink/70">
+                      <span className="tabular-nums">{step.number}</span>
+                      <span aria-hidden="true" className="mx-2 text-ink/40">
+                        /
+                      </span>
+                      {step.kicker}
+                    </p>
 
-                  <RevealText
-                    as="h3"
-                    className="headline mt-4 max-w-[15ch] text-[clamp(2rem,4.6vw,4rem)] leading-[0.94] tracking-[-0.03em] text-ink md:mt-5"
-                  >
-                    {before}
-                    <span className="accent">{accent}</span>
-                    {after}
-                  </RevealText>
+                    <h3 className="headline mt-4 max-w-[15ch] text-[clamp(2rem,4.6vw,4rem)] leading-[0.94] tracking-[-0.03em] text-ink md:mt-5">
+                      {before}
+                      <span className="accent">{accent}</span>
+                      {after}
+                    </h3>
 
-                  <p className="measure mt-5 max-w-[42ch] text-[1rem] leading-[1.6] text-ink/80 md:mt-6 md:text-[1.125rem]">
-                    {step.body}
-                  </p>
+                    <p className="measure mt-5 max-w-[42ch] text-[1rem] leading-[1.6] text-ink/80 md:mt-6 md:text-[1.125rem]">
+                      {step.body}
+                    </p>
 
-                  <ul className="mt-6 space-y-2.5 border-t border-ink/12 pt-5 md:mt-7">
-                    {step.points.map((point) => (
-                      <li key={point} className="flex items-center gap-3 text-[1rem] leading-[1.45] font-medium text-ink">
-                        <span
-                          aria-hidden="true"
-                          className="size-2 shrink-0 rounded-full border border-ink bg-volt"
-                        />
-                        <span>{point}</span>
-                      </li>
-                    ))}
-                  </ul>
+                    <ul className="mt-6 space-y-2.5 border-t border-ink/12 pt-5 md:mt-7">
+                      {step.points.map((point) => (
+                        <li key={point} className="flex items-center gap-3 text-[1rem] leading-[1.45] font-medium text-ink">
+                          <span
+                            aria-hidden="true"
+                            className="size-2 shrink-0 rounded-full border border-ink bg-volt"
+                          />
+                          <span>{point}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="w-full lg:w-[56%]">
+                    <ServicesStage activeStep={idx} staticScene={staticIdx} />
+                  </div>
                 </article>
               );
             })}
+          </div>
+        </div>
+      ) : (
+        /* Interactive sticky-stage + scrolling-steps story */
+        <div className="services-layout">
+          {/* Sticky artwork stage: top ~42dvh on phones/portrait tablets, right ~70dvh on lg+ */}
+          <div className="services-stage-col">
+            <ServicesStage ref={stageRef} activeStep={activeStep} />
+          </div>
+
+          {/* Scrolling steps + thin 3-dot progress rail beside the text */}
+          <div className="services-steps-wrap">
+            <nav aria-label="Services steps" className="services-rail">
+              <div className="relative flex flex-col items-center gap-2">
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-x-0 top-5 bottom-5 mx-auto w-px bg-ink/20"
+                />
+                {servicesJourney.steps.map((step, idx) => {
+                  const isActive = activeStep === idx;
+                  return (
+                    <button
+                      key={step.id}
+                      type="button"
+                      onClick={() => scrollToStep(idx)}
+                      aria-current={isActive ? "step" : undefined}
+                      aria-label={`Jump to ${step.number} ${step.kicker}`}
+                      className="group relative z-10 flex min-h-[44px] min-w-[44px] flex-col items-center justify-center gap-1 rounded-full focus-visible:outline-ink"
+                    >
+                      <span
+                        aria-hidden="true"
+                        className={`size-3.5 rounded-full border-[1.5px] transition-[transform,background-color,border-color] duration-300 ${
+                          isActive
+                            ? "scale-110 border-ink bg-volt"
+                            : "border-ink/45 bg-bone group-hover:border-ink"
+                        }`}
+                      />
+                      <span
+                        className={`bg-bone px-1 font-mono text-[12px] leading-none font-medium tabular-nums transition-colors duration-300 ${
+                          isActive ? "text-ink" : "text-ink/55 group-hover:text-ink"
+                        }`}
+                      >
+                        {step.number}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </nav>
+
+            {/* The three narrative steps */}
+            <div className="min-w-0 flex-1">
+              {servicesJourney.steps.map((step, idx) => {
+                const [before, accent, after] = step.headline;
+                return (
+                  <article
+                    key={step.id}
+                    id={`service-${step.id}`}
+                    data-step-index={idx}
+                    ref={(el) => {
+                      stepRefs.current[idx] = el;
+                    }}
+                    className="services-step border-t border-ink/12 first:border-t-0"
+                  >
+                    <p className="label text-ink/70">
+                      <span className="tabular-nums">{step.number}</span>
+                      <span aria-hidden="true" className="mx-2 text-ink/40">
+                        /
+                      </span>
+                      {step.kicker}
+                    </p>
+
+                    <RevealText
+                      as="h3"
+                      className="headline mt-4 max-w-[15ch] text-[clamp(2rem,4.6vw,4rem)] leading-[0.94] tracking-[-0.03em] text-ink md:mt-5"
+                    >
+                      {before}
+                      <span className="accent">{accent}</span>
+                      {after}
+                    </RevealText>
+
+                    <p className="measure mt-5 max-w-[42ch] text-[1rem] leading-[1.6] text-ink/80 md:mt-6 md:text-[1.125rem]">
+                      {step.body}
+                    </p>
+
+                    <ul className="mt-6 space-y-2.5 border-t border-ink/12 pt-5 md:mt-7">
+                      {step.points.map((point) => (
+                        <li key={point} className="flex items-center gap-3 text-[1rem] leading-[1.45] font-medium text-ink">
+                          <span
+                            aria-hidden="true"
+                            className="size-2 shrink-0 rounded-full border border-ink bg-volt"
+                          />
+                          <span>{point}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Closing custom-work line + Start a project CTA (sits cleanly below sticky stage release) */}
+      <div className="mx-auto w-full max-w-[1600px] px-5 pt-4 pb-16 md:px-10 md:pt-8 md:pb-24">
+        <div className="flex flex-col items-start justify-between gap-6 border-t border-ink/15 pt-10 md:flex-row md:items-center md:pt-12">
+          <p className="max-w-[34ch] font-display text-[1.375rem] leading-[1.2] font-bold tracking-[-0.02em] text-ink md:text-[1.75rem]">
+            {servicesJourney.closing.text}
+          </p>
+          <div className="shrink-0">
+            <MagneticButton>
+              <Button
+                href={servicesJourney.closing.cta.href}
+                surface="bone"
+                className="border-[1.5px] border-ink"
+              >
+                {servicesJourney.closing.cta.label}
+              </Button>
+            </MagneticButton>
           </div>
         </div>
       </div>

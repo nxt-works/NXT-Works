@@ -129,12 +129,12 @@ box, continue from there. Commit after each checkpoint.
 - [x] Verify lint, build, and Chromium + WebKit across all 7 sizes for Scene 1 & Scene 2
 - [x] Git commit
 
-### Checkpoint C — Scene 3 (Automation), Scene 2 → 3 morph, closing CTA, reduced-motion & low-power
-- [ ] Morph shared shapes into 4 joined nodes with Volt pulse + sequential node highlight + `"Task done"` chip (no numbers)
-- [ ] Add closing line (`"Something else in mind? Tell us. We build custom too."`) and `"Start a project"` button
-- [ ] Reduced-motion mode (3 static scene cards under each step, zero scrubbing) & low-power simplification
-- [ ] Full Chromium + WebKit verification across all 7 sizes × 3 scenes + reduced motion + lint + build
-- [ ] Update `PROGRESS.md` and commit on `services-journey` (do not merge)
+### Checkpoint C — Scene 3 (Automation), Scene 2 → 3 morph, closing CTA, reduced-motion & low-power ✅
+- [x] Morphed shared shapes into 4 joined nodes with orthogonal connectors, live Volt pulse (paused off-screen), sequential node lighting, and `"Task done"` Volt chip (no numbers, `≥ 12px` mono)
+- [x] Added closing line (`"Something else in mind? Tell us. We build custom too."`) and `"Start a project"` CTA (`1.5px` Ink outline on Bone) cleanly below sticky stage release
+- [x] Implemented `prefers-reduced-motion` layout (zero scrubbing, 3 static scene cards one under each step) and low-power simplification (shorter scrub smoothing, no looping pulse, flat row fade)
+- [x] Verified lint, production build, and Chromium + WebKit across all 7 sizes (`360×740`, `390×844`, `412×915`, `768×1024`, `820×1180`, `1024×768`, `1440×900`) × all 3 scenes + closing CTA + reduced-motion with zero overlap and zero console/hydration warnings
+- [x] Updated `PROGRESS.md` and committed on `services-journey` (not merged)
 
 ## Notes / decisions
 - Next.js 16.4 with `cacheComponents` enabled (scaffold default). Page is fully static.
