@@ -195,10 +195,10 @@ box, continue from there. Commit after each checkpoint.
 - [x] Build `components/sections/Footer.tsx` reusing `<Logo />` scaled nearly full-width with 4-part `data-logo-part` mouse spring parallax, touch gentle arrow drift + scroll nudge, static under reduced-motion & low-power, site links + conditional WhatsApp/email + Back to top + copyright line, safe-area padding
 - [x] Git commit
 
-### Checkpoint C — Dual-engine verification, TEST link proof & clean-up
-- [ ] Test WhatsApp & email link generation with TEST config values, capture exact links, restore empty config values
-- [ ] Verify Chromium + WebKit across all 7 sizes (`360×740`–`1440×900`): Q1–Q4, summary, thank-you, footer, wide-screen Process & FAQ, phone keyboard focus/no-zoom, keyboard-only flow, reduced motion
-- [ ] Confirm `tsc --noEmit`, `eslint`, and `npm run build` pass with zero console errors or hydration warnings; stop all servers, update `PROGRESS.md`, commit on `contact-footer` (do not merge)
+### Checkpoint C — Dual-engine verification, TEST link proof & clean-up ✅
+- [x] Test WhatsApp & email link generation with TEST config values, capture exact links, restore empty config values
+- [x] Verify Chromium + WebKit across all 7 sizes (`360×740`–`1440×900`): Q1–Q4, summary, thank-you, footer, wide-screen Process & FAQ, phone keyboard focus/no-zoom, keyboard-only flow, reduced motion
+- [x] Confirm `tsc --noEmit`, `eslint`, and `npm run build` pass with zero console errors or hydration warnings; stop all servers, update `PROGRESS.md`, commit on `contact-footer` (do not merge)
 
 ## Notes / decisions
 - Next.js 16.4 with `cacheComponents` enabled (scaffold default). Page is fully static.

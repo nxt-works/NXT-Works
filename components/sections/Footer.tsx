@@ -60,10 +60,12 @@ export default function Footer() {
       if (!partN || !partStroke || !partArrow || !partT) return;
 
       // Reset transforms cleanly whenever mode changes.
-      gsap.set([partN, partStroke, partArrow, partT, wrapEl], { x: 0, y: 0 });
+      gsap.set([partN, partStroke, partArrow, partT, wrapEl], { clearProps: "transform" });
 
-      // Reduced motion or low-power: completely static.
-      if (reducedMotion || lowPower) return;
+      // Reduced motion (checked synchronously too so frame-0 never drifts) or low-power: completely static.
+      const prefersReduced =
+        reducedMotion || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (prefersReduced || lowPower) return;
 
       // Touch devices (no mouse): gentle arrow drift + subtle whole-wordmark scroll nudge.
       if (isTouch) {
@@ -157,7 +159,7 @@ export default function Footer() {
         footerEl.removeEventListener("pointerleave", onPointerLeave);
       };
     },
-    { scope: footerRef, dependencies: [reducedMotion, lowPower, isTouch] },
+    { scope: footerRef, dependencies: [reducedMotion, lowPower, isTouch], revertOnUpdate: true },
   );
 
   const handleBackToTop = () => {
