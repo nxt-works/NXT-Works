@@ -89,6 +89,27 @@ box, continue from there. Commit after each checkpoint.
 - [x] Reduced motion: instant toggle with `"Show blueprint"` / `"Hide blueprint"`, no fade transition
 - [x] Verified at `390×844`, `820×1180`, and `1440×900` (zero overlap, zero console/hydration errors, lint & build clean), committed on `hero-xray`
 
+### Safari / WebKit Fix Pass (`hero-xray`)
+#### Checkpoint A — Find the real cause ✅
+- [x] Installed Playwright + WebKit & Chromium; captured and compared `390×844`, `820×1180`, `1440×900`, and `1440×780` screenshots plus CSSOM selector diff and fresh-intro nav timeline
+- [x] Added mandatory WebKit + Chromium verification rule to `RESPONSIVE_RULES.md`
+- [x] Documented evidence-backed causes (shared `lg:grid-cols-12` / `lg:col-span-6` squeezing + `col-start-1 row-start-1` stacking, unguarded tether anchor, missing `white-space: nowrap` on ticker items, visible `#{id}` anchor text + `dvh`-only `min-h` & `clamp()` inside `clip-path: polygon()` in `SectionPlaceholder`, escaped `[@media(...)]` variants, and Safari `fixed` + `backdrop-filter` post-intro repaint / `translate:` timing on `Nav`)
+- [x] Git commit
+
+#### Checkpoint B — Safari / WebKit fixes
+- [ ] Hero bottom layout: independent column for subline + CTAs; separate bottom-right container (`width: min(360px, 40vw)`) for booking line + stacked hint/spec card
+- [ ] Tether line: draw only when card is visible and verified in bottom-right zone
+- [ ] Ticker: explicit `whitespace-nowrap` on every phrase/track, strictly single-line horizontal scroll
+- [ ] Section placeholders: safe minimum height fallback (`vh` + `dvh`), normal flow without label/heading overlap, remove visible `#SERVICES` / `#PROOF` anchor text, safe `clip-path`
+- [ ] Nav: guaranteed visible immediately when intro finishes (explicit intro-handoff reset + safe `transform` / compositing wake in WebKit)
+- [ ] Replace fragile/unusual CSS (escaped `[@media(...)]`, `dvh`-only heights, `clamp()` in `clip-path`) with widely supported equivalents
+- [ ] Git commit
+
+#### Checkpoint C — Dual-engine verification
+- [ ] WebKit & Chromium screenshots at `390×844`, `820×1180`, `1440×900` + scrolled sections + active lens over headline
+- [ ] Lint, type check, and production build clean with zero console errors or hydration warnings
+- [ ] Update `PROGRESS.md` and commit on `hero-xray` (do not merge)
+
 ## Notes / decisions
 - Next.js 16.4 with `cacheComponents` enabled (scaffold default). Page is fully static.
 - Grain is static (no animated noise) to avoid full-screen repaints.

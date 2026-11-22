@@ -34,3 +34,7 @@ Read this file at the start of every task. Most visitors arrive on phones and ta
 ## 8. Mandatory Verification Matrix
 Test and visually verify in portrait and landscape:
 `360×740`, `390×844`, `412×915`, `768×1024`, `820×1180`, `1024×768`, `1180×820`, `1440×900`.
+
+## 9. Mandatory Dual-Engine Browser Checks (WebKit + Chromium)
+- Every screenshot and layout verification check MUST run in **Playwright WebKit as well as Chromium** (never Chromium alone).
+- Prefer widely supported CSS (standard `@media` rules, `vh`/`px` fallbacks before `dvh`, explicit `whitespace-nowrap` on horizontal tracks, `transform: translate3d(...)` over standalone `translate:`, no `clamp()` inside `clip-path: polygon()`, and independent containers instead of fragile shared 12-column grids) so Safari/WebKit never drops or collapses layout rules.
