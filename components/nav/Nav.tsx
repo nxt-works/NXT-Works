@@ -44,6 +44,9 @@ export default function Nav() {
   const openMenu = useCallback(() => {
     setMenuOpen(true);
     setHidden(false);
+    if (headerRef.current) {
+      headerRef.current.style.transform = "none";
+    }
     if (!pushedHistoryRef.current) {
       pushedHistoryRef.current = true;
       window.history.pushState({ ...(window.history.state ?? {}), navDrawer: true }, "");
@@ -56,7 +59,7 @@ export default function Nav() {
       setHidden(false);
       const header = headerRef.current;
       if (header) {
-        header.style.transform = "translate3d(0, 0, 0)";
+        header.style.transform = "none";
         void header.offsetHeight;
       }
     };
@@ -165,8 +168,8 @@ export default function Nav() {
       setMenuOpen(false);
     };
 
-    // Close mobile drawer automatically if rotating a tablet into md+ landscape nav.
-    const mql = window.matchMedia("(min-width: 768px)");
+    // Close mobile drawer automatically if rotating a tablet into 900px+ landscape nav.
+    const mql = window.matchMedia("(min-width: 900px)");
     const onMediaChange = (ev: MediaQueryListEvent) => {
       if (ev.matches) closeMenu(false);
     };
@@ -202,7 +205,7 @@ export default function Nav() {
         paddingLeft: "max(1rem, env(safe-area-inset-left))",
         paddingRight: "max(1rem, env(safe-area-inset-right))",
       }}
-      className="pointer-events-none fixed inset-x-0 top-0 z-[100] flex flex-col items-center md:pt-5"
+      className="pointer-events-none fixed inset-x-0 top-0 z-[100] flex flex-col items-center min-[900px]:pt-5"
     >
       {/* Keyboard skip link */}
       <a
@@ -215,7 +218,7 @@ export default function Nav() {
       <nav
         aria-label="Primary"
         data-hidden={isHidden ? "true" : "false"}
-        className="nav-pill pointer-events-auto relative z-[102] flex w-full max-w-[400px] items-center justify-between gap-2 rounded-full border border-bone/14 bg-ink/96 p-1.5 pl-2 shadow-[0_12px_36px_rgba(12,12,13,0.45)] md:w-auto md:max-w-none md:gap-4 md:bg-ink/86 md:pl-2.5"
+        className="nav-pill pointer-events-auto relative z-[102] flex w-full max-w-[400px] items-center justify-between gap-2 rounded-full border border-bone/14 bg-ink/96 p-1.5 pl-2 shadow-[0_12px_36px_rgba(12,12,13,0.45)] min-[900px]:w-auto min-[900px]:max-w-none min-[900px]:gap-4 min-[900px]:bg-ink/86 min-[900px]:pl-2.5"
       >
         {/* Left: X mark (44×44px tap target) */}
         <a
@@ -228,8 +231,8 @@ export default function Nav() {
           <Logo mark title="" className="h-[18px] w-auto" />
         </a>
 
-        {/* Centre: tablet/desktop links (44px min height, 8px+ gap) */}
-        <ul className="hidden items-center gap-2 md:flex">
+        {/* Centre: desktop links (44px min height, 8px+ gap) */}
+        <ul className="hidden items-center gap-2 min-[900px]:flex">
           {nav.links.map((item) => {
             const isActive = activeHref === item.href;
             return (
@@ -261,7 +264,7 @@ export default function Nav() {
             <a
               href={nav.cta.href}
               onClick={() => closeMenu(false)}
-              className="group/cta inline-flex h-11 items-center gap-2 rounded-full bg-volt pr-1.5 pl-4 text-[0.875rem] font-medium tracking-[-0.01em] text-ink transition-colors duration-300 active:scale-[0.98] md:pl-5"
+              className="group/cta inline-flex h-11 items-center gap-2 rounded-full bg-volt pr-1.5 pl-4 text-[0.875rem] font-medium tracking-[-0.01em] text-ink transition-colors duration-300 active:scale-[0.98] min-[900px]:pl-5"
               data-cursor="grow"
               data-cursor-surface="volt"
             >
@@ -294,7 +297,7 @@ export default function Nav() {
             aria-expanded={menuOpen}
             aria-controls="mobile-nav-drawer"
             aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
-            className="grid size-11 shrink-0 place-items-center rounded-full border border-bone/16 text-bone transition-colors duration-300 hover:border-bone/40 hover:bg-graphite active:bg-graphite md:hidden"
+            className="grid size-11 shrink-0 place-items-center rounded-full border border-bone/16 text-bone transition-colors duration-300 hover:border-bone/40 hover:bg-graphite active:bg-graphite min-[900px]:hidden"
           >
             <span className="relative flex h-2.5 w-4 flex-col justify-between" aria-hidden="true">
               <span
@@ -326,7 +329,7 @@ export default function Nav() {
           paddingLeft: "max(1.5rem, env(safe-area-inset-left))",
           paddingRight: "max(1.5rem, env(safe-area-inset-right))",
         }}
-        className="pointer-events-auto fixed inset-0 z-[101] flex flex-col justify-between overflow-y-auto bg-ink md:hidden"
+        className="pointer-events-auto fixed inset-0 z-[101] flex flex-col justify-between overflow-y-auto bg-ink min-[900px]:hidden"
       >
         <ul className="divide-y divide-bone/12">
           {nav.links.map((item, idx) => (

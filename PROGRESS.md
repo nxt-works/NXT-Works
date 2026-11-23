@@ -200,6 +200,15 @@ box, continue from there. Commit after each checkpoint.
 - [x] Verify Chromium + WebKit across all 7 sizes (`360×740`–`1440×900`): Q1–Q4, summary, thank-you, footer, wide-screen Process & FAQ, phone keyboard focus/no-zoom, keyboard-only flow, reduced motion
 - [x] Confirm `tsc --noEmit`, `eslint`, and `npm run build` pass with zero console errors or hydration warnings; stop all servers, update `PROGRESS.md`, commit on `contact-footer` (do not merge)
 
+## Stage 2 — Polish Pass 1: Section Visibility & Menu Sync (`polish-1`)
+### Checkpoint A — Unfinished section toggle & single-source nav sync ✅
+- [x] Added `showUnfinishedSections = false`, `sectionReady` status map, `isSectionShowing()`, and ONE master `navLinks` list (Services, Proof, Demos, Process, Team, Packages, FAQ) in `site.config.ts`
+- [x] Filtered SectionPlaceholder rendering in `app/page.tsx` so Proof, Team, and Packages placeholders render only when `showUnfinishedSections === true` or their ready flag is `true`
+- [x] Unified desktop menu, mobile drawer menu (`Nav.tsx`), and footer links (`Footer.tsx`) to pull strictly from visible nav links derived from the master list
+- [x] Switched mobile drawer vs desktop nav breakpoint to `900px` (`min-[900px]:` / `matchMedia("(min-width: 900px)")`) so tablet portrait devices get comfortable, uncluttered touch navigation
+- [x] Verified dual-engine (Chromium & WebKit) across phone (`390×844`), tablet (`768×1024`), and desktop (`1440×900`) with `showUnfinishedSections: false` (4 links) and `showUnfinishedSections: true` (7 links); restored setting to `false`
+- [x] Smooth scroll, "Start a project" CTA focus, and active link scrollspy verified; lint and production build clean; git commit on `polish-1` (not merged)
+
 ## Notes / decisions
 - Next.js 16.4 with `cacheComponents` enabled (scaffold default). Page is fully static.
 - Grain is static (no animated noise) to avoid full-screen repaints.

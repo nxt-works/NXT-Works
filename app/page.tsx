@@ -9,7 +9,7 @@ import ProcessSection from "@/components/sections/ProcessSection";
 import FaqSection from "@/components/sections/FaqSection";
 import ContactSection from "@/components/sections/ContactSection";
 import Footer from "@/components/sections/Footer";
-import { sections } from "@/site.config";
+import { sections, showUnfinishedSections, sectionReady } from "@/site.config";
 
 export default function Home() {
   return (
@@ -21,6 +21,10 @@ export default function Home() {
         <Hero ticker={<Ticker />} />
 
         {sections.map((section, i) => {
+          const isReady = sectionReady[section.id];
+          const isVisible = showUnfinishedSections || isReady;
+          if (!isVisible) return null;
+
           if (section.id === "services") return <ServicesJourney key={section.id} />;
           if (section.id === "demos") return <LiveDemos key={section.id} />;
           if (section.id === "process") return <ProcessSection key={section.id} />;

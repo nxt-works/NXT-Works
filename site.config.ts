@@ -46,6 +46,51 @@ export type SectionId =
   | "faq"
   | "contact";
 
+// Set showUnfinishedSections to true to preview everything. Set a section to ready when it is built.
+export const showUnfinishedSections = false;
+
+/** List indicating which sections are ready to be shown. */
+export const sectionReady: Record<SectionId, boolean> = {
+  services: true,
+  proof: false,
+  demos: true,
+  process: true,
+  team: false,
+  packages: false,
+  faq: true,
+  contact: true,
+};
+
+/** Helper to check whether a section should currently be displayed. */
+export function isSectionShowing(id: SectionId): boolean {
+  return showUnfinishedSections || Boolean(sectionReady[id]);
+}
+
+export interface NavLinkItem {
+  id: SectionId;
+  label: string;
+  href: string;
+}
+
+/**
+ * ONE master list of navigation links across the site:
+ * Services, Proof, Demos, Process, Team, Packages, FAQ.
+ */
+export const navLinks: NavLinkItem[] = [
+  { id: "services", label: "Services", href: "#services" },
+  { id: "proof", label: "Proof", href: "#proof" },
+  { id: "demos", label: "Demos", href: "#demos" },
+  { id: "process", label: "Process", href: "#process" },
+  { id: "team", label: "Team", href: "#team" },
+  { id: "packages", label: "Packages", href: "#packages" },
+  { id: "faq", label: "FAQ", href: "#faq" },
+];
+
+/** Filtered list of visible nav links: only shown if its section is showing. */
+export const visibleNavLinks: NavLinkItem[] = navLinks.filter((item) =>
+  showUnfinishedSections || Boolean(sectionReady[item.id]),
+);
+
 /** Ordered list of page sections. Index labels ("02 / 09") derive from this order. */
 export const sections: {
   id: SectionId;
@@ -68,13 +113,8 @@ export const sections: {
 export const sectionCount = sections.length + 1;
 
 export const nav = {
-  links: [
-    { label: "Services", href: "#services" },
-    { label: "Proof", href: "#proof" },
-    { label: "Process", href: "#process" },
-    { label: "Team", href: "#team" },
-    { label: "Packages", href: "#packages" },
-  ],
+  /** Visible links filtered from the ONE master navLinks list. */
+  links: visibleNavLinks,
   cta: { label: "Start a project", href: "#contact" },
 } as const;
 
