@@ -6,6 +6,7 @@ import Button from "@/components/ui/Button";
 import Label from "@/components/ui/Label";
 import RevealText from "@/components/ui/RevealText";
 import ServicesStage, { CHART_LAYOUT } from "@/components/sections/ServicesStage";
+import { SectionLabelContent } from "@/lib/sections";
 import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
 import { useLowPower } from "@/lib/useLowPower";
 import { useReducedMotion } from "@/lib/useReducedMotion";
@@ -397,8 +398,8 @@ export default function ServicesJourney() {
       {/* Section eyebrow header */}
       <div className="mx-auto w-full max-w-[1600px] px-5 pt-8 pb-4 md:px-10 md:pt-12 md:pb-6">
         <div className="flex items-center justify-between gap-4 border-b border-ink/15 pb-4">
-          <Label index={2} className="text-ink/75">
-            {servicesJourney.eyebrow}
+          <Label className="text-ink/75">
+            <SectionLabelContent id="services">{servicesJourney.eyebrow}</SectionLabelContent>
           </Label>
           <span className="label hidden text-ink/60 sm:inline">01 — 03</span>
         </div>

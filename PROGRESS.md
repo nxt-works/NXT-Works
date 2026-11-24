@@ -209,6 +209,13 @@ box, continue from there. Commit after each checkpoint.
 - [x] Verified dual-engine (Chromium & WebKit) across phone (`390×844`), tablet (`768×1024`), and desktop (`1440×900`) with `showUnfinishedSections: false` (4 links) and `showUnfinishedSections: true` (7 links); restored setting to `false`
 - [x] Smooth scroll, "Start a project" CTA focus, and active link scrollspy verified; lint and production build clean; git commit on `polish-1` (not merged)
 
+### Checkpoint B — Dynamic Section Numbering & Services-Demos Join Polish ✅
+- [x] Created `lib/sections.ts` with `getSectionNumber()`, `getShowingSectionCount()`, `getSectionIndexLabel()`, and `SectionLabelContent` reading dynamically from `site.config.ts`
+- [x] Replaced hardcoded label indices across `Hero.tsx`, `ServicesJourney.tsx`, `LiveDemos.tsx`, `ProcessSection.tsx`, `FaqSection.tsx`, `ContactSection.tsx`, and `SectionPlaceholder.tsx` so section numbering automatically adapts to showing sections (e.g. `01 / 06` through `06 / 06` when unfinished sections are hidden; `01 / 09` through `09 / 09` when `showUnfinishedSections: true`)
+- [x] Cleaned up the Bone-to-Bone join between Services and Demos in `LiveDemos.tsx`: conditionally removed the decorative Ink→Bone slanted top cut when the preceding section is not Ink, ensuring a continuous, flush Bone surface with zero stray lines, gaps, or leftover slants
+- [x] Verified full-page dual-engine screenshots in Chromium and WebKit at `390×844` and `1440×900` for both `showUnfinishedSections: false` and `showUnfinishedSections: true`
+- [x] Stopped all servers, verified clean lint and production build, updated `PROGRESS.md`, and committed on `polish-1` (not merged)
+
 ## Notes / decisions
 - Next.js 16.4 with `cacheComponents` enabled (scaffold default). Page is fully static.
 - Grain is static (no animated noise) to avoid full-screen repaints.

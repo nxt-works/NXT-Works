@@ -1,5 +1,6 @@
 import Label from "@/components/ui/Label";
 import RevealText from "@/components/ui/RevealText";
+import { SectionLabelContent } from "@/lib/sections";
 import type { SectionId } from "@/site.config";
 
 type SectionPlaceholderProps = {
@@ -37,8 +38,8 @@ export default function SectionPlaceholder({ id, index, label, title, surface }:
         <div className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col justify-between px-5 md:px-10">
           <div className="block">
             <div className="flex items-center justify-between gap-4">
-              <Label index={index} className={isBone ? "text-ink/70" : "text-smoke"}>
-                {label}
+              <Label className={isBone ? "text-ink/70" : "text-smoke"}>
+                <SectionLabelContent id={id}>{label}</SectionLabelContent>
               </Label>
               <span className={`label hidden sm:inline ${isBone ? "text-ink/70" : "text-smoke/80"}`}>
                 Stage 02

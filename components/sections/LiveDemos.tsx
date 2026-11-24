@@ -5,6 +5,7 @@ import AutomationDemo from "@/components/sections/AutomationDemo";
 import MiniCrmDemo from "@/components/sections/MiniCrmDemo";
 import Label from "@/components/ui/Label";
 import RevealText from "@/components/ui/RevealText";
+import { isSectionShowing, SectionLabelContent } from "@/lib/sections";
 import { liveDemos } from "@/site.config";
 
 type DemoTab = (typeof liveDemos.tabs)[number]["id"];
@@ -21,6 +22,7 @@ type DemoTab = (typeof liveDemos.tabs)[number]["id"];
 export default function LiveDemos() {
   const [activeTab, setActiveTab] = useState<DemoTab>("crm");
   const [before, accent, after] = liveDemos.headline;
+  const hasInkAbove = isSectionShowing("proof");
 
   return (
     <section
@@ -29,16 +31,18 @@ export default function LiveDemos() {
       aria-labelledby="demos-title"
       className="scroll-mt-4 bg-bone text-ink"
     >
-      {/* Decorative angled Ink → Bone top cut */}
-      <div aria-hidden="true" className="h-5 w-full bg-ink md:h-[34px]">
-        <div className="section-cut-left h-full w-full bg-bone" />
-      </div>
+      {/* Decorative angled Ink → Bone top cut (only when preceding section is Ink) */}
+      {hasInkAbove && (
+        <div aria-hidden="true" className="h-5 w-full bg-ink md:h-[34px]">
+          <div className="section-cut-left h-full w-full bg-bone" />
+        </div>
+      )}
 
       <div className="mx-auto w-full max-w-[1600px] px-5 pt-10 pb-16 md:px-10 md:pt-14 md:pb-24">
         {/* Eyebrow row + SAMPLE DATA / SIMULATED mono note */}
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-ink/15 pb-4">
-          <Label index={4} className="text-ink/75">
-            {liveDemos.eyebrow}
+          <Label className="text-ink/75">
+            <SectionLabelContent id="demos">{liveDemos.eyebrow}</SectionLabelContent>
           </Label>
           <span className="rounded border border-ink/35 bg-bone px-2.5 py-1 font-mono text-[12px] leading-none font-medium tracking-[0.12em] text-ink/80 uppercase">
             {liveDemos.note}

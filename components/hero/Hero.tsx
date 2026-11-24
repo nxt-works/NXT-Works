@@ -6,6 +6,7 @@ import HeroXRay from "@/components/hero/HeroXRay";
 import MagneticButton from "@/components/nav/MagneticButton";
 import Button from "@/components/ui/Button";
 import Label from "@/components/ui/Label";
+import { SectionLabelContent } from "@/lib/sections";
 import { gsap, SplitText, useGSAP } from "@/lib/gsap";
 import { onIntroReveal } from "@/lib/intro";
 import { useIsTouch } from "@/lib/useIsTouch";
@@ -98,8 +99,8 @@ export default function Hero({ object, ticker }: { object?: React.ReactNode; tic
         >
           <div className="w-full">
             <div data-reveal="rise" data-xray="eyebrow" className="w-fit">
-              <Label index={1} className="text-[0.75rem] text-bone/85 md:text-[0.8125rem]">
-                {hero.eyebrow}
+              <Label className="text-[0.75rem] text-bone/85 md:text-[0.8125rem]">
+                <SectionLabelContent id="hero">{hero.eyebrow}</SectionLabelContent>
               </Label>
             </div>
 

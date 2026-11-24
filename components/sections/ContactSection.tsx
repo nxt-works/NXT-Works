@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Label from "@/components/ui/Label";
 import RevealText from "@/components/ui/RevealText";
+import { SectionLabelContent } from "@/lib/sections";
 import {
   buildContactMessage,
   buildMailtoUrl,
@@ -369,8 +370,8 @@ export default function ContactSection() {
       <div className="mx-auto w-full max-w-[1600px] px-5 pt-10 pb-20 md:px-10 md:pt-14 md:pb-28">
         {/* Eyebrow row */}
         <div className="flex items-center justify-between gap-4 border-b border-bone/12 pb-4">
-          <Label index={9} className="text-smoke">
-            {cfg.eyebrow}
+          <Label className="text-smoke">
+            <SectionLabelContent id="contact">{cfg.eyebrow}</SectionLabelContent>
           </Label>
         </div>
 

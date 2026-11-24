@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import Label from "@/components/ui/Label";
 import RevealText from "@/components/ui/RevealText";
+import { SectionLabelContent } from "@/lib/sections";
 import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
 import { useLowPower } from "@/lib/useLowPower";
 import { useReducedMotion } from "@/lib/useReducedMotion";
@@ -156,8 +157,8 @@ export default function ProcessSection() {
       <div className="mx-auto w-full max-w-[1600px] px-5 pt-10 pb-20 md:px-10 md:pt-14 md:pb-28">
         {/* Eyebrow row */}
         <div className="flex items-center justify-between gap-4 border-b border-bone/12 pb-4">
-          <Label index={5} className="text-smoke">
-            {processSection.eyebrow}
+          <Label className="text-smoke">
+            <SectionLabelContent id="process">{processSection.eyebrow}</SectionLabelContent>
           </Label>
         </div>
 

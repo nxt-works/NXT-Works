@@ -6,6 +6,7 @@ import { scrollToTarget } from "@/components/providers/SmoothScroll";
 import Button from "@/components/ui/Button";
 import Label from "@/components/ui/Label";
 import RevealText from "@/components/ui/RevealText";
+import { SectionLabelContent } from "@/lib/sections";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 import { faqSection } from "@/site.config";
 
@@ -90,8 +91,8 @@ export default function FaqSection() {
       <div className="mx-auto w-full max-w-[1600px] px-5 pt-10 pb-16 md:px-10 md:pt-14 md:pb-24">
         {/* Eyebrow row */}
         <div className="flex items-center justify-between gap-4 border-b border-ink/15 pb-4">
-          <Label index={8} className="text-ink/75">
-            {faqSection.eyebrow}
+          <Label className="text-ink/75">
+            <SectionLabelContent id="faq">{faqSection.eyebrow}</SectionLabelContent>
           </Label>
         </div>
 
