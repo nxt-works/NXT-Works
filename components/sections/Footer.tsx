@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import Logo from "@/components/Logo";
 import { scrollToTarget } from "@/components/providers/SmoothScroll";
 import { gsap, useGSAP } from "@/lib/gsap";
-import { useIsTouch } from "@/lib/useIsTouch";
 import { useLowPower } from "@/lib/useLowPower";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 import { brand, contactSection, footerSection, nav } from "@/site.config";
@@ -13,39 +12,24 @@ import { brand, contactSection, footerSection, nav } from "@/site.config";
  * SITE FOOTER — giant interactive <Logo /> wordmark + navigation + back to top.
  *
  * - Reuses `components/Logo.tsx` directly (never redraws the logo).
- * - Fine pointer (mouse): shifts the 4 `data-logo-part` SVG groups (`n`, `x-stroke`,
- *   `x-arrow`, `t`) in distinct directions & amplitudes with spring easing.
- * - Touch without mouse: `x-arrow` drifts gently on its own and the whole wordmark
- *   nudges subtly with scroll.
+ * - At rest: exact resting <Logo /> aligned to page margins (20px phones / 40px wide).
+ * - Mouse or finger movement: shifts the 4 `data-logo-part` SVG groups (`n`, `x-stroke`,
+ *   `x-arrow`, `t`) slightly in CSS-pixel-capped amplitudes (≤ ~14px even on corners),
+ *   guaranteed never to overlap adjacent letters or approach screen edges, and glides
+ *   back to exact resting (0, 0) on cursor leave / touch end / off-screen.
  * - Reduced motion or low-power: completely static.
- * - Pauses animations automatically when scrolled off-screen.
  */
 export default function Footer() {
   const reducedMotion = useReducedMotion();
   const lowPower = useLowPower();
-  const isTouch = useIsTouch();
 
   const footerRef = useRef<HTMLElement>(null);
   const wordmarkWrapRef = useRef<HTMLDivElement>(null);
-  const inViewRef = useRef(false);
 
   const whatsappDigits = contactSection.whatsappNumber.replace(/\D/g, "");
   const whatsappHref = whatsappDigits ? `https://wa.me/${whatsappDigits}` : null;
   const emailTrimmed = contactSection.contactEmail.trim();
   const emailHref = emailTrimmed ? `mailto:${emailTrimmed}` : null;
-
-  useEffect(() => {
-    const el = footerRef.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        inViewRef.current = entries[0]?.isIntersecting ?? false;
-      },
-      { rootMargin: "80px 0px", threshold: 0 },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
 
   useGSAP(
     () => {
@@ -53,66 +37,24 @@ export default function Footer() {
       const wrapEl = wordmarkWrapRef.current;
       if (!footerEl || !wrapEl) return;
 
+      const svgEl = wrapEl.querySelector<SVGSVGElement>("svg");
       const partN = wrapEl.querySelector<SVGGElement>('[data-logo-part="n"]');
       const partStroke = wrapEl.querySelector<SVGGElement>('[data-logo-part="x-stroke"]');
       const partArrow = wrapEl.querySelector<SVGGElement>('[data-logo-part="x-arrow"]');
       const partT = wrapEl.querySelector<SVGGElement>('[data-logo-part="t"]');
-      if (!partN || !partStroke || !partArrow || !partT) return;
+      if (!svgEl || !partN || !partStroke || !partArrow || !partT) return;
 
-      // Reset transforms cleanly whenever mode changes.
+      // Reset transforms cleanly whenever mode changes so at rest it is the exact logo.
       gsap.set([partN, partStroke, partArrow, partT, wrapEl], { clearProps: "transform" });
 
-      // Reduced motion (checked synchronously too so frame-0 never drifts) or low-power: completely static.
+      // Reduced motion (checked synchronously too so frame-0 never moves) or low-power: completely static.
       const prefersReduced =
         reducedMotion || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       if (prefersReduced || lowPower) return;
 
-      // Touch devices (no mouse): gentle arrow drift + subtle whole-wordmark scroll nudge.
-      if (isTouch) {
-        const drift = gsap.to(partArrow, {
-          x: 6,
-          y: -6,
-          duration: 2.8,
-          ease: "sine.inOut",
-          repeat: -1,
-          yoyo: true,
-          paused: true,
-        });
+      let inView = false;
 
-        const io = new IntersectionObserver(
-          (entries) => {
-            if (entries[0]?.isIntersecting) drift.play();
-            else drift.pause();
-          },
-          { threshold: 0.05 },
-        );
-        io.observe(footerEl);
-
-        const nudge = gsap.fromTo(
-          wrapEl,
-          { y: 14 },
-          {
-            y: -6,
-            ease: "none",
-            scrollTrigger: {
-              trigger: footerEl,
-              start: "top bottom",
-              end: "bottom bottom",
-              scrub: 0.4,
-            },
-          },
-        );
-
-        return () => {
-          io.disconnect();
-          drift.kill();
-          nudge.scrollTrigger?.kill();
-          nudge.kill();
-        };
-      }
-
-      // Mouse / fine pointer: 4-part parallax spring shift in distinct directions & amounts.
-      const spring = { duration: 0.85, ease: "power3.out" as const };
+      const spring = { duration: 0.75, ease: "power3.out" as const };
       const nX = gsap.quickTo(partN, "x", spring);
       const nY = gsap.quickTo(partN, "y", spring);
       const sX = gsap.quickTo(partStroke, "x", spring);
@@ -122,25 +64,7 @@ export default function Footer() {
       const tX = gsap.quickTo(partT, "x", spring);
       const tY = gsap.quickTo(partT, "y", spring);
 
-      const onPointerMove = (e: PointerEvent) => {
-        if (e.pointerType !== "mouse" || !inViewRef.current) return;
-        const rect = wrapEl.getBoundingClientRect();
-        if (rect.width === 0 || rect.height === 0) return;
-        const nx = Math.max(-1, Math.min(1, ((e.clientX - rect.left) / rect.width - 0.5) * 2));
-        const ny = Math.max(-1, Math.min(1, ((e.clientY - rect.top) / rect.height - 0.5) * 2));
-
-        // Each of the 4 parts moves in a distinct direction and amplitude (SVG user units).
-        nX(-9 * nx);
-        nY(-4 * ny);
-        sX(5 * nx);
-        sY(6 * ny);
-        aX(14 * nx);
-        aY(-11 * ny);
-        tX(8 * nx);
-        tY(4 * ny);
-      };
-
-      const onPointerLeave = () => {
+      const resetParts = () => {
         nX(0);
         nY(0);
         sX(0);
@@ -151,15 +75,82 @@ export default function Footer() {
         tY(0);
       };
 
+      const io = new IntersectionObserver(
+        (entries) => {
+          inView = entries[0]?.isIntersecting ?? false;
+          if (!inView) resetParts();
+        },
+        { rootMargin: "80px 0px", threshold: 0 },
+      );
+      io.observe(footerEl);
+
+      const applyClientPoint = (clientX: number, clientY: number) => {
+        if (!inView) return;
+        const rect = wrapEl.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) return;
+
+        const nx = Math.max(-1, Math.min(1, ((clientX - rect.left) / rect.width - 0.5) * 2));
+        const ny = Math.max(-1, Math.min(1, ((clientY - rect.top) / rect.height - 0.5) * 2));
+
+        // Cap amplitudes in real CSS pixels (max ~13.9px diagonal on wide, scaled down on phones
+        // so letters never overlap and N/T keep generous clearance from screen edges).
+        const viewBoxWidth = svgEl.viewBox?.baseVal?.width || 308;
+        const pxToSvg = viewBoxWidth / rect.width;
+        const ampPx = Math.min(11.5, rect.width * 0.025);
+
+        nX(-0.55 * ampPx * nx * pxToSvg);
+        nY(-0.35 * ampPx * ny * pxToSvg);
+        sX(0.35 * ampPx * nx * pxToSvg);
+        sY(0.45 * ampPx * ny * pxToSvg);
+        aX(1.0 * ampPx * nx * pxToSvg);
+        aY(-0.68 * ampPx * ny * pxToSvg);
+        tX(0.55 * ampPx * nx * pxToSvg);
+        tY(0.35 * ampPx * ny * pxToSvg);
+      };
+
+      const onPointerMove = (e: PointerEvent) => {
+        applyClientPoint(e.clientX, e.clientY);
+      };
+
+      const onPointerLeave = () => {
+        resetParts();
+      };
+
+      const onPointerUpOrCancel = (e: PointerEvent) => {
+        if (e.pointerType !== "mouse") resetParts();
+      };
+
+      const onTouchMove = (e: TouchEvent) => {
+        const touch = e.touches[0];
+        if (touch) applyClientPoint(touch.clientX, touch.clientY);
+      };
+
+      const onTouchEnd = () => {
+        resetParts();
+      };
+
       footerEl.addEventListener("pointermove", onPointerMove, { passive: true });
       footerEl.addEventListener("pointerleave", onPointerLeave, { passive: true });
+      footerEl.addEventListener("pointerup", onPointerUpOrCancel, { passive: true });
+      footerEl.addEventListener("pointercancel", onPointerUpOrCancel, { passive: true });
+      footerEl.addEventListener("touchstart", onTouchMove, { passive: true });
+      footerEl.addEventListener("touchmove", onTouchMove, { passive: true });
+      footerEl.addEventListener("touchend", onTouchEnd, { passive: true });
+      footerEl.addEventListener("touchcancel", onTouchEnd, { passive: true });
 
       return () => {
+        io.disconnect();
         footerEl.removeEventListener("pointermove", onPointerMove);
         footerEl.removeEventListener("pointerleave", onPointerLeave);
+        footerEl.removeEventListener("pointerup", onPointerUpOrCancel);
+        footerEl.removeEventListener("pointercancel", onPointerUpOrCancel);
+        footerEl.removeEventListener("touchstart", onTouchMove);
+        footerEl.removeEventListener("touchmove", onTouchMove);
+        footerEl.removeEventListener("touchend", onTouchEnd);
+        footerEl.removeEventListener("touchcancel", onTouchEnd);
       };
     },
-    { scope: footerRef, dependencies: [reducedMotion, lowPower, isTouch], revertOnUpdate: true },
+    { scope: footerRef, dependencies: [reducedMotion, lowPower], revertOnUpdate: true },
   );
 
   const handleBackToTop = () => {
@@ -173,20 +164,16 @@ export default function Footer() {
     <footer
       ref={footerRef}
       data-surface="ink"
-      className="border-t border-bone/12 bg-ink text-bone"
+      className="overflow-hidden border-t border-bone/12 bg-ink text-bone"
       style={{
+        paddingLeft: "env(safe-area-inset-left)",
+        paddingRight: "env(safe-area-inset-right)",
         paddingBottom: "max(2rem, env(safe-area-inset-bottom))",
       }}
     >
-      <div
-        className="mx-auto w-full max-w-[1600px] pt-10 md:pt-14"
-        style={{
-          paddingLeft: "max(1.25rem, env(safe-area-inset-left))",
-          paddingRight: "max(1.25rem, env(safe-area-inset-right))",
-        }}
-      >
+      <div className="mx-auto w-full max-w-[1600px] px-5 pt-10 md:px-10 md:pt-14">
         {/* Top row: site links + conditional WhatsApp/Email + Back to top */}
-        <div className="flex flex-col gap-6 border-b border-bone/12 pb-8 md:flex-row md:items-center md:justify-between md:px-5">
+        <div className="flex flex-col gap-6 border-b border-bone/12 pb-8 md:flex-row md:items-center md:justify-between">
           <nav aria-label="Footer navigation" className="flex flex-wrap items-center gap-x-2 gap-y-2">
             {nav.links.map((link) => (
               <a
@@ -231,8 +218,8 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Giant NXT wordmark reusing Logo.tsx directly (nearly full width) */}
-        <div className="overflow-hidden px-2 py-10 sm:px-4 sm:py-14 md:px-6 md:py-20">
+        {/* Giant NXT wordmark reusing Logo.tsx directly, aligned to page side margins (20px phone / 40px wide) */}
+        <div className="py-10 sm:py-14 md:py-20">
           <div ref={wordmarkWrapRef} data-testid="footer-wordmark" className="w-full">
             <Logo
               variant="light"
@@ -243,7 +230,7 @@ export default function Footer() {
         </div>
 
         {/* Bottom copyright bar */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-bone/12 pt-6 md:px-5">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-bone/12 pt-6">
           <p className="font-mono text-[12px] leading-relaxed tracking-[0.08em] text-smoke">
             © {footerSection.year} {brand.name}. {footerSection.tagline}
           </p>

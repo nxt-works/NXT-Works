@@ -216,6 +216,12 @@ box, continue from there. Commit after each checkpoint.
 - [x] Verified full-page dual-engine screenshots in Chromium and WebKit at `390×844` and `1440×900` for both `showUnfinishedSections: false` and `showUnfinishedSections: true`
 - [x] Stopped all servers, verified clean lint and production build, updated `PROGRESS.md`, and committed on `polish-1` (not merged)
 
+### Checkpoint C — Giant Footer NXT Wordmark Polish ✅
+- [x] Aligned footer container and giant `<Logo />` wordmark in `components/sections/Footer.tsx` to exact page side margins (`20px` on phones, `40px` on tablets/wide screens, with safe-area padding) and removed tight `overflow-hidden` clipping on the wordmark wrapper
+- [x] Unified mouse & finger (`pointermove`/`touchmove`) 4-part parallax in CSS-pixel-capped amplitudes (`≤ 13.9px` max diagonal, scaled down on phones) converted via live SVG `viewBox` width so letters never overlap or approach screen edges and glide back to exact `(0, 0)` on leave/touch-end/off-screen
+- [x] Kept reduced motion and low-power completely static (`0.000px` drift) and reused existing `<Logo />` without redrawing
+- [x] Verified lint, production build, and Chromium + WebKit screenshots at rest & mid-movement across `390×844`, `820×1180`, and `1440×900` (zero console/hydration errors, `0.000px` return error); stopped all servers and committed on `polish-1` (not merged)
+
 ## Notes / decisions
 - Next.js 16.4 with `cacheComponents` enabled (scaffold default). Page is fully static.
 - Grain is static (no animated noise) to avoid full-screen repaints.
