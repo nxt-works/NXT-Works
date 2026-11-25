@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Bricolage_Grotesque, Geist, Instrument_Serif, JetBrains_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import { brand, colors, meta } from "@/site.config";
 import { INTRO_STORAGE_KEY } from "@/lib/intro";
 import SmoothScroll from "@/components/providers/SmoothScroll";
@@ -7,24 +7,34 @@ import ScrollProgress from "@/components/ui/ScrollProgress";
 import Cursor from "@/components/ui/Cursor";
 import "./globals.css";
 
-const bricolage = Bricolage_Grotesque({
+const __Bricolage_Grotesque = localFont({
+  src: "./fonts/bricolage-grotesque-latin.woff2",
   variable: "--font-bricolage",
-  subsets: ["latin"],
-  axes: ["opsz", "wdth"],
+  weight: "200 800",
+  style: "normal",
   display: "swap",
+  declarations: [{ prop: "font-stretch", value: "75% 100%" }],
 });
-const instrument = Instrument_Serif({
+const __Instrument_Serif = localFont({
+  src: "./fonts/instrument-serif-latin-400-italic.woff2",
   variable: "--font-instrument",
-  subsets: ["latin"],
   weight: "400",
   style: "italic",
   display: "swap",
+  adjustFontFallback: "Times New Roman",
 });
-const geist = Geist({ variable: "--font-geist", subsets: ["latin"], display: "swap" });
-const jetbrains = JetBrains_Mono({
+const __Geist = localFont({
+  src: "./fonts/geist-latin.woff2",
+  variable: "--font-geist",
+  weight: "100 900",
+  style: "normal",
+  display: "swap",
+});
+const __JetBrains_Mono = localFont({
+  src: "./fonts/jetbrains-mono-latin.woff2",
   variable: "--font-jetbrains",
-  subsets: ["latin"],
-  weight: ["400", "500"],
+  weight: "400 500",
+  style: "normal",
   display: "swap",
   preload: false, // labels only — not worth competing with the display face
 });
@@ -57,7 +67,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       data-intro="seen"
       suppressHydrationWarning
-      className={`${bricolage.variable} ${instrument.variable} ${geist.variable} ${jetbrains.variable}`}
+      className={`${__Bricolage_Grotesque.variable} ${__Instrument_Serif.variable} ${__Geist.variable} ${__JetBrains_Mono.variable}`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: prePaintScript }} />

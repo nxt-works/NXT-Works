@@ -222,6 +222,12 @@ box, continue from there. Commit after each checkpoint.
 - [x] Kept reduced motion and low-power completely static (`0.000px` drift) and reused existing `<Logo />` without redrawing
 - [x] Verified lint, production build, and Chromium + WebKit screenshots at rest & mid-movement across `390×844`, `820×1180`, and `1440×900` (zero console/hydration errors, `0.000px` return error); stopped all servers and committed on `polish-1` (not merged)
 
+### Checkpoint D — Self-Hosted Local Fonts (`next/font/local`) ✅
+- [x] Diagnosed font fallback cause: `app/layout.tsx` and `app/globals.css` font config matched commit `733459c` identically, but `next/font/google` depended on live fetches from `fonts.googleapis.com` and `.next` cache consistency (a stale `next dev` PID 3269 on port 3000 + Google Fonts network failures caused browsers to fall back to system fonts)
+- [x] Downloaded open-source latin `.woff2` files into `app/fonts/` (`bricolage-grotesque-latin.woff2` with full `opsz`/`wdth`/`wght` variable axes, `instrument-serif-latin-400-italic.woff2`, `geist-latin.woff2`, `jetbrains-mono-latin.woff2`) and switched `app/layout.tsx` to `next/font/local` with identical weights, `font-stretch: 75% 100%`, italic style, `display: "swap"`, `preload: false` on mono, and CSS variable names (zero `next/font/google` imports left)
+- [x] Stopped all servers, deleted `.next`, ran clean `tsc`, `eslint`, and production build, and verified in both Chromium and WebKit (online + external-network-blocked reload) that all 4 fonts load locally from `/_next/static/media/*.woff2` with zero external requests
+- [x] Verified Chromium + WebKit screenshots at `390×844`, `820×1180`, and `1440×900` (2-line heavy tight hero headline, pixel-aligned X-ray outline + clean `Bricolage Grotesque` readout, labels, demos, process, and footer) with zero console/hydration errors; committed on `polish-1` (not merged)
+
 ## Notes / decisions
 - Next.js 16.4 with `cacheComponents` enabled (scaffold default). Page is fully static.
 - Grain is static (no animated noise) to avoid full-screen repaints.
