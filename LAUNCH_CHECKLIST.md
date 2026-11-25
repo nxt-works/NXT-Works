@@ -10,7 +10,7 @@ Every placeholder, draft, empty setting, and launch decision tracked in one plac
 | --- | --- | --- | --- |
 | **Agency name & short mark** | `site.config.ts` (`brand.name`, `brand.short`) | `"NXT Agency"` / `"NXT"` | Confirm final agency name and short form. If changed, also update the logo artwork in `components/Logo.tsx` and `app/icon.svg` and remake `public/og.png`. |
 | **Placeholder logo artwork** | `components/Logo.tsx`, `app/icon.svg` | Geometric N-X-T wordmark with Volt arrow | Confirm keeping the N-X-T artwork or swap in final brand artwork while keeping the four `data-logo-part` hooks (`n`, `x-stroke`, `x-arrow`, `t`). |
-| **Site address (`siteUrl`)** | `site.config.ts` (`siteUrl` / `brand.url`) | Empty `siteUrl` (safe fallback used during build; `brand.url` currently `"https://nxt.agency"`) | Set the real production domain (e.g. `"https://yourdomain.com"`) with no trailing slash before going public so canonical URLs, OG sharing links, and `sitemap.xml` point to the real domain. |
+| **Site address (`siteUrl`)** | `site.config.ts` (`siteUrl` / `resolvedSiteUrl`) | `siteUrl: ""` (empty; build uses safe fallback `"https://nxt.agency"` via `resolvedSiteUrl` so `metadataBase` never fails) | Set the real production domain (e.g. `"https://yourdomain.com"`) with no trailing slash before going public so canonical URLs, OG sharing links, and `sitemap.xml` point to the real domain. |
 | **Search engine toggle (`allowSearchEngines`)** | `site.config.ts` (`allowSearchEngines`) | `false` (`noindex, nofollow` + `Disallow: /` in `robots.txt`) | Keep `false` during staging/preview. Flip to `true` only once all placeholders are replaced and the real domain is live. |
 | **WhatsApp number** | `site.config.ts` (`contactSection.whatsappNumber`) | `""` (empty — WhatsApp buttons are hidden) | Enter real WhatsApp number in digits only with country code (e.g. `"919876543210"`). |
 | **Contact email** | `site.config.ts` (`contactSection.contactEmail` & `brand.email`) | `contactEmail: ""` (hidden); `brand.email: "hello@nxt.agency"` | Enter the real studio inbox email (and align `brand.email`). Leaving both WhatsApp and Email empty shows `"Contact details coming soon."`. |
@@ -36,3 +36,15 @@ Complete these steps in order before sharing the public URL:
 3. **Test on a real iPhone and a real Android phone** — Check the intro, hero X-ray Blueprint button, Services Journey scroll morph, Live Demos touch tabs, Team swipe row & tap animations, FAQ accordion, Contact inputs (no Safari auto-zoom), Footer wordmark, and 404 page on real mobile devices.
 4. **Set the site address** — Put the real production URL into `siteUrl` in `site.config.ts`, verify `public/og.png` previews cleanly in WhatsApp, Instagram, LinkedIn, and Telegram link debuggers, and confirm canonical metadata resolves to the real domain.
 5. **Switch search engines on** — Set `allowSearchEngines` to `true` in `site.config.ts`, redeploy, and confirm the page no longer outputs `noindex`, `/robots.txt` allows crawling with the sitemap URL, and `/sitemap.xml` lists the live home page.
+
+---
+
+## 3. Sharing Image (`public/og.png`) Regeneration
+
+> **Important:** `public/og.png` (1200×630) **must be remade** whenever the agency name, headline, or logo artwork in `components/Logo.tsx` changes.
+
+To remake `public/og.png` using the live logo artwork and local fonts:
+1. Read the four `<g data-logo-part="...">` groups directly from `components/Logo.tsx` (never hand-draw duplicate logo shapes) alongside `app/fonts/bricolage-grotesque-latin.woff2`, `app/fonts/instrument-serif-latin-400-italic.woff2`, `app/fonts/jetbrains-mono-latin.woff2`, and `public/grain.png`.
+2. Render a temporary 1200×630 HTML page on `#0C0C0D` Ink with subtle grain, the NXT logo, `"We build what's next for your business."`, and `"Websites / Dashboards / Automations"`.
+3. Capture with Playwright Chromium (`viewport: { width: 1200, height: 630 }`, `deviceScaleFactor: 1`) after `document.fonts.ready` to `public/og.png`, then delete the temporary HTML file.
+4. Update `ogImageAlt` in `site.config.ts` if the brand name or headline changes.

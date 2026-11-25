@@ -1,6 +1,14 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
-import { brand, colors, meta } from "@/site.config";
+import {
+  allowSearchEngines,
+  brand,
+  ogImageAlt,
+  resolvedSiteUrl,
+  siteDescription,
+  siteTitle,
+  themeColor,
+} from "@/site.config";
 import { INTRO_STORAGE_KEY } from "@/lib/intro";
 import SmoothScroll from "@/components/providers/SmoothScroll";
 import ScrollProgress from "@/components/ui/ScrollProgress";
@@ -40,14 +48,52 @@ const __JetBrains_Mono = localFont({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(brand.url),
-  title: meta.title,
-  description: meta.description,
-  openGraph: { title: meta.title, description: meta.description, siteName: brand.name },
+  metadataBase: new URL(resolvedSiteUrl),
+  title: siteTitle,
+  description: siteDescription,
+  robots: allowSearchEngines
+    ? { index: true, follow: true }
+    : {
+        index: false,
+        follow: false,
+        nocache: true,
+        googleBot: {
+          index: false,
+          follow: false,
+          noimageindex: true,
+        },
+      },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "/",
+    siteName: brand.name,
+    title: siteTitle,
+    description: siteDescription,
+    images: [
+      {
+        url: "/og.png",
+        width: 1200,
+        height: 630,
+        alt: ogImageAlt,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteTitle,
+    description: siteDescription,
+    images: [
+      {
+        url: "/og.png",
+        alt: ogImageAlt,
+      },
+    ],
+  },
 };
 
 export const viewport: Viewport = {
-  themeColor: colors.ink,
+  themeColor,
   colorScheme: "dark",
   viewportFit: "cover",
 };

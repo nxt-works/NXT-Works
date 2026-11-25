@@ -274,6 +274,13 @@ box, continue from there. Commit after each checkpoint.
 - [x] Created `LAUNCH_CHECKLIST.md` auditing every `PLACEHOLDER`, `DRAFT`, empty setting, team member, FAQ item, budget range, booking status, ticker phrase, and agency name/logo item with file, current value, team decision, and `"Before going public"` launch sequence
 - [x] Confirmed clean `tsc`, `eslint`, production build, and identical Hero visuals in Chromium + WebKit (`390×844` & `1440×900`) with zero console/hydration errors; committed Checkpoint A on `launch-prep`
 
+### Checkpoint B — Search, sharing, OG image & error pages ✅
+- [x] Added `siteUrl` (empty with safe `resolvedSiteUrl` fallback), `allowSearchEngines` (`false`), `siteTitle`, `siteDescription` (107 chars, plain words), `themeColor` (Ink), and `ogImageAlt` in `site.config.ts` and wired them into `app/layout.tsx` (English `lang="en"`, `themeColor` viewport, `noindex/nofollow` while disabled, Open Graph + Twitter card sharing tags)
+- [x] Created `app/robots.ts` (`Disallow: /` while `allowSearchEngines` is `false`; `Allow: /` + sitemap when `true`) and `app/sitemap.ts` (empty while `false`; home page entry when `true`)
+- [x] Generated `public/og.png` (`1200×630`) via Playwright from a temporary HTML file reusing exact logo shapes from `components/Logo.tsx`, local fonts, and subtle grain (deleted temporary HTML after) and documented regeneration steps + fallback URL in `LAUNCH_CHECKLIST.md`
+- [x] Built branded `app/not-found.tsx` (`"That page took a wrong turn."` + `"Back to home"`) and calm `app/error.tsx` (`"Something hit a snag."` + `"Try again"`) on Ink with minimal logo header & footer
+- [x] Verified `/robots.txt`, `/sitemap.xml`, `noindex` meta tags, `/og.png`, and 404 screenshots in Chromium + WebKit (`390×844` & `1440×900`) with clean lint/build; committed Checkpoint B on `launch-prep`
+
 ## Notes / decisions
 - Next.js 16.4 with `cacheComponents` enabled (scaffold default). Page is fully static.
 - Grain is static (no animated noise) to avoid full-screen repaints.

@@ -547,7 +547,21 @@ export const social = [
   { label: "GitHub", href: "https://github.com/" },
 ] as const;
 
+// The real address once published (e.g. "https://nxt.agency"). Leave empty while staging; build uses a safe fallback URL.
+export const siteUrl = "";
+// Keep false until all placeholders are replaced and the real domain is live.
+export const allowSearchEngines = false;
+export const siteTitle = "NXT Agency: Websites, dashboards and automations for growing businesses";
+export const siteDescription =
+  "A five-person team building fast websites, clear dashboards and helpful automations for growing businesses.";
+export const themeColor = colors.ink;
+export const ogImageAlt =
+  "NXT Agency — We build what's next for your business. Websites, Dashboards, Automations.";
+
+/** Safe URL fallback when siteUrl is empty so metadataBase, robots, and sitemap never fail at build time. */
+export const resolvedSiteUrl = (siteUrl.trim() || "https://nxt.agency").replace(/\/+$/, "");
+
 export const meta = {
-  title: `${brand.name} — Websites, dashboards & automations`,
-  description: `${brand.name} is a student-run studio building websites, CRM dashboards and automations for growing businesses. Built fast. Built to last.`,
+  title: siteTitle,
+  description: siteDescription,
 } as const;
