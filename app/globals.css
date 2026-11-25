@@ -471,7 +471,7 @@
   will-change: transform;
 }
 .process-step-content {
-  opacity: 0.55;
+  opacity: 0.62;
   transition: opacity 320ms var(--ease-nxt);
 }
 .process-step[data-lit="true"] .process-step-content {

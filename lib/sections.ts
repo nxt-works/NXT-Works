@@ -62,7 +62,7 @@ export function SectionLabelContent({
     { className: "inline-flex items-center gap-4" },
     React.createElement(
       "span",
-      { className: "shrink-0 whitespace-nowrap tabular-nums opacity-85" },
+      { className: "shrink-0 whitespace-nowrap tabular-nums" },
       `${getSectionNumber(id)} / ${getShowingSectionCount()}`,
     ),
     React.createElement("span", {

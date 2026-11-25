@@ -281,6 +281,12 @@ box, continue from there. Commit after each checkpoint.
 - [x] Built branded `app/not-found.tsx` (`"That page took a wrong turn."` + `"Back to home"`) and calm `app/error.tsx` (`"Something hit a snag."` + `"Try again"`) on Ink with minimal logo header & footer
 - [x] Verified `/robots.txt`, `/sitemap.xml`, `noindex` meta tags, `/og.png`, and 404 screenshots in Chromium + WebKit (`390×844` & `1440×900`) with clean lint/build; committed Checkpoint B on `launch-prep`
 
+### Checkpoint C — Speed measurement, safe fixes & final launch checks ✅
+- [x] Ran 3× mobile Lighthouse on production build (intro untouched): baseline `Perf 87 / A11y 96 / BP 100 / SEO 63` (`LCP 4.1s` from fresh-session intro, `color-contrast` on muted index/unlit Process text, `is-crawlable` from intentional `allowSearchEngines: false`)
+- [x] Applied safe fixes without changing any design or intro timing: removed `opacity-85` on section index labels (`lib/sections.ts`, `components/ui/Label.tsx`), nudged unlit `.process-step-content` opacity `0.55` → `0.62` (`app/globals.css`), and code-split below-the-fold sections via `next/dynamic` (`app/page.tsx`, cutting unused initial JS `71 KiB` → `50 KiB`)
+- [x] Re-measured 3× mobile Lighthouse: final averages **Performance 87 / Accessibility 100 / Best Practices 100 / SEO 63** (`FCP 0.9s`, `LCP 4.1s`, `TBT 40–50ms`, `CLS 0.021`, `SI 1.8s`); logged full results with `2026-11-25` date in `LAUNCH_CHECKLIST.md` (nothing on site)
+- [x] Re-verified `tsc`, `eslint`, `npm run build`, `/robots.txt`, `noindex`, zero console/hydration errors, and Chromium + WebKit 404 screenshots (`390×844` & `1440×900`); committed Checkpoint C on `launch-prep` (not merged)
+
 ## Notes / decisions
 - Next.js 16.4 with `cacheComponents` enabled (scaffold default). Page is fully static.
 - Grain is static (no animated noise) to avoid full-screen repaints.

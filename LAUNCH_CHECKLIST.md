@@ -48,3 +48,16 @@ To remake `public/og.png` using the live logo artwork and local fonts:
 2. Render a temporary 1200×630 HTML page on `#0C0C0D` Ink with subtle grain, the NXT logo, `"We build what's next for your business."`, and `"Websites / Dashboards / Automations"`.
 3. Capture with Playwright Chromium (`viewport: { width: 1200, height: 630 }`, `deviceScaleFactor: 1`) after `document.fonts.ready` to `public/og.png`, then delete the temporary HTML file.
 4. Update `ogImageAlt` in `site.config.ts` if the brand name or headline changes.
+
+---
+
+## 4. Mobile Lighthouse Baseline & Final Results (2026-11-25)
+
+Measured against the production build (`next start -p 3000`) on throttled mobile Chromium (3 runs averaged, fresh-session intro untouched and unskipped):
+
+| Category | Baseline (3-run avg) | Final (3-run avg) | Notes |
+| --- | --- | --- | --- |
+| **Performance** | **87** (`87 / 87 / 87`) | **87** (`87 / 87 / 87`) | `FCP 0.9s`, `TBT 40–50ms`, `CLS 0.021`, `SI 1.8s` (all 100/100). Only drag is `LCP 4.1s` (score `0.48`) caused by the intentional fresh-session intro overlay covering the hero headline until reveal. Below-the-fold dynamic code-splitting reduced unused initial JS from `71 KiB` → `50 KiB`. |
+| **Accessibility** | **96** (`96 / 96 / 96`) | **100** (`100 / 100 / 100`) | Fixed the two flagged `color-contrast` items: removed `opacity-85` on section index numbers (`lib/sections.ts`, `Label.tsx`) and nudged unlit Process step opacity from `0.55` → `0.62` (`app/globals.css`). |
+| **Best Practices** | **100** (`100 / 100 / 100`) | **100** (`100 / 100 / 100`) | Zero console errors, zero hydration warnings, clean security/API checks. |
+| **SEO** | **63** (`63 / 63 / 63`) | **63** (`63 / 63 / 63`) | Sole deduction is `is-crawlable` (`noindex` + `robots.txt Disallow: /`), which is intentional while `allowSearchEngines` is `false`. All other SEO audits pass 100%; flipping `allowSearchEngines` to `true` at launch brings SEO to 100. |

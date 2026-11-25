@@ -1,16 +1,18 @@
+import dynamic from "next/dynamic";
 import Intro from "@/components/intro/Intro";
 import Nav from "@/components/nav/Nav";
 import Hero from "@/components/hero/Hero";
 import Ticker from "@/components/hero/Ticker";
 import SectionPlaceholder from "@/components/sections/SectionPlaceholder";
-import ServicesJourney from "@/components/sections/ServicesJourney";
-import LiveDemos from "@/components/sections/LiveDemos";
-import ProcessSection from "@/components/sections/ProcessSection";
-import TeamSection from "@/components/sections/TeamSection";
-import FaqSection from "@/components/sections/FaqSection";
-import ContactSection from "@/components/sections/ContactSection";
-import Footer from "@/components/sections/Footer";
 import { sections, showUnfinishedSections, sectionReady } from "@/site.config";
+
+const ServicesJourney = dynamic(() => import("@/components/sections/ServicesJourney"));
+const LiveDemos = dynamic(() => import("@/components/sections/LiveDemos"));
+const ProcessSection = dynamic(() => import("@/components/sections/ProcessSection"));
+const TeamSection = dynamic(() => import("@/components/sections/TeamSection"));
+const FaqSection = dynamic(() => import("@/components/sections/FaqSection"));
+const ContactSection = dynamic(() => import("@/components/sections/ContactSection"));
+const Footer = dynamic(() => import("@/components/sections/Footer"));
 
 export default function Home() {
   return (
