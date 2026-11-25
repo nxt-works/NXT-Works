@@ -57,7 +57,8 @@ export default function TeamSection() {
   const lowPower = useLowPower();
   const isTouch = useIsTouch();
 
-  // Client-only small-phone check (runs only after mount so SSR & hydration never diverge).
+  // Client-only flags (run only after mount so SSR & hydration output always match).
+  const [mounted, setMounted] = useState(false);
   const [isSmallPhone, setIsSmallPhone] = useState(false);
   const [activeCard, setActiveCard] = useState(0);
   const [reducedHighlight, setReducedHighlight] = useState<Record<number, boolean>>({});
@@ -74,9 +75,15 @@ export default function TeamSection() {
   useEffect(() => {
     const mql = window.matchMedia("(max-width: 639px)");
     const sync = () => setIsSmallPhone(mql.matches);
-    sync();
+    const raf = window.requestAnimationFrame(() => {
+      setMounted(true);
+      sync();
+    });
     mql.addEventListener("change", sync);
-    return () => mql.removeEventListener("change", sync);
+    return () => {
+      window.cancelAnimationFrame(raf);
+      mql.removeEventListener("change", sync);
+    };
   }, []);
 
   // Clean up any pending reduced-motion highlight timers on unmount.
@@ -97,8 +104,9 @@ export default function TeamSection() {
     let closest = 0;
     let minDist = Number.POSITIVE_INFINITY;
     cards.forEach((card, idx) => {
-      if (!card) return;
-      const cardCenter = card.offsetLeft + card.offsetWidth / 2;
+      const item = card?.parentElement;
+      if (!item) return;
+      const cardCenter = item.offsetLeft + item.offsetWidth / 2;
       const d = Math.abs(cardCenter - trackCenter);
       if (d < minDist) {
         minDist = d;
@@ -110,9 +118,9 @@ export default function TeamSection() {
 
   const scrollToCard = useCallback((index: number) => {
     const track = trackRef.current;
-    const card = cardRefs.current[index];
-    if (!track || !card) return;
-    const targetLeft = card.offsetLeft - (track.clientWidth - card.offsetWidth) / 2;
+    const item = cardRefs.current[index]?.parentElement;
+    if (!track || !item) return;
+    const targetLeft = item.offsetLeft - (track.clientWidth - item.offsetWidth) / 2;
     track.scrollTo({
       left: Math.max(0, targetLeft),
       behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
@@ -173,7 +181,8 @@ export default function TeamSection() {
               .set(drawLine, { scaleX: 0.08, opacity: 1, svgOrigin: "104 171" })
               .to(pencil, { x: 2, y: 0, duration: 0.56, ease: "power2.inOut" })
               .to(drawLine, { scaleX: 1, svgOrigin: "104 171", duration: 0.56, ease: "power2.inOut" }, "<")
-              .to(pencil, { x: 0, y: 0, duration: 0.24, ease: "power2.out" });
+              .to(pencil, { x: 0, y: 0, duration: 0.24, ease: "power2.out" })
+              .to(drawLine, { opacity: 0, duration: 0.28, ease: "power2.out" }, "+=0.35");
           }
           break;
         }
@@ -235,15 +244,21 @@ export default function TeamSection() {
           const bubble = q('[data-sig="lead-bubble"]');
           const check = q('[data-sig="lead-check"]');
           if (bubble && check) {
-            tl.to(bubble, { y: -7, scale: 1.07, svgOrigin: "136 66", duration: 0.24, ease: "back.out(2.2)" }, 0)
+            tl.fromTo(
+              bubble,
+              { y: 8, scale: 0.86, opacity: 0, svgOrigin: "136 64" },
+              { y: -4, scale: 1.04, opacity: 1, svgOrigin: "136 64", duration: 0.26, ease: "back.out(2.2)" },
+              0,
+            )
               .fromTo(
                 check,
-                { scale: 0.55, opacity: 0.2, svgOrigin: "153 40" },
-                { scale: 1.1, opacity: 1, svgOrigin: "153 40", duration: 0.26, ease: "back.out(2.4)" },
+                { scale: 0.55, opacity: 0.2, svgOrigin: "153 34" },
+                { scale: 1.08, opacity: 1, svgOrigin: "153 34", duration: 0.26, ease: "back.out(2.4)" },
                 0.08,
               )
-              .to(check, { scale: 1, svgOrigin: "153 40", duration: 0.18, ease: "power2.out" }, 0.36)
-              .to(bubble, { y: 0, scale: 1, svgOrigin: "136 66", duration: 0.34, ease: "power3.out" }, 0.82);
+              .to(check, { scale: 1, svgOrigin: "153 34", duration: 0.18, ease: "power2.out" }, 0.36)
+              .to(bubble, { y: 0, scale: 1, svgOrigin: "136 64", duration: 0.22, ease: "power2.out" }, 0.36)
+              .to(bubble, { y: 6, scale: 0.9, opacity: 0, svgOrigin: "136 64", duration: 0.3, ease: "power2.in" }, 1.1);
           }
           break;
         }
@@ -509,7 +524,7 @@ export default function TeamSection() {
           </span>
         </div>
 
-        {/* Section headline & subline */}
+        {/* Section headline, subline & device-aware mono interaction hint */}
         <div className="mt-8 md:mt-10">
           <RevealText
             as="h2"
@@ -523,6 +538,16 @@ export default function TeamSection() {
           <p className="measure mt-5 text-lede text-ink/75 md:mt-6">
             {teamSection.subline}
           </p>
+          <p
+            data-testid="team-interaction-hint"
+            className="mt-3 min-h-[1.25rem] font-mono text-[12px] leading-[1.35] font-medium tracking-[0.12em] text-ink/65 uppercase"
+          >
+            {mounted
+              ? isTouch
+                ? teamSection.interactionHintTouch
+                : teamSection.interactionHintDesktop
+              : "\u00A0"}
+          </p>
         </div>
 
         {/* Polite screen-reader announcement when interacting with a team member */}
@@ -531,14 +556,14 @@ export default function TeamSection() {
         </p>
 
         {/* Responsive cards container:
-            - Phones (<640px): horizontal scroll-snap swipe row (~78vw cards)
-            - Tablets (640–1023px): 3 + 2 centred flex wrap
-            - Desktop (1024px+): 5 across, vertically staggered (0 / 40px) */}
+            - Phones (<640px): horizontal scroll-snap swipe row (~78vw cards), equal heights via items-stretch
+            - Tablets (640–1023px): 3 + 2 centred flex wrap, equal heights via items-stretch
+            - Desktop (1024px+): 5 across, equal card heights with 40px stagger via even pb-10 / odd pt-10 */}
         <div
           ref={trackRef}
           onScroll={handleTrackScroll}
           style={{ touchAction: "pan-x pan-y" }}
-          className="no-scrollbar -mx-5 mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-3 sm:mx-0 sm:mt-12 sm:flex-wrap sm:justify-center sm:gap-5 sm:overflow-visible sm:px-0 sm:pb-0 lg:mt-14 lg:grid lg:grid-cols-5 lg:items-start lg:gap-5 lg:pb-10 xl:gap-6"
+          className="no-scrollbar -mx-5 mt-8 flex items-stretch snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-2 sm:mx-0 sm:mt-10 sm:flex-wrap sm:justify-center sm:gap-5 sm:overflow-visible sm:px-0 sm:pb-0 lg:mt-12 lg:grid lg:grid-cols-5 lg:items-stretch lg:gap-5 xl:gap-6"
         >
           {teamSection.members.map((member, index) => {
             const isStaggered = index % 2 === 1;
@@ -546,52 +571,58 @@ export default function TeamSection() {
             const isReducedLit = Boolean(reducedHighlight[index]);
 
             return (
-              <button
+              <div
                 key={member.id}
-                ref={(el) => {
-                  cardRefs.current[index] = el;
-                }}
-                type="button"
-                data-team-card={member.characterId}
-                data-reduced-lit={isReducedLit ? "true" : "false"}
-                aria-label={`${teamSection.ariaPrefix} ${member.name}, ${member.role}`}
-                onPointerEnter={(e) => {
-                  if (e.pointerType === "mouse") {
-                    triggerSignature(index, member.characterId);
-                  }
-                }}
-                onClick={() => triggerSignature(index, member.characterId)}
-                className={`group flex w-[78vw] max-w-[320px] shrink-0 snap-center flex-col rounded-[24px] border p-5 text-left transition-colors duration-300 hover:border-ink/45 active:border-ink sm:w-[calc((100%-2.5rem)/3)] sm:max-w-none sm:shrink lg:w-auto lg:p-5 xl:p-6 ${
-                  isReducedLit
-                    ? "border-ink bg-volt/20"
-                    : "border-ink/15 bg-bone"
-                } ${isStaggered ? "lg:mt-10" : ""}`}
+                className={`flex w-[78vw] max-w-[320px] shrink-0 snap-center sm:w-[calc((100%-2.5rem)/3)] sm:max-w-none sm:shrink lg:w-auto ${
+                  isStaggered ? "lg:pt-10" : "lg:pb-10"
+                }`}
               >
-                {/* Character stage */}
-                <div className="mx-auto w-full max-w-[200px] pt-1 pb-3">
-                  <TeamCharacter
-                    characterId={member.characterId}
-                    photo={member.photo}
-                    clipId={`team-clip-${uid}-${member.id}`}
-                    reducedActive={isReducedLit}
-                  />
-                </div>
+                <button
+                  ref={(el) => {
+                    cardRefs.current[index] = el;
+                  }}
+                  type="button"
+                  data-team-card={member.characterId}
+                  data-reduced-lit={isReducedLit ? "true" : "false"}
+                  aria-label={`${teamSection.ariaPrefix} ${member.name}, ${member.role}`}
+                  onPointerEnter={(e) => {
+                    if (e.pointerType === "mouse") {
+                      triggerSignature(index, member.characterId);
+                    }
+                  }}
+                  onClick={() => triggerSignature(index, member.characterId)}
+                  className={`group flex h-full w-full flex-col rounded-[24px] border p-5 text-left transition-colors duration-300 hover:border-ink/45 active:border-ink lg:p-5 xl:p-6 ${
+                    isReducedLit
+                      ? "border-ink bg-volt/20"
+                      : "border-ink/15 bg-bone"
+                  }`}
+                >
+                  {/* Character stage */}
+                  <div className="mx-auto w-full max-w-[200px] pt-1 pb-3">
+                    <TeamCharacter
+                      characterId={member.characterId}
+                      photo={member.photo}
+                      clipId={`team-clip-${uid}-${member.id}`}
+                      reducedActive={isReducedLit}
+                    />
+                  </div>
 
-                {/* Member details */}
-                <div className="mt-auto border-t border-ink/12 pt-4">
-                  <p className="font-display text-[1.375rem] leading-[1.12] font-bold tracking-[-0.02em] text-ink">
-                    {member.name}
-                  </p>
-                  <p className="mt-1.5 font-mono text-[12px] leading-[1.35] font-medium tracking-[0.12em] text-ink/70 uppercase">
-                    {member.role}
-                  </p>
-                  {hasBio && (
-                    <p className="mt-2.5 text-[1rem] leading-[1.45] text-ink/80">
-                      {member.bio}
+                  {/* Member details — fixed min-height keeps all 5 cards equal height across 1–2 line roles */}
+                  <div className="mt-auto min-h-[96px] border-t border-ink/12 pt-4 lg:min-h-[116px] xl:min-h-[96px]">
+                    <p className="font-display text-[1.375rem] leading-[1.12] font-bold tracking-[-0.02em] text-ink">
+                      {member.name}
                     </p>
-                  )}
-                </div>
-              </button>
+                    <p className="mt-1.5 font-mono text-[12px] leading-[1.35] font-medium tracking-[0.12em] text-ink/70 uppercase">
+                      {member.role}
+                    </p>
+                    {hasBio && (
+                      <p className="mt-2.5 text-[1rem] leading-[1.45] text-ink/80">
+                        {member.bio}
+                      </p>
+                    )}
+                  </div>
+                </button>
+              </div>
             );
           })}
         </div>

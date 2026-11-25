@@ -247,6 +247,14 @@ box, continue from there. Commit after each checkpoint.
 - [x] Verified Chromium + WebKit across all 7 sizes (`360×740`, `390×844`, `412×915`, `768×1024`, `820×1180`, `1024×768`, `1440×900`): whole section, Team→FAQ Bone-to-Bone join, auto-numbering (`05 / 07 TEAM`, `06 / 07 FAQ`, `07 / 07 CONTACT`), phone swipe first & last card + ≥44px dots, and mid-animation frames for all 5 characters
 - [x] Passed keyboard-only Enter/Space checks, reduced-motion static-change check (zero breathing/eye-follow/travelling pulse), `tsc`, `eslint`, and production build with zero console or hydration errors; committed on `team-section` (not merged)
 
+### Team Polish Pass (`team-polish`)
+#### Checkpoint A — Client Lead silhouette, clean rest states, equal card heights & hint ✅
+- [x] Replaced Client Lead silhouette in `TeamCharacters.tsx` with ONE clean continuous stepped Bauhaus block (single rounded step on top right, zero overlapping shapes or stray notches)
+- [x] Hid Client Lead speech bubble + check mark and Designer drawn Volt stroke at rest (`opacity: 0`), appearing only during their signature animation (or reduced-motion static highlight) and fading cleanly back out
+- [x] Equalized all five card heights across phone, tablet, and desktop via stretched flex/grid wrappers (`lg:pb-10` even / `lg:pt-10` odd stagger) and a fixed minimum height on the card text block; removed extra grid bottom padding so bottom spacing matches other Bone sections
+- [x] Added post-mount hydration-safe `12px` mono interaction hint (`"Hover a character."` on mouse, `"Tap a character."` on touch) in `site.config.ts` and `TeamSection.tsx`
+- [x] Lint and TypeScript clean; committed Checkpoint A on `team-polish`
+
 ## Notes / decisions
 - Next.js 16.4 with `cacheComponents` enabled (scaffold default). Page is fully static.
 - Grain is static (no animated noise) to avoid full-screen repaints.

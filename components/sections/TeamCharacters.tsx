@@ -59,15 +59,16 @@ const CHARACTER_SPECS: Record<TeamCharacterId, CharacterSpec> = {
     breathOrigin: "100px 146px",
   },
   "client-lead": {
-    // Stepped Bauhaus block
+    // Single continuous stepped Bauhaus block (one clean rounded step on top right)
     silhouette:
-      "M 70 36 H 130 A 14 14 0 0 1 144 50 V 74 H 150 A 14 14 0 0 1 164 88 V 152 A 14 14 0 0 1 150 166 H 50 A 14 14 0 0 1 36 152 V 88 A 14 14 0 0 1 50 74 H 56 V 50 A 14 14 0 0 1 70 36 Z",
-    facet: "M 36 134 H 164 V 152 A 14 14 0 0 1 150 166 H 50 A 14 14 0 0 1 36 152 Z",
+      "M 58 34 H 98 A 16 16 0 0 1 114 50 V 56 A 12 12 0 0 0 126 68 H 142 A 16 16 0 0 1 158 84 V 148 A 16 16 0 0 1 142 164 H 58 A 16 16 0 0 1 42 148 V 50 A 16 16 0 0 1 58 34 Z",
+    facet:
+      "M 42 132 H 158 V 148 A 16 16 0 0 1 142 164 H 58 A 16 16 0 0 1 42 148 Z",
     eyes: [
-      { cx: 80, cy: 108 },
-      { cx: 120, cy: 108 },
+      { cx: 80, cy: 102 },
+      { cx: 120, cy: 102 },
     ],
-    breathOrigin: "100px 166px",
+    breathOrigin: "100px 164px",
   },
 };
 
@@ -98,8 +99,12 @@ function RoleObject({
           <line x1="103" y1="154" x2="117" y2="154" stroke="var(--color-ink)" strokeWidth="2" strokeOpacity="0.28" strokeLinecap="round" />
           <line x1="103" y1="188" x2="141" y2="188" stroke="var(--color-ink)" strokeWidth="2" strokeOpacity="0.2" strokeLinecap="round" />
 
-          {/* ONE Volt accent: drawn Volt stroke across the canvas card (thin Ink outline for contrast on Bone) */}
-          <g data-sig="draw-line" style={{ transformOrigin: "104px 171px" }}>
+          {/* ONE Volt accent: drawn Volt stroke across the canvas card (hidden at rest, drawn on animation) */}
+          <g
+            data-sig="draw-line"
+            opacity={reducedActive ? 1 : 0}
+            style={{ transformOrigin: "104px 171px" }}
+          >
             <rect
               x="104"
               y="165"
@@ -279,33 +284,33 @@ function RoleObject({
       );
 
     case "client-lead":
-      // Crisp geometric speech bubble at top-right shoulder + ONE Volt check badge (thin Ink outline on Bone)
+      // Crisp geometric speech bubble above right step terrace — HIDDEN at rest, appears only on trigger
       return (
-        <g data-char-prop="client-lead" data-sig="lead-bubble" style={{ transformOrigin: "136px 66px" }}>
+        <g
+          data-char-prop="client-lead"
+          data-sig="lead-bubble"
+          opacity={reducedActive ? 1 : 0}
+          style={{ transformOrigin: "136px 64px" }}
+        >
           <path
-            d="M 132 16 H 174 A 12 12 0 0 1 186 28 V 52 A 12 12 0 0 1 174 64 H 142 L 128 74 V 64 H 132 A 12 12 0 0 1 120 52 V 28 A 12 12 0 0 1 132 16 Z"
+            d="M 132 10 H 174 A 12 12 0 0 1 186 22 V 46 A 12 12 0 0 1 174 58 H 142 L 128 68 V 58 H 132 A 12 12 0 0 1 120 46 V 22 A 12 12 0 0 1 132 10 Z"
             fill="var(--color-bone)"
             stroke="var(--color-ink)"
             strokeWidth="2.5"
             strokeLinejoin="round"
           />
-          {/* Subtle chat lines at rest */}
-          <g data-sig="lead-lines" opacity="0.32">
-            <line x1="133" y1="35" x2="173" y2="35" stroke="var(--color-ink)" strokeWidth="3" strokeLinecap="round" />
-            <line x1="133" y1="45" x2="158" y2="45" stroke="var(--color-ink)" strokeWidth="3" strokeLinecap="round" />
-          </g>
           {/* ONE Volt accent: crisp check badge with thin Ink outline so Volt stays sharp on Bone */}
-          <g data-sig="lead-check" style={{ transformOrigin: "153px 40px" }}>
+          <g data-sig="lead-check" style={{ transformOrigin: "153px 34px" }}>
             <circle
               cx="153"
-              cy="40"
+              cy="34"
               r="14"
               fill="var(--color-volt)"
               stroke="var(--color-ink)"
               strokeWidth="2.2"
             />
             <path
-              d="M 146 40.5 L 151 45.5 L 160.5 35"
+              d="M 146 34.5 L 151 39.5 L 160.5 29"
               fill="none"
               stroke="var(--color-ink)"
               strokeWidth="3"

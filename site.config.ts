@@ -325,6 +325,8 @@ export const teamSection = {
   eyebrow: "Team",
   headline: ["Five people. ", "One", " standard."] as [string, string, string],
   subline: "A small team, so you always talk to the people doing the work.",
+  interactionHintDesktop: "Hover a character.",
+  interactionHintTouch: "Tap a character.",
   ariaPrefix: "Say hi to",
   swipeHint: "Swipe to meet all five",
   members: [
