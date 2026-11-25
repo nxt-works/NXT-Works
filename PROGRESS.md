@@ -228,6 +228,14 @@ box, continue from there. Commit after each checkpoint.
 - [x] Stopped all servers, deleted `.next`, ran clean `tsc`, `eslint`, and production build, and verified in both Chromium and WebKit (online + external-network-blocked reload) that all 4 fonts load locally from `/_next/static/media/*.woff2` with zero external requests
 - [x] Verified Chromium + WebKit screenshots at `390×844`, `820×1180`, and `1440×900` (2-line heavy tight hero headline, pixel-aligned X-ray outline + clean `Bricolage Grotesque` readout, labels, demos, process, and footer) with zero console/hydration errors; committed on `polish-1` (not merged)
 
+## Stage 2 — Section "Team" (`team-section`)
+### Checkpoint A — Config, layout & static geometric characters ✅
+- [x] Added `teamSection` (5 PLACEHOLDER members: Member One–Five, roles Designer, Front-end developer, Automation engineer, Back-end and CRM developer, Client lead, optional bio & photo path) to `site.config.ts` and set `sectionReady.team = true`
+- [x] Built `components/sections/TeamCharacters.tsx`: shared inline SVG builder for 5 chunky Bauhaus characters (squircle, tall capsule, wide arch, circle, stepped block) with two round Bone eyes + Ink pupils, role objects, strictly palette tokens + 1 Volt accent per character (with thin Ink outline on Bone), and `<clipPath>` silhouette photo support
+- [x] Built `components/sections/TeamSection.tsx`: Bone surface with Ink→Bone cut, auto-numbered label via `lib/sections.ts`, `Five people. One standard.` reveal, 5-across staggered desktop (`0`/`40px`), 3+2 centred tablet, and 78%-width scroll-snap phone swipe row + 5 accessible 44×44px dots (`touch-action: pan-x pan-y`)
+- [x] Mounted `TeamSection` in `app/page.tsx` and added `hasInkAbove = isSectionShowing("packages")` guard in `FaqSection.tsx` so the Team→FAQ Bone-to-Bone join stays clean
+- [x] Lint and TypeScript clean; committed Checkpoint A on `team-section`
+
 ## Notes / decisions
 - Next.js 16.4 with `cacheComponents` enabled (scaffold default). Page is fully static.
 - Grain is static (no animated noise) to avoid full-screen repaints.

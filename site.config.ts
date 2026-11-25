@@ -55,7 +55,7 @@ export const sectionReady: Record<SectionId, boolean> = {
   proof: false,
   demos: true,
   process: true,
-  team: false,
+  team: true,
   packages: false,
   faq: true,
   contact: true,
@@ -300,6 +300,95 @@ export const processSection = {
       body: "We launch, show your team how it works, and stay close to fix and improve.",
     },
   ],
+} as const;
+
+export type TeamCharacterId =
+  | "designer"
+  | "frontend"
+  | "automation"
+  | "backend"
+  | "client-lead";
+
+export interface TeamMember {
+  id: string;
+  characterId: TeamCharacterId;
+  name: string;
+  role: string;
+  /** Optional one-line "what I do" bio (may be empty). */
+  bio: string;
+  /** Optional photo path (e.g. "/team/member-1.jpg"). Leave empty to show the geometric character. */
+  photo: string;
+}
+
+// PLACEHOLDER — team must replace every name, role, bio, and optional photo path before publishing.
+export const teamSection = {
+  eyebrow: "Team",
+  headline: ["Five people. ", "One", " standard."] as [string, string, string],
+  subline: "A small team, so you always talk to the people doing the work.",
+  ariaPrefix: "Say hi to",
+  swipeHint: "Swipe to meet all five",
+  members: [
+    {
+      id: "member-1",
+      characterId: "designer",
+      // PLACEHOLDER — replace before publishing
+      name: "Member One",
+      // PLACEHOLDER — replace before publishing
+      role: "Designer",
+      // PLACEHOLDER — optional one-line "what I do"
+      bio: "",
+      // PLACEHOLDER — optional photo path (replaces character in the same silhouette)
+      photo: "",
+    },
+    {
+      id: "member-2",
+      characterId: "frontend",
+      // PLACEHOLDER — replace before publishing
+      name: "Member Two",
+      // PLACEHOLDER — replace before publishing
+      role: "Front-end developer",
+      // PLACEHOLDER — optional one-line "what I do"
+      bio: "",
+      // PLACEHOLDER — optional photo path
+      photo: "",
+    },
+    {
+      id: "member-3",
+      characterId: "automation",
+      // PLACEHOLDER — replace before publishing
+      name: "Member Three",
+      // PLACEHOLDER — replace before publishing
+      role: "Automation engineer",
+      // PLACEHOLDER — optional one-line "what I do"
+      bio: "",
+      // PLACEHOLDER — optional photo path
+      photo: "",
+    },
+    {
+      id: "member-4",
+      characterId: "backend",
+      // PLACEHOLDER — replace before publishing
+      name: "Member Four",
+      // PLACEHOLDER — replace before publishing
+      role: "Back-end and CRM developer",
+      // PLACEHOLDER — optional one-line "what I do"
+      bio: "",
+      // PLACEHOLDER — optional photo path
+      photo: "",
+    },
+    {
+      id: "member-5",
+      characterId: "client-lead",
+      // PLACEHOLDER — replace before publishing
+      name: "Member Five",
+      // PLACEHOLDER — replace before publishing
+      role: "Client lead",
+      // PLACEHOLDER — optional one-line "what I do"
+      bio: "",
+      // PLACEHOLDER — optional photo path
+      photo: "",
+    },
+  ] as TeamMember[],
 } as const;
 
 // DRAFT — team to review all FAQ questions and answers before final launch.

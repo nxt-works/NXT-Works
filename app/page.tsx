@@ -6,6 +6,7 @@ import SectionPlaceholder from "@/components/sections/SectionPlaceholder";
 import ServicesJourney from "@/components/sections/ServicesJourney";
 import LiveDemos from "@/components/sections/LiveDemos";
 import ProcessSection from "@/components/sections/ProcessSection";
+import TeamSection from "@/components/sections/TeamSection";
 import FaqSection from "@/components/sections/FaqSection";
 import ContactSection from "@/components/sections/ContactSection";
 import Footer from "@/components/sections/Footer";
@@ -28,6 +29,7 @@ export default function Home() {
           if (section.id === "services") return <ServicesJourney key={section.id} />;
           if (section.id === "demos") return <LiveDemos key={section.id} />;
           if (section.id === "process") return <ProcessSection key={section.id} />;
+          if (section.id === "team") return <TeamSection key={section.id} />;
           if (section.id === "faq") return <FaqSection key={section.id} />;
           if (section.id === "contact") return <ContactSection key={section.id} />;
           return (

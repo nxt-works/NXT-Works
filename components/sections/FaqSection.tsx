@@ -6,7 +6,7 @@ import { scrollToTarget } from "@/components/providers/SmoothScroll";
 import Button from "@/components/ui/Button";
 import Label from "@/components/ui/Label";
 import RevealText from "@/components/ui/RevealText";
-import { SectionLabelContent } from "@/lib/sections";
+import { isSectionShowing, SectionLabelContent } from "@/lib/sections";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 import { faqSection } from "@/site.config";
 
@@ -25,6 +25,7 @@ import { faqSection } from "@/site.config";
 export default function FaqSection() {
   const reducedMotion = useReducedMotion();
   const [before, accent, after] = faqSection.headline;
+  const hasInkAbove = isSectionShowing("packages");
 
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [instantCloseIndex, setInstantCloseIndex] = useState<number | null>(null);
@@ -83,10 +84,12 @@ export default function FaqSection() {
       aria-labelledby="faq-title"
       className="scroll-mt-4 bg-bone text-ink"
     >
-      {/* Decorative angled Ink → Bone top cut */}
-      <div aria-hidden="true" className="h-5 w-full bg-ink md:h-[34px]">
-        <div className="section-cut-left h-full w-full bg-bone" />
-      </div>
+      {/* Decorative angled Ink → Bone top cut (only when preceding section is Ink) */}
+      {hasInkAbove && (
+        <div aria-hidden="true" className="h-5 w-full bg-ink md:h-[34px]">
+          <div className="section-cut-left h-full w-full bg-bone" />
+        </div>
+      )}
 
       <div className="mx-auto w-full max-w-[1600px] px-5 pt-10 pb-16 md:px-10 md:pt-14 md:pb-24">
         {/* Eyebrow row */}

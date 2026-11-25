@@ -576,6 +576,15 @@
   animation: contact-step-in-back 320ms var(--ease-nxt) both;
 }
 
+/* Hide scrollbars cleanly on horizontal touch swipe tracks (Chromium + WebKit). */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* ──────────────────────────────────────────────────────────────────────────
    INTRO STATE (set before first paint by the inline script in app/layout.tsx)
      data-intro="play"    → first visit this session: overlay shown, scroll locked
