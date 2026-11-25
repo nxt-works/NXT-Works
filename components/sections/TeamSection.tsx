@@ -170,9 +170,9 @@ export default function TeamSection() {
           const drawLine = q('[data-sig="draw-line"]');
           if (pencil && drawLine) {
             tl.to(pencil, { x: -46, y: 2, duration: 0.18, ease: "power2.out" })
-              .set(drawLine, { scaleX: 0.08, opacity: 1 })
-              .to(pencil, { x: 4, y: -1, duration: 0.56, ease: "power2.inOut" })
-              .to(drawLine, { scaleX: 1, duration: 0.56, ease: "power2.inOut" }, "<")
+              .set(drawLine, { scaleX: 0.08, opacity: 1, svgOrigin: "104 171" })
+              .to(pencil, { x: 2, y: 0, duration: 0.56, ease: "power2.inOut" })
+              .to(drawLine, { scaleX: 1, svgOrigin: "104 171", duration: 0.56, ease: "power2.inOut" }, "<")
               .to(pencil, { x: 0, y: 0, duration: 0.24, ease: "power2.out" });
           }
           break;
@@ -235,15 +235,15 @@ export default function TeamSection() {
           const bubble = q('[data-sig="lead-bubble"]');
           const check = q('[data-sig="lead-check"]');
           if (bubble && check) {
-            tl.to(bubble, { y: -8, scale: 1.07, duration: 0.24, ease: "back.out(2.2)" }, 0)
+            tl.to(bubble, { y: -7, scale: 1.07, svgOrigin: "136 66", duration: 0.24, ease: "back.out(2.2)" }, 0)
               .fromTo(
                 check,
-                { scale: 0.55, opacity: 0.2 },
-                { scale: 1.12, opacity: 1, duration: 0.26, ease: "back.out(2.4)" },
+                { scale: 0.55, opacity: 0.2, svgOrigin: "153 40" },
+                { scale: 1.1, opacity: 1, svgOrigin: "153 40", duration: 0.26, ease: "back.out(2.4)" },
                 0.08,
               )
-              .to(check, { scale: 1, duration: 0.18, ease: "power2.out" }, 0.36)
-              .to(bubble, { y: 0, scale: 1, duration: 0.34, ease: "power3.out" }, 0.82);
+              .to(check, { scale: 1, svgOrigin: "153 40", duration: 0.18, ease: "power2.out" }, 0.36)
+              .to(bubble, { y: 0, scale: 1, svgOrigin: "136 66", duration: 0.34, ease: "power3.out" }, 0.82);
           }
           break;
         }
@@ -265,19 +265,8 @@ export default function TeamSection() {
         reducedMotion || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
       if (prefersReduced) {
-        gsap.from(cards, {
-          autoAlpha: 0,
-          duration: 0.45,
-          stagger: 0.05,
-          onComplete: () => {
-            hasRevealedRef.current = true;
-          },
-          scrollTrigger: {
-            trigger: trackRef.current ?? sectionEl,
-            start: "top 90%",
-            once: true,
-          },
-        });
+        gsap.set(cards, { clearProps: "opacity,visibility,transform" });
+        hasRevealedRef.current = true;
         return;
       }
 
@@ -340,6 +329,7 @@ export default function TeamSection() {
           const tw = gsap.to(body, {
             scaleX: 1.012,
             scaleY: 1.016,
+            transformOrigin: "50% 100%",
             duration: 1.7,
             ease: "sine.inOut",
             repeat: -1,
@@ -366,8 +356,8 @@ export default function TeamSection() {
             if (cardEyes && cardEyes.length > 0) {
               gsap
                 .timeline()
-                .to(cardEyes, { scaleY: 0.08, duration: 0.07, ease: "power2.in" })
-                .to(cardEyes, { scaleY: 1, duration: 0.11, ease: "power2.out" });
+                .to(cardEyes, { scaleY: 0.08, transformOrigin: "50% 50%", duration: 0.07, ease: "power2.in" })
+                .to(cardEyes, { scaleY: 1, transformOrigin: "50% 50%", duration: 0.11, ease: "power2.out" });
             }
           }
           scheduleBlink(idx);

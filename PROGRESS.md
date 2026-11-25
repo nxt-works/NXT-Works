@@ -242,6 +242,11 @@ box, continue from there. Commit after each checkpoint.
 - [x] Wired staggered entrance reveal (`ScrollTrigger`, once-only), focusable `<button>` cards (`"Say hi to Member One, Designer"` etc.) with polite `aria-live` announcements, reduced-motion static Volt highlight (zero breathing/blinking/eye-follow/pulse), and low-power / small-phone ambient skip (tap signature animations kept)
 - [x] Lint and TypeScript clean; committed Checkpoint B on `team-section`
 
+### Checkpoint C — Safety, reduced motion & 7-size dual-engine QA ✅
+- [x] Fixed reduced-motion entrance visibility (immediate static visibility without scroll-hidden reveal) and exact GSAP `svgOrigin`/`transformOrigin` anchors for Designer line draw, Client Lead bubble/check pop, grounded breathing, and centred eye blinks
+- [x] Verified Chromium + WebKit across all 7 sizes (`360×740`, `390×844`, `412×915`, `768×1024`, `820×1180`, `1024×768`, `1440×900`): whole section, Team→FAQ Bone-to-Bone join, auto-numbering (`05 / 07 TEAM`, `06 / 07 FAQ`, `07 / 07 CONTACT`), phone swipe first & last card + ≥44px dots, and mid-animation frames for all 5 characters
+- [x] Passed keyboard-only Enter/Space checks, reduced-motion static-change check (zero breathing/eye-follow/travelling pulse), `tsc`, `eslint`, and production build with zero console or hydration errors; committed on `team-section` (not merged)
+
 ## Notes / decisions
 - Next.js 16.4 with `cacheComponents` enabled (scaffold default). Page is fully static.
 - Grain is static (no animated noise) to avoid full-screen repaints.
