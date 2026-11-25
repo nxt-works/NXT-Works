@@ -255,6 +255,12 @@ box, continue from there. Commit after each checkpoint.
 - [x] Added post-mount hydration-safe `12px` mono interaction hint (`"Hover a character."` on mouse, `"Tap a character."` on touch) in `site.config.ts` and `TeamSection.tsx`
 - [x] Lint and TypeScript clean; committed Checkpoint A on `team-polish`
 
+#### Checkpoint B — Distinct body tones, friendly eye styles & dual-engine QA ✅
+- [x] Differentiated all five character silhouettes in `TeamCharacters.tsx` within the strict 4-token palette (Designer & Automation in Ink, Front-end & Client Lead in Graphite with thin Bone edge line, Back-end in Bone with `2px` Ink outline, one Volt accent per character with Ink outline on Bone)
+- [x] Added five distinct friendly eye & face styles (medium round, wider-apart slit pupils, equal-size eyes + small flat mouth line, larger close-together inverted Ink eyes with Bone highlights, upward-glancing eyes + friendly smile arc) while keeping eye-following, breathing, blinking, signature animations, silhouette photo `<clipPath>`, reduced motion, and low-power behavior intact
+- [x] Verified Chromium + WebKit screenshots across `390×844`, `820×1180`, and `1440×900` at rest (`0.0px` card height difference, bubble & drawn stroke hidden at rest, device-appropriate `12px` mono hint) plus all 5 characters mid-animation, keyboard Enter/Space triggers, bubble fade-out, and reduced-motion static behavior
+- [x] Lint (`eslint`), `tsc --noEmit`, and production build (`npm run build`) clean with zero console errors or hydration warnings; updated `PROGRESS.md` and committed Checkpoint B on `team-polish` (not merged)
+
 ## Notes / decisions
 - Next.js 16.4 with `cacheComponents` enabled (scaffold default). Page is fully static.
 - Grain is static (no animated noise) to avoid full-screen repaints.
