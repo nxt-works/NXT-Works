@@ -236,6 +236,12 @@ box, continue from there. Commit after each checkpoint.
 - [x] Mounted `TeamSection` in `app/page.tsx` and added `hasInkAbove = isSectionShowing("packages")` guard in `FaqSection.tsx` so the Team→FAQ Bone-to-Bone join stays clean
 - [x] Lint and TypeScript clean; committed Checkpoint A on `team-section`
 
+### Checkpoint B — Motion, eye tracking, idle life & signature animations ✅
+- [x] Added soft-spring cursor eye-following (capped `±4.2` SVG units inside Bone eyes), tablet touch look-at-last-tap + gentle idle gaze drift, staggered 1.5% idle breathing (`~3.4s` cycle out of sync), and varied-interval blinks — all paused automatically off-screen via `IntersectionObserver`
+- [x] Built all 5 one-shot signature animations (hover on mouse, tap on touch, Enter/Space on keyboard; never looping forever): Designer pencil drawing Volt line, Front-end brackets sliding apart + double cursor blink, Automation 3-node sequential light-up + travelling Volt pulse, Back-end 3-disc shuffle + Volt row blink, Client lead speech bubble pop + Volt check badge
+- [x] Wired staggered entrance reveal (`ScrollTrigger`, once-only), focusable `<button>` cards (`"Say hi to Member One, Designer"` etc.) with polite `aria-live` announcements, reduced-motion static Volt highlight (zero breathing/blinking/eye-follow/pulse), and low-power / small-phone ambient skip (tap signature animations kept)
+- [x] Lint and TypeScript clean; committed Checkpoint B on `team-section`
+
 ## Notes / decisions
 - Next.js 16.4 with `cacheComponents` enabled (scaffold default). Page is fully static.
 - Grain is static (no animated noise) to avoid full-screen repaints.

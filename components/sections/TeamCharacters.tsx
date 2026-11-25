@@ -71,7 +71,13 @@ const CHARACTER_SPECS: Record<TeamCharacterId, CharacterSpec> = {
   },
 };
 
-function RoleObject({ characterId }: { characterId: TeamCharacterId }) {
+function RoleObject({
+  characterId,
+  reducedActive = false,
+}: {
+  characterId: TeamCharacterId;
+  reducedActive?: boolean;
+}) {
   switch (characterId) {
     case "designer":
       // Small canvas card + chunky geometric pencil + ONE Volt drawn line (with thin Ink outline on Bone)
@@ -219,14 +225,14 @@ function RoleObject({ characterId }: { characterId: TeamCharacterId }) {
           <g data-sig="auto-node-1">
             <circle cx="100" cy="190" r="13" fill="var(--color-ink)" />
             <circle cx="100" cy="190" r="6" fill="var(--color-bone)" />
-            <circle data-sig="auto-lit-1" cx="100" cy="190" r="6.5" fill="var(--color-volt)" stroke="var(--color-ink)" strokeWidth="1.5" opacity="0" />
+            <circle data-sig="auto-lit-1" cx="100" cy="190" r="6.5" fill="var(--color-volt)" stroke="var(--color-ink)" strokeWidth="1.5" opacity={reducedActive ? 1 : 0} />
           </g>
 
           {/* Node 2 */}
           <g data-sig="auto-node-2">
             <circle cx="154" cy="190" r="13" fill="var(--color-ink)" />
             <circle cx="154" cy="190" r="6" fill="var(--color-bone)" />
-            <circle data-sig="auto-lit-2" cx="154" cy="190" r="6.5" fill="var(--color-volt)" stroke="var(--color-ink)" strokeWidth="1.5" opacity="0" />
+            <circle data-sig="auto-lit-2" cx="154" cy="190" r="6.5" fill="var(--color-volt)" stroke="var(--color-ink)" strokeWidth="1.5" opacity={reducedActive ? 1 : 0} />
           </g>
 
           {/* Travelling Volt pulse (hidden at rest so only ONE Volt accent is visible at rest) */}
@@ -316,6 +322,8 @@ export type TeamCharacterProps = {
   characterId: TeamCharacterId;
   photo?: string;
   clipId: string;
+  /** Simple still Volt highlight when triggered under prefers-reduced-motion. */
+  reducedActive?: boolean;
 };
 
 /**
@@ -323,7 +331,12 @@ export type TeamCharacterProps = {
  * - Renders an original chunky Bauhaus character in our 4-token palette (Ink, Bone, Graphite, one Volt accent).
  * - If `photo` is provided, renders the photo cleanly clipped inside the exact same body silhouette.
  */
-export default function TeamCharacter({ characterId, photo, clipId }: TeamCharacterProps) {
+export default function TeamCharacter({
+  characterId,
+  photo,
+  clipId,
+  reducedActive = false,
+}: TeamCharacterProps) {
   const spec = CHARACTER_SPECS[characterId];
   const hasPhoto = Boolean(photo && photo.trim().length > 0);
 
@@ -391,7 +404,7 @@ export default function TeamCharacter({ characterId, photo, clipId }: TeamCharac
         )}
 
         {/* Role-specific signature object */}
-        <RoleObject characterId={characterId} />
+        <RoleObject characterId={characterId} reducedActive={reducedActive} />
       </g>
     </svg>
   );
