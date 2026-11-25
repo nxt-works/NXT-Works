@@ -18,7 +18,6 @@ export default function Home() {
       <Intro />
       <Nav />
       <main id="main">
-        {/* HeroObject (3D slab) kept in components/hero/HeroObject.tsx for Stage 2 reuse */}
         <Hero ticker={<Ticker />} />
 
         {sections.map((section, i) => {

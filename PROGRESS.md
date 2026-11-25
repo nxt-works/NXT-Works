@@ -268,6 +268,12 @@ box, continue from there. Commit after each checkpoint.
 - [x] Tightened card bottom padding and text block `min-h-[78px]` in `TeamSection.tsx` so all five cards stay equal height (`0.0px` diff) with ~`13px` below the two-line role on tablet and desktop
 - [x] Verified Chromium + WebKit screenshots at `390×844`, `820×1180`, and `1440×900` (rest + all five mid-animation frames), keyboard Enter/Space, reduced-motion, `tsc`, `eslint`, and `npm run build` with zero console errors or hydration warnings; committed on `team-polish` (not merged)
 
+## Launch Prep (`launch-prep`)
+### Checkpoint A — Clean-up & launch checklist ✅
+- [x] Deleted unused `components/hero/HeroObject.tsx` and `components/hero/HeroObjectCanvas.tsx`, removed stale reference in `app/page.tsx`, and uninstalled `three`, `@react-three/fiber`, `@react-three/drei`, and `@types/three` (54 packages removed after full-repo verification)
+- [x] Created `LAUNCH_CHECKLIST.md` auditing every `PLACEHOLDER`, `DRAFT`, empty setting, team member, FAQ item, budget range, booking status, ticker phrase, and agency name/logo item with file, current value, team decision, and `"Before going public"` launch sequence
+- [x] Confirmed clean `tsc`, `eslint`, production build, and identical Hero visuals in Chromium + WebKit (`390×844` & `1440×900`) with zero console/hydration errors; committed Checkpoint A on `launch-prep`
+
 ## Notes / decisions
 - Next.js 16.4 with `cacheComponents` enabled (scaffold default). Page is fully static.
 - Grain is static (no animated noise) to avoid full-screen repaints.
