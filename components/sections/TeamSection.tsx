@@ -242,23 +242,37 @@ export default function TeamSection() {
         }
         case "client-lead": {
           const bubble = q('[data-sig="lead-bubble"]');
+          const dots = q('[data-sig="lead-dots"]');
           const check = q('[data-sig="lead-check"]');
-          if (bubble && check) {
-            tl.fromTo(
+          if (bubble && dots && check) {
+            tl.to(
               bubble,
-              { y: 8, scale: 0.86, opacity: 0, svgOrigin: "136 64" },
-              { y: -4, scale: 1.04, opacity: 1, svgOrigin: "136 64", duration: 0.26, ease: "back.out(2.2)" },
+              { y: -4, scale: 1.04, svgOrigin: "134 65", duration: 0.22, ease: "back.out(2.2)" },
               0,
             )
+              .to(
+                dots,
+                { scale: 0.45, opacity: 0, svgOrigin: "153.5 35", duration: 0.14, ease: "power2.in" },
+                0.02,
+              )
               .fromTo(
                 check,
-                { scale: 0.55, opacity: 0.2, svgOrigin: "153 34" },
-                { scale: 1.08, opacity: 1, svgOrigin: "153 34", duration: 0.26, ease: "back.out(2.4)" },
-                0.08,
+                { scale: 0.4, opacity: 0, svgOrigin: "153.5 35" },
+                { scale: 1.1, opacity: 1, svgOrigin: "153.5 35", duration: 0.24, ease: "back.out(2.4)" },
+                0.12,
               )
-              .to(check, { scale: 1, svgOrigin: "153 34", duration: 0.18, ease: "power2.out" }, 0.36)
-              .to(bubble, { y: 0, scale: 1, svgOrigin: "136 64", duration: 0.22, ease: "power2.out" }, 0.36)
-              .to(bubble, { y: 6, scale: 0.9, opacity: 0, svgOrigin: "136 64", duration: 0.3, ease: "power2.in" }, 1.1);
+              .to(check, { scale: 1, svgOrigin: "153.5 35", duration: 0.18, ease: "power2.out" }, 0.36)
+              .to(bubble, { y: 0, scale: 1, svgOrigin: "134 65", duration: 0.22, ease: "power2.out" }, 0.38)
+              .to(
+                check,
+                { scale: 0.45, opacity: 0, svgOrigin: "153.5 35", duration: 0.18, ease: "power2.in" },
+                1.08,
+              )
+              .to(
+                dots,
+                { scale: 1, opacity: 1, svgOrigin: "153.5 35", duration: 0.22, ease: "back.out(1.8)" },
+                1.2,
+              );
           }
           break;
         }
@@ -591,14 +605,14 @@ export default function TeamSection() {
                     }
                   }}
                   onClick={() => triggerSignature(index, member.characterId)}
-                  className={`group flex h-full w-full flex-col rounded-[24px] border p-5 text-left transition-colors duration-300 hover:border-ink/45 active:border-ink lg:p-5 xl:p-6 ${
+                  className={`group flex h-full w-full flex-col rounded-[24px] border px-5 pt-4 pb-3 text-left transition-colors duration-300 hover:border-ink/45 active:border-ink lg:px-5 lg:pt-4 lg:pb-3 xl:px-6 xl:pt-5 xl:pb-3 ${
                     isReducedLit
                       ? "border-ink bg-volt/20"
                       : "border-ink/15 bg-bone"
                   }`}
                 >
                   {/* Character stage */}
-                  <div className="mx-auto w-full max-w-[200px] pt-1 pb-3">
+                  <div className="mx-auto w-full max-w-[200px] pt-1 pb-2.5">
                     <TeamCharacter
                       characterId={member.characterId}
                       photo={member.photo}
@@ -607,12 +621,15 @@ export default function TeamSection() {
                     />
                   </div>
 
-                  {/* Member details — fixed min-height keeps all 5 cards equal height across 1–2 line roles */}
-                  <div className="mt-auto min-h-[96px] border-t border-ink/12 pt-4 lg:min-h-[116px] xl:min-h-[96px]">
+                  {/* Member details — tight min-height fits 2-line roles with ~12px card bottom padding */}
+                  <div className="mt-auto min-h-[78px] border-t border-ink/12 pt-3.5">
                     <p className="font-display text-[1.375rem] leading-[1.12] font-bold tracking-[-0.02em] text-ink">
                       {member.name}
                     </p>
-                    <p className="mt-1.5 font-mono text-[12px] leading-[1.35] font-medium tracking-[0.12em] text-ink/70 uppercase">
+                    <p
+                      data-team-role=""
+                      className="mt-1.5 font-mono text-[12px] leading-[1.35] font-medium tracking-[0.12em] text-ink/70 uppercase"
+                    >
                       {member.role}
                     </p>
                     {hasBio && (

@@ -3,7 +3,12 @@
 import type { TeamCharacterId } from "@/site.config";
 
 type BodyTone = "ink" | "graphite" | "bone";
-type EyeVariant = "round" | "slit" | "equal-flat" | "large-close-inverted" | "upward-smile";
+type EyeVariant =
+  | "round"
+  | "round-highlight-smile"
+  | "equal-gentle-smile"
+  | "large-close-inverted"
+  | "upward-smile";
 
 type CharacterSpec = {
   /** Shared geometric body silhouette path in 200×220 viewBox. */
@@ -42,7 +47,7 @@ const CHARACTER_SPECS: Record<TeamCharacterId, CharacterSpec> = {
     innerDetail:
       "M 100 27.5 A 42.5 42.5 0 0 1 142.5 70 V 118 A 42.5 42.5 0 0 1 100 160.5 A 42.5 42.5 0 0 1 57.5 118 V 70 A 42.5 42.5 0 0 1 100 27.5 Z",
     bodyTone: "graphite",
-    eyeVariant: "slit",
+    eyeVariant: "round-highlight-smile",
     eyes: [
       { cx: 76, cy: 82 },
       { cx: 124, cy: 82 },
@@ -57,7 +62,7 @@ const CHARACTER_SPECS: Record<TeamCharacterId, CharacterSpec> = {
     innerDetail:
       "M 36 130 H 164 V 150 A 14 14 0 0 1 150 164 H 50 A 14 14 0 0 1 36 150 Z",
     bodyTone: "ink",
-    eyeVariant: "equal-flat",
+    eyeVariant: "equal-gentle-smile",
     eyes: [
       { cx: 78, cy: 90 },
       { cx: 122, cy: 90 },
@@ -160,15 +165,11 @@ function CharacterFace({ spec }: { spec: CharacterSpec }) {
 
           {/* Eye pupil / highlight (moves smoothly inside data-char-pupil) */}
           <g data-char-pupil={idx === 0 ? "left" : "right"}>
-            {spec.eyeVariant === "slit" ? (
-              <rect
-                x={eye.cx - 5.5}
-                y={eye.cy - 2.6}
-                width="11"
-                height="5.2"
-                rx="2.6"
-                fill="var(--color-ink)"
-              />
+            {spec.eyeVariant === "round-highlight-smile" ? (
+              <>
+                <circle cx={eye.cx} cy={eye.cy} r="5" fill="var(--color-ink)" />
+                <circle cx={eye.cx + 1.8} cy={eye.cy - 2} r="1.7" fill="var(--color-bone)" />
+              </>
             ) : isInverted ? (
               <>
                 <circle cx={eye.cx} cy={eye.cy - 1} r="5.2" fill="var(--color-bone)" />
@@ -180,7 +181,7 @@ function CharacterFace({ spec }: { spec: CharacterSpec }) {
               <circle
                 cx={eye.cx}
                 cy={eye.cy}
-                r={spec.eyeVariant === "equal-flat" ? 5 : 5.5}
+                r={spec.eyeVariant === "equal-gentle-smile" ? 5 : 5.5}
                 fill="var(--color-ink)"
               />
             )}
@@ -188,15 +189,23 @@ function CharacterFace({ spec }: { spec: CharacterSpec }) {
         </g>
       ))}
 
-      {/* Subtle facial signature lines where specified */}
-      {spec.eyeVariant === "equal-flat" && (
-        <line
-          x1="90"
-          y1="118"
-          x2="110"
-          y2="118"
+      {/* Subtle friendly facial signature lines where specified */}
+      {spec.eyeVariant === "round-highlight-smile" && (
+        <path
+          d="M 93 111 Q 100 116.5 107 111"
+          fill="none"
           stroke="var(--color-bone)"
-          strokeWidth="3"
+          strokeWidth="2.6"
+          strokeLinecap="round"
+        />
+      )}
+
+      {spec.eyeVariant === "equal-gentle-smile" && (
+        <path
+          d="M 91 116.5 Q 100 122 109 116.5"
+          fill="none"
+          stroke="var(--color-bone)"
+          strokeWidth="2.8"
           strokeLinecap="round"
         />
       )}
@@ -257,13 +266,20 @@ function RoleObject({
             />
           </g>
 
-          {/* Chunky geometric pencil */}
+          {/* Chunky geometric pencil — ONE small Volt accent at rest on the pencil tip (Ink outline on Bone) */}
           <g data-sig="pencil" transform="translate(0, 0)">
             <g transform="translate(154, 166) rotate(-32)">
               <rect x="0" y="-6.5" width="32" height="13" rx="3" fill="var(--color-ink)" />
               <rect x="25" y="-6.5" width="7" height="13" rx="2.5" fill="var(--color-graphite)" stroke="var(--color-bone)" strokeWidth="1.2" />
-              <polygon points="0,-6.5 -12,0 0,6.5" fill="var(--color-bone)" stroke="var(--color-ink)" strokeWidth="2" strokeLinejoin="round" />
-              <polygon points="-8,-2.2 -12,0 -8,2.2" fill="var(--color-ink)" />
+              <polygon points="0,-6.5 -13,0 0,6.5" fill="var(--color-bone)" stroke="var(--color-ink)" strokeWidth="2" strokeLinejoin="round" />
+              <polygon
+                data-rest-volt="designer"
+                points="-6,-3 -13,0 -6,3"
+                fill="var(--color-volt)"
+                stroke="var(--color-ink)"
+                strokeWidth="1.6"
+                strokeLinejoin="round"
+              />
             </g>
           </g>
         </g>
@@ -413,39 +429,65 @@ function RoleObject({
       );
 
     case "client-lead":
-      // Crisp geometric speech bubble above right step terrace — HIDDEN at rest, appears only on trigger
+      // ONE small Volt "online" dot near top step + small empty speech bubble outline with 3 dots at rest
+      // During signature animation, the 3 dots turn into the Volt check mark and then settle back
       return (
-        <g
-          data-char-prop="client-lead"
-          data-sig="lead-bubble"
-          opacity={reducedActive ? 1 : 0}
-          style={{ transformOrigin: "136px 64px" }}
-        >
-          <path
-            d="M 132 10 H 174 A 12 12 0 0 1 186 22 V 46 A 12 12 0 0 1 174 58 H 142 L 128 68 V 58 H 132 A 12 12 0 0 1 120 46 V 22 A 12 12 0 0 1 132 10 Z"
-            fill="var(--color-bone)"
+        <g data-char-prop="client-lead">
+          {/* ONE small Volt accent at rest: crisp "online" dot near the top step */}
+          <circle
+            data-rest-volt="client-lead"
+            cx="95"
+            cy="54"
+            r="5.2"
+            fill="var(--color-volt)"
             stroke="var(--color-ink)"
-            strokeWidth="2.5"
-            strokeLinejoin="round"
+            strokeWidth="1.8"
           />
-          {/* ONE Volt accent: crisp check badge with thin Ink outline so Volt stays sharp on Bone */}
-          <g data-sig="lead-check" style={{ transformOrigin: "153px 34px" }}>
-            <circle
-              cx="153"
-              cy="34"
-              r="14"
-              fill="var(--color-volt)"
-              stroke="var(--color-ink)"
-              strokeWidth="2.2"
-            />
+
+          {/* Small empty speech bubble outline sitting beside the top step */}
+          <g data-sig="lead-bubble" style={{ transformOrigin: "134px 65px" }}>
             <path
-              d="M 146 34.5 L 151 39.5 L 160.5 29"
-              fill="none"
+              d="M 135 14 H 172 A 11 11 0 0 1 183 25 V 45 A 11 11 0 0 1 172 56 H 145 L 134 65 L 135 56 A 11 11 0 0 1 124 45 V 25 A 11 11 0 0 1 135 14 Z"
+              fill="var(--color-bone)"
               stroke="var(--color-ink)"
-              strokeWidth="3"
-              strokeLinecap="round"
+              strokeWidth="2.4"
               strokeLinejoin="round"
             />
+
+            {/* Three tiny Ink dots visible at rest */}
+            <g
+              data-sig="lead-dots"
+              opacity={reducedActive ? 0 : 1}
+              style={{ transformOrigin: "153.5px 35px" }}
+            >
+              <circle cx="142.5" cy="35" r="2.8" fill="var(--color-ink)" />
+              <circle cx="153.5" cy="35" r="2.8" fill="var(--color-ink)" />
+              <circle cx="164.5" cy="35" r="2.8" fill="var(--color-ink)" />
+            </g>
+
+            {/* Volt check badge — HIDDEN at rest, appears only during signature animation */}
+            <g
+              data-sig="lead-check"
+              opacity={reducedActive ? 1 : 0}
+              style={{ transformOrigin: "153.5px 35px" }}
+            >
+              <circle
+                cx="153.5"
+                cy="35"
+                r="12.5"
+                fill="var(--color-volt)"
+                stroke="var(--color-ink)"
+                strokeWidth="2.1"
+              />
+              <path
+                d="M 147.5 35.5 L 151.8 39.8 L 160 30.5"
+                fill="none"
+                stroke="var(--color-ink)"
+                strokeWidth="2.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </g>
           </g>
         </g>
       );

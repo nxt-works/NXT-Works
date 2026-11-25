@@ -261,6 +261,13 @@ box, continue from there. Commit after each checkpoint.
 - [x] Verified Chromium + WebKit screenshots across `390×844`, `820×1180`, and `1440×900` at rest (`0.0px` card height difference, bubble & drawn stroke hidden at rest, device-appropriate `12px` mono hint) plus all 5 characters mid-animation, keyboard Enter/Space triggers, bubble fade-out, and reduced-motion static behavior
 - [x] Lint (`eslint`), `tsc --noEmit`, and production build (`npm run build`) clean with zero console errors or hydration warnings; updated `PROGRESS.md` and committed Checkpoint B on `team-polish` (not merged)
 
+#### Checkpoint C — Resting Volt accents, Client Lead bubble dots, friendlier expressions & tight card bottom ✅
+- [x] Ensured every character shows exactly ONE small Volt accent at rest (with Ink outline on Bone): added a crisp Volt tip on Designer's pencil (keeping drawn Volt stroke animation-only) and a small Volt "online" dot near Client Lead's top step, while Front-end, Automation, and Back-end keep their single resting Volt accents
+- [x] Updated Client Lead's resting role object to a small empty Bone/Ink speech bubble outline with three tiny Ink dots; on signature trigger (or reduced-motion static toggle), the dots swap cleanly to the Volt check mark and settle back
+- [x] Softened Front-end eyes to small round pupils with a tiny upward Bone highlight + very small smile, and turned Automation's flat mouth line into a gentle smile while preserving blinking, eye-following, breathing, signature timelines, keyboard triggers, reduced-motion, low-power, and photo-in-silhouette clipping
+- [x] Tightened card bottom padding and text block `min-h-[78px]` in `TeamSection.tsx` so all five cards stay equal height (`0.0px` diff) with ~`13px` below the two-line role on tablet and desktop
+- [x] Verified Chromium + WebKit screenshots at `390×844`, `820×1180`, and `1440×900` (rest + all five mid-animation frames), keyboard Enter/Space, reduced-motion, `tsc`, `eslint`, and `npm run build` with zero console errors or hydration warnings; committed on `team-polish` (not merged)
+
 ## Notes / decisions
 - Next.js 16.4 with `cacheComponents` enabled (scaffold default). Page is fully static.
 - Grain is static (no animated noise) to avoid full-screen repaints.
